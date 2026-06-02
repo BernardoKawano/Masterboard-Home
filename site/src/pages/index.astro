@@ -1,0 +1,64 @@
+---
+export const prerender = false;
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Hero from '../components/Hero.astro';
+import ChoicePath from '../components/ChoicePath.astro';
+import Marquee from '../components/Marquee.astro';
+import Metrics from '../components/Metrics.astro';
+import About from '../components/About.astro';
+import WhatWeDo from '../components/WhatWeDo.astro';
+import Speakers from '../components/Speakers.astro';
+import Events from '../components/Events.astro';
+import Ecosystem from '../components/Ecosystem.astro';
+import Testimonials from '../components/Testimonials.astro';
+import FAQ from '../components/FAQ.astro';
+import CTAFinal from '../components/CTAFinal.astro';
+import LeadModal from '../components/LeadModal.astro';
+import faqsData from '../data/faqs.json';
+import { dataSource } from '../lib/data-source';
+
+// Busca em paralelo via data source (não Bubble diretamente)
+const [upcomingEvents, speakers] = await Promise.all([
+  dataSource.listEvents({ status: 'upcoming', sortAscending: true, limit: 5 }),
+  dataSource.listSpeakers(),
+]);
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqsData.map((faq) => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+  })),
+};
+---
+
+<BaseLayout
+  title="Masterboard | O Ecossistema Fechado para Líderes que Estão no Jogo"
+  description="Masterboard é o ecossistema empresarial fechado onde fundadores, CEOs e executivos encontram os pares certos para as decisões que realmente importam. Acesso por curadoria."
+  jsonLd={[faqSchema]}
+>
+  <Header />
+
+  <main id="main-content">
+    <Hero />
+    <ChoicePath />
+    <Marquee />
+    <Metrics />
+    <About />
+    <WhatWeDo />
+    <Speakers speakers={speakers} />
+    <Events events={upcomingEvents} limit={5} showViewAll={true} />
+    <Ecosystem />
+    <Testimonials />
+    <FAQ />
+    <CTAFinal />
+  </main>
+
+  <Footer />
+  <LeadModal />
+</BaseLayout>

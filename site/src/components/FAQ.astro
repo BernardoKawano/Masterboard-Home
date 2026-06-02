@@ -1,0 +1,114 @@
+---
+import type { FAQ } from '../types';
+import faqsData from '../data/faqs.json';
+
+const faqs = faqsData as FAQ[];
+---
+
+<section
+  id="faq"
+  class="section-py bg-mb-black relative"
+  aria-labelledby="faq-heading"
+>
+  <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+
+  <div class="container">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
+
+      <!-- Sticky header no desktop -->
+      <div class="lg:sticky lg:top-24 self-start">
+        <p class="eyebrow mb-4" data-animate>Antes de entrar</p>
+        <h2
+          id="faq-heading"
+          class="section-title text-balance mb-5"
+          data-animate
+          data-animate-delay="100"
+        >
+          Perguntas que chegam antes
+          <span class="text-mb-yellow"> do primeiro encontro.</span>
+        </h2>
+        <p class="text-white/50 text-sm leading-relaxed" data-animate data-animate-delay="150">
+          Se algo ainda não ficou claro, a conversa continua aqui.
+        </p>
+        <div class="mt-6" data-animate data-animate-delay="200">
+          <button type="button" class="btn-secondary text-sm" data-open-modal>
+            Falar com a equipe
+          </button>
+        </div>
+      </div>
+
+      <!-- Accordion -->
+      <div class="lg:col-span-2">
+        <dl>
+          {faqs.map((faq, i) => (
+            <div
+              class="faq-item"
+              data-animate
+              data-animate-delay={String(i * 60)}
+            >
+              <dt>
+                <details class="group">
+                  <summary class="faq-trigger list-none" aria-expanded="false">
+                    <span>{faq.question}</span>
+                    <span class="faq-icon" aria-hidden="true">
+                      <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                      </svg>
+                    </span>
+                  </summary>
+                  <dd class="faq-body">
+                    {faq.answer}
+                  </dd>
+                </details>
+              </dt>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  details[open] > summary .faq-icon {
+    transform: rotate(45deg);
+    border-color: var(--mb-yellow);
+    background: rgba(251, 190, 10, 0.1);
+  }
+
+  details > summary {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 1.5rem 0;
+    color: white;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    gap: 1rem;
+    list-style: none;
+    transition: color 0.2s;
+  }
+
+  details > summary:hover {
+    color: var(--mb-yellow);
+  }
+
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-icon {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 1.5px solid var(--mb-border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, border-color 0.2s, background 0.2s;
+  }
+</style>

@@ -1,0 +1,102 @@
+---
+const benefits = [
+  {
+    icon: 'calendar_month',
+    title: 'Calendário de experiências',
+    description: 'Encontros estratégicos para se conectar com quem move o mercado.',
+  },
+  {
+    icon: 'psychology',
+    title: 'Mentorias e conselhos',
+    description: 'Direcionamento prático para transformar desafios em crescimento.',
+  },
+  {
+    icon: 'workspace_premium',
+    title: 'Imersão executiva',
+    description: 'Bastidores do mercado, visitas, CEOs e novas estratégias.',
+  },
+  {
+    icon: 'handshake',
+    title: 'Parcerias e oportunidades',
+    description: 'Contato com investidores, potenciais clientes e novos mercados.',
+  },
+  {
+    icon: 'phone_iphone',
+    title: 'App exclusivo',
+    description: 'A camada privada para continuar conversas fora dos encontros.',
+  },
+  {
+    icon: 'mic',
+    title: 'Conteúdo de bastidor',
+    description: 'Palestras, painéis e insights que nascem dentro da comunidade.',
+  },
+  {
+    icon: 'location_on',
+    title: 'Presença nacional',
+    description: 'Capítulos locais conectados por uma mesma régua de curadoria.',
+  },
+  {
+    icon: 'key',
+    title: 'Acesso prioritário',
+    description: 'Convites e experiências antes de virarem oportunidade pública.',
+  },
+];
+---
+
+<section
+  id="ecossistema"
+  class="section-py relative"
+  style="background: linear-gradient(180deg, var(--mb-black) 0%, rgba(251,190,10,0.02) 50%, var(--mb-black) 100%);"
+  aria-labelledby="ecosystem-heading"
+>
+  <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+
+  <div class="container">
+
+    <!-- Cabeçalho -->
+    <div class="text-center max-w-2xl mx-auto mb-14 md:mb-16">
+      <p class="eyebrow mb-4" data-animate>O que você acessa</p>
+      <h2
+        id="ecosystem-heading"
+        class="section-title text-balance"
+        data-animate
+        data-animate-delay="100"
+      >
+        A rede que sustenta decisões
+        <span class="text-mb-yellow"> que ninguém vê de fora.</span>
+      </h2>
+      <p class="text-white/55 mt-4 leading-relaxed" data-animate data-animate-delay="150">
+        Calendário, matchmaking, conteúdo de bastidor, presença nacional — a estrutura invisível por trás das relações que movem negócios.
+      </p>
+    </div>
+
+    <!-- Grid de benefícios -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+      {benefits.map((b, i) => (
+        <article
+          class="flex gap-4 p-5 rounded-xl border border-mb-border bg-mb-card hover:border-mb-yellow/20 hover:bg-white/[0.03] transition-all group"
+          data-animate
+          data-animate-delay={String((i % 4) * 80)}
+        >
+          <div class="ecosystem-icon shrink-0" aria-hidden="true">
+            <span class="material-symbols-rounded icon-md">{b.icon}</span>
+          </div>
+          <div>
+            <h3 class="font-700 text-white text-sm mb-1.5 group-hover:text-mb-yellow transition-colors">
+              {b.title}
+            </h3>
+            <p class="text-white/45 text-xs leading-relaxed">{b.description}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <!-- CTA inline -->
+    <div class="text-center mt-12" data-animate>
+      <button type="button" class="btn-primary" data-open-modal>
+        Pedir acesso ao ecossistema
+      </button>
+    </div>
+
+  </div>
+</section>

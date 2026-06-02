@@ -1,0 +1,88 @@
+---
+const services = [
+  {
+    icon: 'filter_alt',
+    title: 'Curadoria ativa de perfil',
+    description:
+      'Selecionamos empresários com base no momento da empresa, maturidade de gestão e desafios estratégicos atuais.',
+    highlight: 'O ambiente começa no filtro',
+  },
+  {
+    icon: 'hub',
+    title: 'Match empresarial',
+    description:
+      'Conectamos empresários por estágio de crescimento, desafios semelhantes e complementaridade de competências.',
+    highlight: 'Trocas relevantes, não volume',
+  },
+  {
+    icon: 'groups',
+    title: 'Ambiente controlado',
+    description:
+      'Estruturamos encontros em grupos reduzidos, com mediação qualificada e foco em execução.',
+    highlight: 'Decisões concretas',
+  },
+];
+---
+
+<section
+  id="o-que-fazemos"
+  class="section-py bg-mb-black relative"
+  aria-labelledby="whatwedo-heading"
+>
+  <!-- Linha decorativa -->
+  <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+
+  <div class="container">
+
+    <!-- Cabeçalho -->
+    <div class="max-w-2xl mb-14 md:mb-16">
+      <p class="eyebrow mb-4" data-animate>Por dentro</p>
+      <h2
+        id="whatwedo-heading"
+        class="section-title text-balance"
+        data-animate
+        data-animate-delay="100"
+      >
+        A qualidade da sala começa
+        <span class="text-mb-yellow"> antes de ela ser aberta.</span>
+      </h2>
+    </div>
+
+    <!-- Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
+      {services.map((s, i) => (
+        <article
+          class="card flex flex-col gap-5 group"
+          data-animate
+          data-animate-delay={String(i * 120)}
+        >
+          <!-- Ícone decorativo -->
+          <div
+            class="w-12 h-12 rounded-xl flex items-center justify-center text-xl"
+            style="background: rgba(251,190,10,0.08); border: 1px solid rgba(251,190,10,0.18);"
+            aria-hidden="true"
+          >
+            <span class="material-symbols-rounded icon-lg text-mb-yellow">{s.icon}</span>
+          </div>
+
+          <div class="flex-1">
+            <h3 class="font-800 text-lg text-white mb-3 group-hover:text-mb-yellow transition-colors leading-tight">
+              {s.title}
+            </h3>
+            <p class="text-white/55 text-sm leading-relaxed">
+              {s.description}
+            </p>
+          </div>
+
+          <!-- Rodapé do card -->
+          <div class="pt-4 border-t border-mb-border">
+            <span class="text-xs font-700 text-mb-yellow/70 tracking-wide">
+              {s.highlight}
+            </span>
+          </div>
+        </article>
+      ))}
+    </div>
+
+  </div>
+</section>

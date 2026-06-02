@@ -1,0 +1,123 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import LeadModal from '../../components/LeadModal.astro';
+import type { BlogPost } from '../../types';
+import postsData from '../../data/blog-posts.json';
+
+const posts = postsData as BlogPost[];
+
+const formatDate = (dateStr: string) =>
+  new Date(dateStr).toLocaleDateString('pt-BR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+const blogListSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  name: 'Blog Masterboard',
+  description: 'Conteúdo sobre liderança, networking estratégico e ecossistema empresarial do Masterboard.',
+  url: 'https://masterboard.com.br/blog/',
+  publisher: {
+    '@type': 'Organization',
+    name: 'Masterboard',
+    url: 'https://masterboard.com.br',
+  },
+  blogPost: posts.map((p) => ({
+    '@type': 'BlogPosting',
+    headline: p.title,
+    description: p.excerpt,
+    url: `https://masterboard.com.br/blog/${p.slug}/`,
+    datePublished: p.date,
+    author: { '@type': 'Organization', name: p.author },
+  })),
+};
+---
+
+<BaseLayout
+  title="Blog Masterboard | Liderança, Networking e Ecossistema Empresarial"
+  description="Conteúdo sobre liderança estratégica, networking de alto nível e o ecossistema empresarial brasileiro. Do Masterboard para líderes que definem o rumo."
+  jsonLd={[blogListSchema]}
+>
+  <Header />
+
+  <main id="main-content" class="pt-20">
+
+    <!-- Hero da página -->
+    <section class="section-py bg-mb-black relative overflow-hidden" aria-labelledby="blog-heading">
+      <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(251,190,10,0.05) 0%, transparent 60%);" aria-hidden="true"></div>
+
+      <div class="container relative z-10 max-w-3xl">
+        <p class="eyebrow mb-4" data-animate>// BLOG</p>
+        <h1
+          id="blog-heading"
+          class="section-title text-balance mb-5"
+          data-animate
+          data-animate-delay="100"
+          style="font-size: clamp(2.75rem, 6vw, 5rem);"
+        >
+          Insights para
+          <span class="text-mb-yellow"> quem lidera.</span>
+        </h1>
+        <p class="text-white/60 text-lg leading-relaxed" data-animate data-animate-delay="150">
+          Liderança, networking estratégico e ecossistema empresarial — do Masterboard para quem define o rumo.
+        </p>
+      </div>
+    </section>
+
+    <!-- Grade de posts -->
+    <section class="section-py bg-mb-black relative" aria-label="Artigos do blog">
+      <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+
+      <div class="container">
+        {posts.length > 0 ? (
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {posts.map((post, i) => (
+              <article
+                class="card flex flex-col gap-4 group"
+                data-animate
+                data-animate-delay={String(i * 80)}
+              >
+                <!-- Imagem placeholder -->
+                <div class="w-full aspect-video rounded-xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-mb-border overflow-hidden flex items-center justify-center">
+                  <span class="text-4xl text-white/10">✦</span>
+                </div>
+
+                <div>
+                  <span class="badge badge-upcoming text-[10px] mb-3 inline-flex">
+                    {post.category}
+                  </span>
+
+                  <h2 class="font-800 text-white text-lg leading-tight mb-2 group-hover:text-mb-yellow transition-colors">
+                    <a href={`/blog/${post.slug}/`} class="after:absolute after:inset-0 relative">
+                      {post.title}
+                    </a>
+                  </h2>
+                  <p class="text-white/50 text-sm leading-relaxed">{post.excerpt}</p>
+                </div>
+
+                <div class="flex items-center justify-between pt-3 border-t border-mb-border text-xs text-white/35 mt-auto">
+                  <time datetime={post.date}>{formatDate(post.date)}</time>
+                  <span>{post.author}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div class="text-center py-20">
+            <p class="text-white/40 text-lg mb-2">Em breve.</p>
+            <p class="text-white/30 text-sm">Novos conteúdos chegando. Seja membro para receber primeiro.</p>
+            <button type="button" class="btn-primary mt-6" data-open-modal>Fazer parte</button>
+          </div>
+        )}
+      </div>
+    </section>
+
+  </main>
+
+  <Footer />
+  <LeadModal />
+</BaseLayout>

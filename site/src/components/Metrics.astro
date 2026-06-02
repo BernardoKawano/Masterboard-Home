@@ -1,0 +1,67 @@
+---
+const metrics = [
+  {
+    value: '800',
+    suffix: '+',
+    label: 'Membros ativos',
+    description: 'Empresários, C-levels e decisores curados',
+  },
+  {
+    value: '1.200',
+    suffix: '+',
+    label: 'Encontros realizados',
+    description: 'Experiências, mesas, imersões e summits',
+  },
+  {
+    value: '12',
+    suffix: '+',
+    label: 'Cidades atendidas',
+    description: 'Capítulos e experiências em expansão',
+  },
+  {
+    value: 'R$5bi',
+    suffix: '+',
+    label: 'Faturamento combinado',
+    description: 'Nas empresas dos membros do club',
+  },
+];
+---
+
+<section
+  id="numeros"
+  class="section-py bg-mb-black relative overflow-hidden"
+  aria-label="Números do Masterboard"
+>
+  <!-- Linha decorativa sutil -->
+  <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+
+  <div class="container">
+
+    <!-- Intro -->
+    <div class="text-center mb-14 md:mb-16" data-animate>
+      <p class="eyebrow mb-3">Números que falam</p>
+      <h2 class="section-title max-w-2xl mx-auto text-balance">
+        Não estão no feed.
+        <span class="text-mb-yellow"> Estão na sala.</span>
+      </h2>
+    </div>
+
+    <!-- Grid de métricas -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      {metrics.map((m, i) => (
+        <div
+          class="card text-center"
+          data-animate
+          data-animate-delay={String(i * 100)}
+        >
+          <p class="metrics-number mb-2" aria-label={`${m.value}${m.suffix} ${m.label}`}>
+            {m.value}<span class="text-mb-yellow">{m.suffix}</span>
+          </p>
+          <p class="font-700 text-white text-sm md:text-base mb-1">{m.label}</p>
+          <p class="text-white/45 text-xs leading-snug">{m.description}</p>
+        </div>
+      ))}
+    </div>
+
+  </div>
+</section>

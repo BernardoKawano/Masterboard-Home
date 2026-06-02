@@ -1,0 +1,68 @@
+[
+  {
+    "id": "bernardo-kawano",
+    "name": "Bernardo Kawano",
+    "role": "Fundador",
+    "company": "Masterboard",
+    "bio": "Fundador do Masterboard, o club exclusivo para líderes empresariais que estão construindo o futuro juntos. Acredita que as melhores decisões nascem de conexões reais entre pessoas que estão no mesmo nível de ambição.",
+    "image": "/images/speakers/bernardo-kawano.jpg",
+    "imageAlt": "Bernardo Kawano, fundador do Masterboard",
+    "linkedin": "https://www.linkedin.com/in/bernardokawano/",
+    "topics": ["Empreendedorismo", "Liderança", "Ecossistema de Negócios"]
+  },
+  {
+    "id": "speaker-placeholder-1",
+    "name": "Speaker em breve",
+    "role": "CEO",
+    "company": "Empresa líder",
+    "bio": "Executivo com trajetória de transformação em empresas de grande impacto no Brasil. Referência em estratégia e liderança organizacional.",
+    "image": "/images/speakers/placeholder.jpg",
+    "imageAlt": "Speaker Masterboard",
+    "linkedin": "#",
+    "topics": ["Estratégia", "Transformação Organizacional", "Liderança"]
+  },
+  {
+    "id": "speaker-placeholder-2",
+    "name": "Speaker em breve",
+    "role": "Fundadora & CPO",
+    "company": "Scale-up brasileira",
+    "bio": "Fundadora de uma das scale-ups de maior crescimento do Brasil nos últimos anos. Especialista em produto, growth e cultura de alta performance.",
+    "image": "/images/speakers/placeholder.jpg",
+    "imageAlt": "Speaker Masterboard",
+    "linkedin": "#",
+    "topics": ["Produto", "Growth", "Cultura"]
+  },
+  {
+    "id": "speaker-placeholder-3",
+    "name": "Speaker em breve",
+    "role": "Managing Partner",
+    "company": "Fundo de investimentos",
+    "bio": "Referência no ecossistema de venture capital e private equity no Brasil. Já investiu em mais de 40 empresas e ajudou dezenas a cruzar a fronteira da escala.",
+    "image": "/images/speakers/placeholder.jpg",
+    "imageAlt": "Speaker Masterboard",
+    "linkedin": "#",
+    "topics": ["Venture Capital", "M&A", "Escala"]
+  },
+  {
+    "id": "speaker-placeholder-4",
+    "name": "Speaker em breve",
+    "role": "Diretor Geral",
+    "company": "Multinacional no Brasil",
+    "bio": "Liderança à frente de operações com faturamento bilionário no Brasil. Expertise em expansão de mercado, alocação de capital e tomada de decisão em ambientes complexos.",
+    "image": "/images/speakers/placeholder.jpg",
+    "imageAlt": "Speaker Masterboard",
+    "linkedin": "#",
+    "topics": ["Operações", "Alocação de Capital", "Expansão"]
+  },
+  {
+    "id": "speaker-placeholder-5",
+    "name": "Speaker em breve",
+    "role": "Co-fundador",
+    "company": "Empresa de tecnologia",
+    "bio": "Co-fundador de empresa de tecnologia com presença em mais de 10 países. Defensor do pensamento sistêmico aplicado à construção de negócios duradouros.",
+    "image": "/images/speakers/placeholder.jpg",
+    "imageAlt": "Speaker Masterboard",
+    "linkedin": "#",
+    "topics": ["Tecnologia", "Internacionalização", "Pensamento Sistêmico"]
+  }
+]

@@ -1,0 +1,298 @@
+---
+// SSR — busca evento pelo id de domínio (slug limpo gerado pelo adapter)
+export const prerender = false;
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import LeadModal from '../../components/LeadModal.astro';
+import { dataSource } from '../../lib/data-source';
+import { bbcodeToHtml } from '../../lib/bubble';
+import { formatEventDate, formatEventTime } from '../../lib/adapters/bubble/index';
+import { getEventUrl } from '../../types/domain';
+
+const { id } = Astro.params;
+
+if (!id) return Astro.redirect('/eventos/');
+
+const event = await dataSource.getEventById(id);
+if (!event) return Astro.redirect('/404');
+
+const speakers = await dataSource.getSpeakersForEvent(event);
+const eventDescriptionHtml = bbcodeToHtml(event.description);
+const cleanText = (text: string) => text
+  .replace(/\[\/?(?:b|i|u)\]/g, '')
+  .replace(/\s+/g, ' ')
+  .trim();
+const eventDescriptionText = cleanText(event.description);
+const seoDescriptionText = event.seoDescription
+  ? cleanText(event.seoDescription)
+  : eventDescriptionText;
+
+const SITE_URL = 'https://masterboard.com.br';
+const canonicalUrl = `${SITE_URL}${getEventUrl(event)}`;
+
+const dateFormatted = formatEventDate(event.date, {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'America/Sao_Paulo',
+});
+
+const startTime = event.startTime ? formatEventTime(event.startTime) : null;
+const endTime = event.endTime ? formatEventTime(event.endTime) : null;
+const calendarStart = new Date(event.startTime ?? event.date)
+  .toISOString()
+  .replace(/[-:]/g, '')
+  .replace(/\.\d{3}Z$/, 'Z');
+const calendarEnd = new Date(event.endTime ?? event.startTime ?? event.date)
+  .toISOString()
+  .replace(/[-:]/g, '')
+  .replace(/\.\d{3}Z$/, 'Z');
+const calendarParams = new URLSearchParams({
+  text: event.title,
+  dates: [calendarStart, calendarEnd].join('/'),
+  details: eventDescriptionText,
+  location: event.venue,
+});
+const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&${calendarParams.toString()}`;
+
+// Schema.org — sem acoplamento ao Bubble
+const eventSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Event',
+  name: event.title,
+  description: eventDescriptionText,
+  startDate: event.startTime ?? event.date,
+  endDate: event.endTime,
+  url: canonicalUrl,
+  image: event.coverImage,
+  eventStatus: event.status === 'cancelled'
+    ? 'https://schema.org/EventCancelled'
+    : 'https://schema.org/EventScheduled',
+  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+  location: {
+    '@type': 'Place',
+    name: event.venue,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: event.city ?? event.venue,
+      addressCountry: 'BR',
+    },
+  },
+  organizer: {
+    '@type': 'Organization',
+    name: 'Masterboard',
+    url: SITE_URL,
+  },
+  ...(speakers.length > 0 && {
+    performer: speakers.map((s) => ({
+      '@type': 'Person',
+      name: s.name,
+      jobTitle: s.roleLabel,
+      ...(s.company && { worksFor: { '@type': 'Organization', name: s.company } }),
+    })),
+  }),
+  ...(event.topics.length > 0 && { keywords: event.topics.join(', ') }),
+};
+---
+
+<BaseLayout
+  title={event.seoTitle ?? `${event.title} | Masterboard`}
+  description={seoDescriptionText.slice(0, 155)}
+  ogType="event"
+  ogImage={event.coverImage ?? '/og-image.png'}
+  canonicalURL={canonicalUrl}
+  jsonLd={[eventSchema]}
+>
+  <Header />
+
+  <main id="main-content" class="event-detail-page pt-20">
+
+    <article class="event-app-detail">
+      <div class="container">
+        <nav class="event-app-breadcrumb" aria-label="Breadcrumb">
+          <a href="/">Início</a>
+          <span aria-hidden="true">/</span>
+          <a href="/eventos/">Eventos</a>
+          <span aria-hidden="true">/</span>
+          <span>{event.title}</span>
+        </nav>
+
+        <div class="event-app-shell">
+          <section class="event-app-hero" aria-labelledby="event-heading">
+            <div class="event-app-cover">
+              {event.coverImage ? (
+                <img
+                  src={event.coverImage}
+                  alt={event.title}
+                  loading="eager"
+                  decoding="async"
+                  onerror="this.style.display='none'"
+                />
+              ) : (
+                <div class="event-app-cover__fallback" aria-hidden="true">MASTERBOARD</div>
+              )}
+            </div>
+
+            <div class="event-app-hero__content">
+              <div class="flex flex-wrap gap-2 mb-4" data-animate>
+                <span class={`badge ${event.status === 'upcoming' ? 'badge-upcoming' : 'badge-past'}`}>
+                  <span class="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true"></span>
+                  {event.status === 'upcoming' ? 'Em breve' : event.status === 'cancelled' ? 'Cancelado' : 'Realizado'}
+                </span>
+                {event.edition && (
+                  <span class="badge" style="background:rgba(255,255,255,.04);border-color:var(--mb-border);color:rgba(255,255,255,.5);">
+                    {event.edition}
+                  </span>
+                )}
+              </div>
+
+              <h1 id="event-heading" class="event-app-title text-balance" data-animate data-animate-delay="100">
+                {event.title}
+              </h1>
+
+              <div class="event-app-actions" data-animate data-animate-delay="200">
+                <button type="button" class="btn-primary" data-open-modal>
+                  Cadastre-se
+                </button>
+                <a class="event-app-action" href={calendarUrl} target="_blank" rel="noopener noreferrer">
+                  Adicionar ao meu calendário
+                </a>
+                <button
+                  type="button"
+                  class="event-app-action"
+                  data-share-event
+                  data-share-title={event.title}
+                  data-share-url={canonicalUrl}
+                >
+                  Compartilhar
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <div class="event-app-layout">
+            <div class="event-app-main">
+              <section class="event-app-panel" aria-labelledby="guests-heading" data-animate>
+                <div class="event-app-panel__header">
+                  <h2 id="guests-heading">Convidados</h2>
+                  {speakers.length > 0 && <span>{speakers.length}</span>}
+                </div>
+                {speakers.length > 0 ? (
+                  <div class="event-app-guests">
+                    {speakers.map((speaker) => (
+                      <article class="event-app-guest">
+                        <div class="event-app-guest__photo">
+                          {speaker.photo ? (
+                            <img src={speaker.photo} alt={speaker.name} loading="lazy" decoding="async" onerror="this.style.display='none'" />
+                          ) : (
+                            <span>{speaker.name.charAt(0).toUpperCase()}</span>
+                          )}
+                        </div>
+                        <div>
+                          <p>{speaker.name}</p>
+                          <span>{speaker.roleLabel || 'Convidado Masterboard'}</span>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p class="event-app-empty">Convidados serão divulgados em breve.</p>
+                )}
+              </section>
+
+              <section class="event-app-panel" aria-labelledby="about-event-heading" data-animate>
+                <h2 id="about-event-heading">Sobre o evento</h2>
+                <div class="event-app-copy" set:html={eventDescriptionHtml} />
+              </section>
+
+              {event.schedule && (
+                <section class="event-app-panel" aria-labelledby="schedule-heading" data-animate>
+                  <h2 id="schedule-heading">Cronograma</h2>
+                  <div class="event-app-schedule" set:html={event.schedule} />
+                </section>
+              )}
+            </div>
+
+            <aside class="event-app-side" data-animate data-animate-delay="150">
+              <section class="event-app-panel event-app-sticky-card" aria-labelledby="details-heading">
+                <h2 id="details-heading">Detalhes</h2>
+                <dl class="event-app-details">
+                  <div>
+                    <dt>Data</dt>
+                    <dd>{dateFormatted}</dd>
+                  </div>
+                  {(startTime || endTime) && (
+                    <div>
+                      <dt>Horário</dt>
+                      <dd>{startTime}{endTime ? ` – ${endTime}` : ''}</dd>
+                    </div>
+                  )}
+                  <div>
+                    <dt>Local</dt>
+                    <dd>{event.city ? `${event.city} — ` : ''}{event.venue}</dd>
+                  </div>
+                  {event.topics.length > 0 && (
+                    <div>
+                      <dt>Temas</dt>
+                      <dd>{event.topics.slice(0, 4).join(', ')}</dd>
+                    </div>
+                  )}
+                </dl>
+
+                <button type="button" class="btn-primary w-full justify-center mt-6" data-open-modal>
+                  Cadastre-se
+                </button>
+              </section>
+
+              {event.driveLink && event.status === 'past' && (
+                <section class="event-app-panel">
+                  <p class="text-mb-yellow text-xs font-700 mb-2">Materiais do evento</p>
+                  <p class="text-white/50 text-xs mb-3">Acesso exclusivo para membros presentes.</p>
+                  <a href={event.driveLink} target="_blank" rel="noopener noreferrer" class="btn-secondary text-xs py-2 px-4">
+                    Acessar Drive
+                  </a>
+                </section>
+              )}
+            </aside>
+          </div>
+
+          <nav class="event-app-bottom-nav" aria-label="Navegação do ecossistema">
+            <a href="/eventos/" aria-current="page">Eventos</a>
+            <a href="/blog/">Conteúdos</a>
+            <a href="https://app.masterboard.com.br" target="_blank" rel="noopener noreferrer">Membros</a>
+          </nav>
+        </div>
+      </div>
+    </article>
+
+  </main>
+
+  <Footer />
+  <LeadModal />
+  <script>
+    document.querySelectorAll('[data-share-event]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const shareButton = button as HTMLButtonElement;
+        const title = shareButton.dataset.shareTitle ?? document.title;
+        const url = shareButton.dataset.shareUrl ?? window.location.href;
+
+        try {
+          if (navigator.share) {
+            await navigator.share({ title, url });
+          } else {
+            await navigator.clipboard.writeText(url);
+            shareButton.textContent = 'Link copiado';
+            window.setTimeout(() => {
+              shareButton.textContent = 'Compartilhar';
+            }, 1800);
+          }
+        } catch {
+          // Usuário cancelou o compartilhamento ou o navegador bloqueou a ação.
+        }
+      });
+    });
+  </script>
+</BaseLayout>

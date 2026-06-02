@@ -14,6 +14,9 @@ wp-config.php
 .env.*
 
 node_modules/
+node_modules.failed-install-*/
+dist/
+.astro/
 vendor/
 .DS_Store
 Thumbs.db

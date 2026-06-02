@@ -1,0 +1,10 @@
+---
+/**
+ * Este arquivo existe apenas para compatibilidade histórica.
+ * A rota de detalhe de evento foi migrada para [id].astro (usa _id do Bubble).
+ * getStaticPaths retorna [] → nenhuma página estática gerada → sem conflito de rota.
+ */
+export function getStaticPaths() {
+  return [];
+}
+---

@@ -1,0 +1,194 @@
+---
+export const prerender = false;
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import LeadModal from '../../components/LeadModal.astro';
+import { dataSource } from '../../lib/data-source';
+import { getEventUrl } from '../../types/domain';
+import type { Event } from '../../types/domain';
+
+const [upcoming, past] = await Promise.all([
+  dataSource.listEvents({ status: 'upcoming', sortAscending: true }),
+  dataSource.listEvents({ status: 'past', sortAscending: false }),
+]);
+
+const allCount = upcoming.length + past.length;
+
+const formatShort = (iso: string) =>
+  new Date(iso).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    timeZone: 'America/Sao_Paulo',
+  });
+
+const eventListSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Eventos Masterboard',
+  description: 'Lista de eventos do Masterboard — encontros, jantares e summits para líderes empresariais.',
+  url: 'https://masterboard.com.br/eventos/',
+  numberOfItems: allCount,
+  itemListElement: [...upcoming, ...past].slice(0, 20).map((event, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    url: `https://masterboard.com.br${getEventUrl(event)}`,
+    name: event.title,
+  })),
+};
+---
+
+<BaseLayout
+  title="Eventos Masterboard | Encontros, Jantares e Summits para Líderes"
+  description="Confira os próximos eventos do Masterboard — jantares exclusivos, summits e encontros estratégicos para líderes e executivos em todo o Brasil."
+  jsonLd={[eventListSchema]}
+>
+  <Header />
+
+  <main id="main-content" class="pt-20">
+
+    <!-- Hero da página -->
+    <section class="section-py bg-mb-black relative overflow-hidden" aria-labelledby="eventos-heading">
+      <div
+        class="absolute inset-0 pointer-events-none"
+        style="background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(251,190,10,0.06) 0%, transparent 60%);"
+        aria-hidden="true"
+      ></div>
+      <div class="container relative z-10 text-center max-w-3xl mx-auto">
+        <p class="eyebrow mb-4" data-animate>// EVENTOS</p>
+        <h1
+          id="eventos-heading"
+          class="text-balance mb-5"
+          data-animate
+          data-animate-delay="100"
+          style="font-size: clamp(2.75rem, 6vw, 5rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.0;"
+        >
+          Onde as conexões
+          <span class="text-mb-yellow"> acontecem.</span>
+        </h1>
+        <p class="text-white/60 text-lg leading-relaxed" data-animate data-animate-delay="150">
+          Encontros exclusivos, jantares de alto nível e summits para quem define o rumo dos negócios.
+          {allCount > 0 && (
+            <span class="text-white/35 text-base block mt-1">{allCount} eventos no ecossistema.</span>
+          )}
+        </p>
+      </div>
+    </section>
+
+    <!-- Próximos eventos -->
+    {upcoming.length > 0 && (
+      <section class="section-py bg-mb-black relative" aria-label="Próximos eventos">
+        <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+        <div class="container">
+          <h2 class="eyebrow mb-8" data-animate>Próximos eventos</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {upcoming.map((event: Event, i: number) => (
+              <article class="card flex flex-col gap-4 group" data-animate data-animate-delay={String(i * 80)}>
+                <div class="w-full aspect-video rounded-xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-mb-border overflow-hidden">
+                  {event.coverImage ? (
+                    <img
+                      src={event.coverImage}
+                      alt={event.title}
+                      loading="lazy"
+                      decoding="async"
+                      class="w-full h-full object-cover"
+                      onerror="this.style.display='none'"
+                    />
+                  ) : (
+                    <div class="w-full h-full flex items-center justify-center">
+                      <span class="text-white/10 font-800 text-3xl">M</span>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <div class="flex flex-wrap gap-2 mb-2">
+                    <span class="badge badge-upcoming text-[10px]">
+                      <span class="w-1.5 h-1.5 rounded-full bg-mb-yellow" aria-hidden="true"></span>
+                      Em breve
+                    </span>
+                    {event.edition && (
+                      <span class="badge" style="background:rgba(255,255,255,.04);border-color:var(--mb-border);color:rgba(255,255,255,.4);">
+                        {event.edition}
+                      </span>
+                    )}
+                  </div>
+                  <h3 class="font-800 text-white text-lg leading-tight mb-2 group-hover:text-mb-yellow transition-colors">
+                    {event.title}
+                  </h3>
+                  <p class="text-white/50 text-sm leading-relaxed line-clamp-2">{event.description}</p>
+                </div>
+
+                <div class="flex items-center justify-between pt-3 border-t border-mb-border text-sm mt-auto">
+                  <span class="text-white/55">{formatShort(event.date)}</span>
+                  <span class="text-white/35 text-xs">{event.venue}</span>
+                </div>
+
+                <a href={getEventUrl(event)} class="btn-secondary text-sm justify-center" aria-label={`Ver detalhes: ${event.title}`}>
+                  Ver detalhes
+                </a>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+
+    <!-- Eventos passados -->
+    {past.length > 0 && (
+      <section class="section-py bg-mb-black relative" aria-label="Eventos realizados">
+        <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+        <div class="container">
+          <h2 class="eyebrow mb-8" data-animate>Eventos realizados</h2>
+          <ul class="flex flex-col gap-3" role="list">
+            {past.map((event: Event, i: number) => (
+              <li data-animate data-animate-delay={String((i % 8) * 50)}>
+                <a
+                  href={getEventUrl(event)}
+                  class="flex items-center gap-4 p-4 rounded-xl border border-mb-border bg-mb-card hover:border-white/15 hover:bg-white/[0.04] transition-all group"
+                >
+                  {event.coverImage && (
+                    <div class="w-12 h-12 rounded-lg overflow-hidden bg-white/5 shrink-0 hidden sm:block">
+                      <img
+                        src={event.coverImage}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
+                        onerror="this.style.display='none'"
+                      />
+                    </div>
+                  )}
+                  <div class="flex-1 min-w-0">
+                    <p class="font-600 text-white/75 text-sm truncate group-hover:text-white transition-colors">
+                      {event.title}
+                    </p>
+                    <p class="text-white/35 text-xs mt-0.5">{formatShort(event.date)} · {event.venue}</p>
+                  </div>
+                  {event.edition && (
+                    <span class="text-xs text-white/25 hidden md:block shrink-0">{event.edition}</span>
+                  )}
+                  <svg class="w-4 h-4 text-white/20 group-hover:text-white/50 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )}
+
+    <section class="py-16 bg-mb-black">
+      <div class="container text-center max-w-xl mx-auto">
+        <p class="text-white/50 text-sm mb-3">Membros têm acesso antecipado e reservas prioritárias.</p>
+        <button type="button" class="btn-primary" data-open-modal>Faça parte para participar</button>
+      </div>
+    </section>
+
+  </main>
+
+  <Footer />
+  <LeadModal />
+</BaseLayout>

@@ -1,0 +1,224 @@
+---
+/**
+ * Seção de comunidade de membros.
+ * Dados: src/data/members.json (curado manualmente).
+ * Contagem real: buscada do Bubble user endpoint se disponível,
+ * caso contrário usa fallback estático.
+ *
+ * NOTA: Para mostrar perfis reais, substituir members.json por dados
+ * reais quando o endpoint de usuário do Bubble for acessível com auth.
+ */
+
+import membersData from '../data/members.json';
+
+interface Props {
+  /** Contagem real de membros (do Bubble). Default: dados do JSON. */
+  totalCount?: number;
+}
+
+const { totalCount } = Astro.props;
+const displayCount = totalCount ?? 1450;
+const members = membersData;
+
+// Setores únicos para filtro visual
+const sectors = [...new Set(members.map((m) => m.sector))];
+---
+
+<section
+  id="membros"
+  class="section-py bg-mb-black relative overflow-hidden"
+  aria-labelledby="members-heading"
+>
+  <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+
+  <!-- Grid pattern decorativo -->
+  <div class="brand-grid-mark" aria-hidden="true" style="opacity:0.35; right: 2%; bottom: 5%;"></div>
+
+  <div class="container">
+
+    <!-- Cabeçalho -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 md:mb-14">
+      <div class="max-w-xl">
+        <p class="eyebrow mb-4" data-animate>A comunidade</p>
+        <h2
+          id="members-heading"
+          class="section-title text-balance"
+          data-animate
+          data-animate-delay="100"
+        >
+          <span class="text-mb-yellow">{displayCount.toLocaleString('pt-BR')}+</span> líderes
+          que já estão na sala.
+        </h2>
+      </div>
+      <p class="text-white/50 text-sm max-w-xs leading-relaxed" data-animate data-animate-delay="150">
+        Identidades preservadas quando a conversa envolve bastidor, estratégia e acesso — como toda comunidade séria protege seus membros.
+      </p>
+    </div>
+
+    <!-- Grade de membros -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
+      {members.map((member, i) => (
+        <div
+          class="member-card group"
+          data-animate
+          data-animate-delay={String((i % 6) * 60)}
+          aria-label={`${member.name}, ${member.role}`}
+        >
+          <!-- Avatar com iniciais -->
+          <div class="member-card__avatar" aria-hidden="true">
+            <span>{member.initials}</span>
+          </div>
+
+          <!-- Info -->
+          <div class="member-card__info">
+            <p class="member-card__name">{member.name}</p>
+            <p class="member-card__role">{member.role}</p>
+            <p class="member-card__company">{member.company}</p>
+          </div>
+
+          <!-- Cidade -->
+          <p class="member-card__city">{member.city}</p>
+        </div>
+      ))}
+
+      <!-- Card "+" — mostra que há muito mais -->
+      <div
+        class="member-card member-card--more"
+        data-animate
+        data-animate-delay="720"
+        aria-hidden="true"
+      >
+        <div class="member-card__avatar member-card__avatar--more">
+          <span>+{(displayCount - members.length).toLocaleString('pt-BR')}</span>
+        </div>
+        <div class="member-card__info">
+          <p class="member-card__name text-mb-yellow">E muito mais</p>
+          <p class="member-card__role">em todo o Brasil</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Setores representados -->
+    <div class="mt-10 pt-8 border-t border-mb-border" data-animate>
+      <p class="text-xs text-white/30 uppercase tracking-widest mb-4">Setores representados</p>
+      <div class="flex flex-wrap gap-2">
+        {sectors.map((sector) => (
+          <span class="text-xs px-3 py-1 rounded-full bg-white/5 border border-mb-border text-white/45">
+            {sector}
+          </span>
+        ))}
+        <span class="text-xs px-3 py-1 rounded-full bg-white/5 border border-mb-border text-white/45">
+          e mais de 20 outros…
+        </span>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="text-center mt-12" data-animate>
+      <button type="button" class="btn-primary" data-open-modal>
+        Fazer parte desta comunidade
+      </button>
+    </div>
+
+  </div>
+</section>
+
+<style>
+/* ─── Member card ──────────────────────────────────────────── */
+.member-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem 0.75rem;
+  border-radius: 1rem;
+  border: 1px solid var(--mb-border);
+  background: var(--mb-card);
+  gap: 0.6rem;
+  transition: border-color 0.22s ease, background 0.22s ease, transform 0.22s ease;
+  cursor: default;
+}
+
+.member-card:hover {
+  border-color: rgba(251, 190, 10, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-3px);
+}
+
+.member-card__avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, rgba(251,190,10,0.18), rgba(251,190,10,0.06));
+  border: 1px solid rgba(251,190,10,0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.member-card__avatar span {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--mb-yellow);
+  letter-spacing: 0.02em;
+}
+
+.member-card__avatar--more {
+  background: rgba(251,190,10,0.08);
+  border-color: rgba(251,190,10,0.15);
+}
+
+.member-card__avatar--more span {
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+.member-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.member-card__name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--mb-white);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.member-card__role {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.3;
+}
+
+.member-card__company {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.32);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.member-card__city {
+  font-size: 0.6rem;
+  color: rgba(251,190,10,0.55);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.member-card--more {
+  border-style: dashed;
+  border-color: rgba(255,255,255,0.1);
+}
+
+.member-card--more:hover {
+  border-color: rgba(251,190,10,0.25);
+}
+</style>

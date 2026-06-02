@@ -1,0 +1,131 @@
+---
+import type { Speaker } from '../types/domain';
+
+interface Props {
+  speakers: Speaker[];
+}
+
+const { speakers } = Astro.props;
+
+const featuredCompanySignals = [
+  'viasoft',
+  'rp trader',
+  'fight music show',
+  'driva',
+  'vpx',
+  'coca-cola',
+  'auda',
+  '+1 cafe',
+  'ivs franquias',
+];
+
+const normalize = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+const getSpeakerScore = (speaker: Speaker) => {
+  const role = normalize([speaker.roleLabel, speaker.role, speaker.company].filter(Boolean).join(' '));
+  let score = 0;
+
+  if (featuredCompanySignals.some((signal) => role.includes(signal))) score += 120;
+  if (/\b(ceo|cfo|cto|coo|cmo|cco|cso|cro)\b/.test(role)) score += 110;
+  if (/\b(presidente|vice-presidente|vp)\b/.test(role)) score += 72;
+  if (/\b(founder|fundador|fundadora|co-founder|socio|socia|owner)\b/.test(role)) score += 62;
+  if (/\b(diretor|diretora|executivo|executiva)\b/.test(role)) score += 36;
+  if (speaker.companyLogo) score += 12;
+  if (speaker.photo) score += 8;
+
+  return score;
+};
+
+const visibleSpeakers = [...speakers]
+  .sort((a, b) => getSpeakerScore(b) - getSpeakerScore(a))
+  .slice(0, 18);
+---
+
+<section
+  id="speakers"
+  class="section-py bg-mb-black relative"
+  aria-labelledby="speakers-heading"
+>
+  <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+
+  <div class="container">
+
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 md:mb-14">
+      <div class="max-w-xl">
+        <p class="eyebrow mb-4" data-animate>Quem senta à mesa</p>
+        <h2
+          id="speakers-heading"
+          class="section-title text-balance"
+          data-animate
+          data-animate-delay="100"
+        >
+          Sem palco.
+          <span class="text-mb-yellow"> Sem roteiro.</span>
+        </h2>
+      </div>
+      <p class="text-white/50 text-sm max-w-xs" data-animate data-animate-delay="150">
+        Líderes que constroem negócios reais e compartilham bastidor — não palestra ensaiada.
+      </p>
+    </div>
+
+    {visibleSpeakers.length > 0 ? (
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        {visibleSpeakers.map((speaker, i) => (
+          <article
+            class="speaker-card"
+            data-animate
+            data-animate-delay={String(i * 70)}
+            aria-label={`${speaker.name}, ${speaker.roleLabel}`}
+          >
+            <div class="overflow-hidden" style="aspect-ratio: 3/4;">
+              {speaker.photo ? (
+                <img
+                  src={speaker.photo}
+                  alt={`${speaker.name} — ${speaker.roleLabel}`}
+                  loading="lazy"
+                  decoding="async"
+                  width="240"
+                  height="320"
+                  class="w-full h-full object-cover object-top"
+                  onerror={`this.style.display='none';this.nextElementSibling.style.display='flex'`}
+                />
+              ) : null}
+              <div
+                class="w-full h-full bg-gradient-to-br from-white/10 to-white/3 items-center justify-center"
+                style={speaker.photo ? 'display:none' : 'display:flex'}
+                aria-hidden="true"
+              >
+                <span class="text-3xl font-800 text-white/20">
+                  {speaker.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            </div>
+
+            <div class="speaker-card-overlay">
+              <p class="text-white font-700 text-sm leading-tight">{speaker.name}</p>
+              <p class="text-white/55 text-xs mt-0.5 leading-snug">{speaker.roleLabel}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+    ) : (
+      <p class="text-white/40 text-center py-10">Speakers em breve.</p>
+    )}
+
+    {speakers.length > visibleSpeakers.length && (
+      <div class="mt-10 text-center" data-animate>
+        <a href="#eventos" class="btn-secondary">
+          Veja mais
+          <svg class="w-4 h-4 ml-1 rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+          </svg>
+        </a>
+      </div>
+    )}
+
+  </div>
+</section>

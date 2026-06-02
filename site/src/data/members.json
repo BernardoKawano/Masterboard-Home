@@ -1,0 +1,110 @@
+[
+  {
+    "id": "m-01",
+    "initials": "RK",
+    "name": "R. Kawano",
+    "role": "Fundador & CEO",
+    "company": "Masterboard",
+    "sector": "Ecossistema Empresarial",
+    "city": "Curitiba"
+  },
+  {
+    "id": "m-02",
+    "initials": "PH",
+    "name": "P. H.",
+    "role": "CEO",
+    "company": "Grupo de Construção",
+    "sector": "Construção Civil",
+    "city": "Curitiba"
+  },
+  {
+    "id": "m-03",
+    "initials": "MS",
+    "name": "M. S.",
+    "role": "Fundadora",
+    "company": "Scale-up de Saúde",
+    "sector": "Health",
+    "city": "São Paulo"
+  },
+  {
+    "id": "m-04",
+    "initials": "AR",
+    "name": "A. R.",
+    "role": "Sócio-Diretor",
+    "company": "Holding Familiar",
+    "sector": "Diversificado",
+    "city": "Belo Horizonte"
+  },
+  {
+    "id": "m-05",
+    "initials": "LM",
+    "name": "L. M.",
+    "role": "Managing Partner",
+    "company": "Gestão Patrimonial",
+    "sector": "Finanças",
+    "city": "São Paulo"
+  },
+  {
+    "id": "m-06",
+    "initials": "TC",
+    "name": "T. C.",
+    "role": "CFO",
+    "company": "Grupo Varejista",
+    "sector": "Varejo",
+    "city": "Rio de Janeiro"
+  },
+  {
+    "id": "m-07",
+    "initials": "BF",
+    "name": "B. F.",
+    "role": "Fundador & COO",
+    "company": "SaaS B2B",
+    "sector": "Tecnologia",
+    "city": "Curitiba"
+  },
+  {
+    "id": "m-08",
+    "initials": "JP",
+    "name": "J. P.",
+    "role": "CEO",
+    "company": "Grupo de Educação",
+    "sector": "Educação",
+    "city": "Brasília"
+  },
+  {
+    "id": "m-09",
+    "initials": "GN",
+    "name": "G. N.",
+    "role": "Co-fundador",
+    "company": "Fintech",
+    "sector": "Finanças",
+    "city": "São Paulo"
+  },
+  {
+    "id": "m-10",
+    "initials": "CR",
+    "name": "C. R.",
+    "role": "Diretora Executiva",
+    "company": "Multinacional Logística",
+    "sector": "Logística",
+    "city": "Florianópolis"
+  },
+  {
+    "id": "m-11",
+    "initials": "FM",
+    "name": "F. M.",
+    "role": "Presidente",
+    "company": "Rede de Franquias",
+    "sector": "Franquias",
+    "city": "Porto Alegre"
+  },
+  {
+    "id": "m-12",
+    "initials": "IA",
+    "name": "I. A.",
+    "role": "Fundador",
+    "company": "AgTech",
+    "sector": "Agronegócio",
+    "city": "Curitiba"
+  }
+]

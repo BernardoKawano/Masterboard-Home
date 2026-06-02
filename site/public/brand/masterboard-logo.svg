@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 52" fill="none" role="img" aria-label="masterboard">
+  <!-- Wordmark: masterboard -->
+  <text
+    x="0" y="42"
+    font-family="'Funnel Display', 'Helvetica Neue', Arial, sans-serif"
+    font-weight="400"
+    font-size="46"
+    letter-spacing="-2"
+    fill="#FBBE0A"
+  >masterboard</text>
+
+  <!-- M mark: 3 diagonal bars (staircase pattern, ~-32° rotation) -->
+  <g transform="translate(385, 4)">
+    <!-- Bar 1: bottom-left, widest -->
+    <rect x="0" y="20" width="20" height="9" rx="2" fill="#FBBE0A"
+          transform="rotate(-32 10 24.5)"/>
+    <!-- Bar 2: middle -->
+    <rect x="7" y="10" width="17" height="7.5" rx="2" fill="#FBBE0A"
+          transform="rotate(-32 15.5 13.75)"/>
+    <!-- Bar 3: top-right, narrowest -->
+    <rect x="16" y="1" width="14" height="6" rx="2" fill="#FBBE0A"
+          transform="rotate(-32 23 4)"/>
+  </g>
+</svg>

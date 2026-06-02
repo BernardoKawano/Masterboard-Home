@@ -1,0 +1,82 @@
+---
+import type { Testimonial } from '../types';
+import testimonialsData from '../data/testimonials.json';
+
+const testimonials = testimonialsData as Testimonial[];
+---
+
+<section
+  id="depoimentos"
+  class="section-py bg-mb-black relative"
+  aria-labelledby="testimonials-heading"
+>
+  <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+
+  <div class="container">
+
+    <!-- Cabeçalho -->
+    <div class="text-center max-w-2xl mx-auto mb-14 md:mb-16">
+      <p class="eyebrow mb-4" data-animate>Quem já está dentro</p>
+      <h2
+        id="testimonials-heading"
+        class="section-title text-balance"
+        data-animate
+        data-animate-delay="100"
+      >
+        Quem entra pela sala certa
+        <span class="text-mb-yellow"> volta diferente.</span>
+      </h2>
+    </div>
+
+    <!-- Masonry / grid de depoimentos -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      {testimonials.map((t, i) => (
+        <figure
+          class="testimonial-card"
+          data-animate
+          data-animate-delay={String(i * 100)}
+          aria-label={`Depoimento de ${t.author}`}
+        >
+          <!-- Aspas decorativas -->
+          <div class="testimonial-quote-mark" aria-hidden="true">"</div>
+
+          <!-- Texto destacado -->
+          <blockquote>
+            <p class="text-white/85 leading-relaxed text-sm md:text-base mb-4">
+              "{t.text}"
+            </p>
+            {t.highlight && (
+              <p class="text-mb-yellow text-sm font-700 border-l-2 border-mb-yellow/40 pl-3">
+                {t.highlight}
+              </p>
+            )}
+          </blockquote>
+
+          <!-- Autor -->
+          <figcaption class="flex items-center gap-3 mt-4 pt-4 border-t border-mb-border">
+            <div
+              class="w-10 h-10 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center text-sm font-800 text-white/60 shrink-0"
+              aria-hidden="true"
+            >
+              {t.author.charAt(0)}
+            </div>
+            <div>
+              <p class="text-white font-700 text-sm">{t.author}</p>
+              <p class="text-white/45 text-xs">{t.role} · {t.company}</p>
+            </div>
+            <!-- Badge membro -->
+            <span class="ml-auto badge badge-upcoming text-[10px] shrink-0">Membro</span>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+
+    <!-- Social proof reforço -->
+    <div class="text-center mt-12" data-animate>
+      <p class="text-white/40 text-sm">
+        Relatos de membros ativos. Identidades preservadas quando a conversa envolve bastidor, estratégia e acesso.
+      </p>
+    </div>
+
+  </div>
+</section>

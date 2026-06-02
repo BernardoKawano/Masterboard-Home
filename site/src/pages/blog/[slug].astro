@@ -1,0 +1,155 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import LeadModal from '../../components/LeadModal.astro';
+import type { BlogPost } from '../../types';
+import postsData from '../../data/blog-posts.json';
+
+export async function getStaticPaths() {
+  const posts = postsData as BlogPost[];
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: BlogPost;
+}
+
+const { post } = Astro.props;
+const SITE_URL = 'https://masterboard.com.br';
+
+const formatDate = (dateStr: string) =>
+  new Date(dateStr).toLocaleDateString('pt-BR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.title,
+  description: post.excerpt,
+  image: post.image.startsWith('http') ? post.image : `${SITE_URL}${post.image}`,
+  datePublished: post.date,
+  author: {
+    '@type': 'Organization',
+    name: post.author,
+    url: SITE_URL,
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Masterboard',
+    url: SITE_URL,
+    logo: { '@type': 'ImageObject', url: `${SITE_URL}/brand/masterboard-logo-yellow.png` },
+  },
+  url: `${SITE_URL}/blog/${post.slug}/`,
+  keywords: post.tags.join(', '),
+  articleSection: post.category,
+};
+---
+
+<BaseLayout
+  title={post.seoTitle}
+  description={post.seoDescription}
+  ogType="article"
+  ogImage={post.image}
+  jsonLd={[articleSchema]}
+>
+  <Header />
+
+  <main id="main-content" class="pt-20">
+
+    <!-- Breadcrumb -->
+    <nav class="container pt-8" aria-label="Breadcrumb">
+      <ol class="flex items-center gap-2 text-xs text-white/40">
+        <li><a href="/" class="hover:text-white transition-colors">Início</a></li>
+        <li aria-hidden="true">/</li>
+        <li><a href="/blog/" class="hover:text-white transition-colors">Blog</a></li>
+        <li aria-hidden="true">/</li>
+        <li class="text-white/60 truncate max-w-xs">{post.title}</li>
+      </ol>
+    </nav>
+
+    <!-- Artigo -->
+    <article class="section-py bg-mb-black" aria-label={post.title}>
+      <div class="container max-w-3xl">
+
+        <!-- Meta -->
+        <div class="mb-6" data-animate>
+          <span class="badge badge-upcoming text-[10px]">{post.category}</span>
+        </div>
+
+        <!-- Título -->
+        <h1
+          class="section-title text-balance mb-5"
+          data-animate
+          data-animate-delay="100"
+          style="font-size: clamp(2rem, 5vw, 3.5rem);"
+        >
+          {post.title}
+        </h1>
+
+        <!-- Meta linha -->
+        <div class="flex flex-wrap items-center gap-3 text-sm text-white/40 mb-8 pb-8 border-b border-mb-border" data-animate data-animate-delay="150">
+          <time datetime={post.date}>{formatDate(post.date)}</time>
+          <span>·</span>
+          <span>{post.author}</span>
+          {post.tags.length > 0 && (
+            <>
+              <span>·</span>
+              <div class="flex flex-wrap gap-2">
+                {post.tags.map((tag) => (
+                  <span class="px-2 py-0.5 rounded-full bg-white/5 border border-mb-border text-xs">
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        <!-- Excerpt destacado -->
+        <p class="text-white/80 text-xl leading-relaxed mb-8 font-medium" data-animate data-animate-delay="200">
+          {post.excerpt}
+        </p>
+
+        <!-- Conteúdo (placeholder até integrar CMS) -->
+        <div
+          class="prose prose-invert max-w-none text-white/65 leading-relaxed"
+          data-animate
+          data-animate-delay="250"
+        >
+          <p>
+            Conteúdo completo disponível em breve. Este artigo será publicado pelo time editorial do Masterboard.
+          </p>
+          <p>
+            Para receber o conteúdo assim que for publicado, faça parte do ecossistema Masterboard.
+          </p>
+        </div>
+
+        <!-- CTA inline -->
+        <div class="mt-12 p-6 rounded-2xl border border-mb-yellow/20 bg-mb-yellow/5 text-center" data-animate>
+          <p class="font-700 text-white mb-2">Conteúdo exclusivo para membros.</p>
+          <p class="text-white/55 text-sm mb-5">Faça parte do Masterboard e tenha acesso a insights, encontros e conexões de alto nível.</p>
+          <button type="button" class="btn-primary" data-open-modal>Quero fazer parte</button>
+        </div>
+
+      </div>
+    </article>
+
+    <!-- Navegação de volta -->
+    <div class="container pb-16">
+      <a href="/blog/" class="btn-secondary text-sm">
+        ← Voltar para o blog
+      </a>
+    </div>
+
+  </main>
+
+  <Footer />
+  <LeadModal />
+</BaseLayout>

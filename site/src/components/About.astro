@@ -1,0 +1,103 @@
+---
+// Seção "Sobre / Proposta de valor" do Masterboard
+---
+
+<section
+  id="sobre"
+  class="section-py bg-mb-black relative overflow-hidden"
+  aria-labelledby="about-heading"
+>
+  <div class="brand-grid-mark" aria-hidden="true"></div>
+  <div class="container">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+
+      <!-- Texto -->
+      <div>
+        <p class="eyebrow mb-5" data-animate>O que é o Masterboard</p>
+
+        <h2
+          id="about-heading"
+          class="section-title mb-6 text-balance"
+          data-animate
+          data-animate-delay="100"
+        >
+          Aqui a conversa começa
+          <span class="text-mb-yellow"> onde o verniz acaba.</span>
+        </h2>
+
+        <p
+          class="text-white/65 text-lg leading-relaxed mb-5"
+          data-animate
+          data-animate-delay="200"
+        >
+          No Masterboard, aprendizado acontece frente a frente com quem já
+          enfrentou o que você enfrenta hoje, sem verniz motivacional e sem
+          teoria enlatada.
+        </p>
+
+        <p
+          class="text-white/65 leading-relaxed mb-8"
+          data-animate
+          data-animate-delay="250"
+        >
+          As conexões iniciam pela confiança e os negócios acontecem como
+          consequência natural de relações verdadeiras. Primeiro amigos,
+          depois negócios.
+        </p>
+
+        <div data-animate data-animate-delay="300">
+          <button
+            type="button"
+            class="btn-primary"
+            data-open-modal
+            aria-label="Candidatar-se ao Masterboard"
+          >
+            Pedir acesso
+          </button>
+        </div>
+      </div>
+
+      <!-- Visual side: pilares -->
+      <div class="flex flex-col gap-4" data-animate data-animate-delay="200">
+        {[
+          {
+            number: '01',
+            title: 'Acesso',
+            text: 'Você não assiste de longe. Você senta à mesa com quem decide.',
+          },
+          {
+            number: '02',
+            title: 'Experiência',
+            text: 'O ambiente não é cenário. É parte central da entrega.',
+          },
+          {
+            number: '03',
+            title: 'Transformação',
+            text: 'Quando o líder cresce, o negócio destrava.',
+          },
+          {
+            number: '04',
+            title: 'Consciência',
+            text: 'Decisões melhores não vêm de mais informação. Vêm de mais consciência.',
+          },
+        ].map((pillar, i) => (
+          <div
+            class="flex gap-4 p-5 rounded-xl border border-mb-border bg-mb-card hover:border-mb-yellow/20 transition-colors group"
+            data-animate
+            data-animate-delay={String(200 + i * 80)}
+          >
+            <span class="text-xs font-800 text-mb-yellow/60 pt-0.5 tabular-nums w-5 shrink-0">
+              {pillar.number}
+            </span>
+            <div>
+              <p class="font-700 text-white text-sm mb-1 group-hover:text-mb-yellow transition-colors">
+                {pillar.title}
+              </p>
+              <p class="text-white/50 text-sm leading-relaxed">{pillar.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

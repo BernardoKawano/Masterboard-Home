@@ -1,0 +1,42 @@
+[
+  {
+    "id": "test-1",
+    "author": "Rafael C.",
+    "role": "Fundador & CEO",
+    "company": "Empresa de tecnologia B2B, São Paulo",
+    "photo": "/images/testimonials/placeholder.jpg",
+    "photoAlt": "Membro do Masterboard",
+    "text": "Eu já tinha muito acesso a conteúdo. O que me faltava era alguém que pudesse me dizer na cara o que estava errado na minha estratégia — sem vender nada depois. No Masterboard, isso acontece naturalmente. As conversas são diretas porque os pares não têm nada a provar.",
+    "highlight": "As conversas são diretas porque os pares não têm nada a provar."
+  },
+  {
+    "id": "test-2",
+    "author": "Mariana P.",
+    "role": "Co-fundadora",
+    "company": "Grupo de saúde, Minas Gerais",
+    "photo": "/images/testimonials/placeholder.jpg",
+    "photoAlt": "Membro do Masterboard",
+    "text": "Em menos de seis meses no Masterboard, encontrei um sócio para um projeto que estava parado há dois anos. Não foi pela plataforma. Foi por uma conversa de jantar que durou 40 minutos. É esse nível de conexão que não acontece em outros lugares.",
+    "highlight": "Foi por uma conversa de jantar que durou 40 minutos."
+  },
+  {
+    "id": "test-3",
+    "author": "André S.",
+    "role": "Diretor Executivo",
+    "company": "Holding familiar, Rio de Janeiro",
+    "photo": "/images/testimonials/placeholder.jpg",
+    "photoAlt": "Membro do Masterboard",
+    "text": "O que diferencia o Masterboard é que aqui ninguém está tentando parecer maior do que é. Estamos todos com os mesmos problemas reais — escala, time, decisão de capital — e nos ajudamos sem o verniz. Isso é raro. Muito raro.",
+    "highlight": "Ninguém está tentando parecer maior do que é."
+  },
+  {
+    "id": "test-4",
+    "author": "Luciana M.",
+    "role": "Sócia-diretora",
+    "company": "Investimentos e gestão patrimonial, São Paulo",
+    "photo": "/images/testimonials/placeholder.jpg",
+    "photoAlt": "Membro do Masterboard",
+    "text": "Entrar no Masterboard foi uma das decisões mais silenciosas e mais impactantes que tomei para o meu negócio. Não tem anúncio, não tem campanha. Tem uma mesa com as pessoas certas — e o que nasce dessas conversas não tem preço.",
+    "highlight": "O que nasce dessas conversas não tem preço."
+  }
+]
