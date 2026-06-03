@@ -1,83 +1,77 @@
 ---
-const paths = [
+const pillars = [
   {
-    eyebrow: 'Quero entrar',
-    title: 'Candidatar minha operação',
+    pill: 'curadoria de entrada',
+    title: ['Curadoria', 'Ativa de Perfil'],
     description:
-      'Para fundadores, CEOs e executivos que querem estar na mesa certa antes da próxima decisão grande.',
-    action: 'Pedir acesso',
-    mode: 'modal',
-    featured: true,
+      'Selecionamos empresários com base no momento da empresa, maturidade de gestão e desafios estratégicos atuais. O ambiente começa no filtro: nem todo perfil é compatível com a mesa.',
   },
   {
-    eyebrow: 'Quero sentir',
-    title: 'Ver os próximos encontros',
+    pill: 'conexões qualificadas',
+    title: ['Match', 'Empresarial'],
     description:
-      'Eventos, jantares e experiências mostram o nível da sala antes de você levantar a mão.',
-    action: 'Explorar eventos',
-    href: '#eventos',
+      'Conectamos empresários por estágio de crescimento, desafios semelhantes e complementaridade de competências. O objetivo não é ampliar rede, é gerar trocas relevantes e decisões mais seguras.',
   },
   {
-    eyebrow: 'Quero entender',
-    title: 'Conhecer o ecossistema',
+    pill: 'decisões estratégicas',
+    title: ['Ambiente', 'Controlado'],
     description:
-      'App, matchmaking, conteúdo e presença nacional: a camada invisível que sustenta a rede.',
-    action: 'Ver ecossistema',
-    href: '#ecossistema',
+      'Estruturamos encontros em grupos reduzidos, com mediação qualificada e foco em execução. As conversas são direcionadas para validar movimentos estratégicos e acelerar decisões concretas.',
   },
 ];
 ---
 
 <section
-  id="escolha"
+  id="o-que-fazemos"
   class="choice-section relative overflow-hidden"
   aria-labelledby="choice-heading"
 >
   <div class="absolute inset-0 pointer-events-none choice-section__glow" aria-hidden="true"></div>
 
   <div class="container relative z-10">
-    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-10 md:mb-12">
-      <div class="max-w-2xl">
-        <p class="eyebrow mb-4" data-animate>Por onde você começa?</p>
-        <h2 id="choice-heading" class="section-title text-balance" data-animate data-animate-delay="100">
-          Cada líder chega com
-          <span class="text-mb-yellow"> um momento diferente.</span>
-        </h2>
-      </div>
-      <p class="max-w-md text-white/55 leading-relaxed" data-animate data-animate-delay="150">
-        Não precisa ter certeza agora. Cada caminho leva à mesma conversa —
-        a que estava faltando.
-      </p>
+
+    <!-- Cabeçalho -->
+    <div class="max-w-3xl mb-12 md:mb-14">
+      <p class="eyebrow mb-4" data-animate>// O QUE FAZEMOS:</p>
+      <h2
+        id="choice-heading"
+        class="section-title text-balance"
+        data-animate
+        data-animate-delay="100"
+      >
+        Saiba mais sobre o
+        <span class="text-mb-yellow"> Masterboard</span>
+      </h2>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
-      {paths.map((path, i) => (
-        <article
-          class:list={[
-            'choice-card group',
-            path.featured && 'choice-card--featured',
-          ]}
-          data-animate
-          data-animate-delay={String(i * 100)}
-        >
-          {path.featured && <span class="choice-card__badge">Mais direto</span>}
-          <p class="choice-card__eyebrow">{path.eyebrow}</p>
-          <h3>{path.title}</h3>
-          <p>{path.description}</p>
+    <!-- Accordion -->
+    <div class="cpx-list" data-animate data-animate-delay="150">
+      {pillars.map((p) => (
+        <details class="cpx-item">
+          <summary class="cpx-summary">
+            <span class="cpx-pill">
+              <span class="cpx-slash" aria-hidden="true">/</span>
+              {p.pill}
+              <span class="cpx-slash" aria-hidden="true">/</span>
+            </span>
+            <span class="cpx-chevron" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </span>
+          </summary>
 
-          {path.mode === 'modal' ? (
-            <button type="button" class="choice-card__action" data-open-modal>
-              {path.action}
-              <span aria-hidden="true">→</span>
-            </button>
-          ) : (
-            <a href={path.href} class="choice-card__action">
-              {path.action}
-              <span aria-hidden="true">→</span>
-            </a>
-          )}
-        </article>
+          <div class="cpx-body">
+            <h3 class="cpx-title">
+              {p.title[0]}&nbsp;<span class="text-mb-yellow">{p.title[1]}</span>
+            </h3>
+            <p class="cpx-desc">{p.description}</p>
+          </div>
+        </details>
       ))}
     </div>
+
   </div>
 </section>

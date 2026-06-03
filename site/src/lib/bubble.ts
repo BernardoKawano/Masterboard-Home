@@ -54,6 +54,34 @@ export interface BubbleSpeaker {
   'Modified Date': string;
 }
 
+export interface BubbleUser {
+  _id: string;
+  email?: string;
+  Email?: string;
+  Nome?: string;
+  Name?: string;
+  name?: string;
+  Cargo?: string;
+  Role?: string;
+  Empresa?: string;
+  Company?: string;
+  Cidade?: string;
+  City?: string;
+  Telefone?: string;
+  Phone?: string;
+  Foto?: string;
+  Imagem?: string;
+  Photo?: string;
+  Avatar?: string;
+  'Profile Picture'?: string;
+  Plano?: string;
+  Tier?: string;
+  user_signed_up?: boolean;
+  'Created Date'?: string;
+  'Modified Date'?: string;
+  [key: string]: unknown;
+}
+
 export type EventStatus = 'upcoming' | 'past';
 
 interface BubbleListResponse<T> {
@@ -274,6 +302,14 @@ export async function fetchEventById(id: string): Promise<BubbleEvento | null> {
  */
 export async function fetchAllSpeakers(): Promise<BubbleSpeaker[]> {
   return fetchAllPages<BubbleSpeaker>('speaker');
+}
+
+/**
+ * Fetches members from Bubble's user endpoint.
+ * Without an admin token, Bubble currently exposes only _id/user_signed_up.
+ */
+export async function fetchAllMembers(): Promise<BubbleUser[]> {
+  return fetchAllPages<BubbleUser>('user');
 }
 
 /**

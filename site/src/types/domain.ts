@@ -114,6 +114,9 @@ export interface Speaker {
   /** URL absoluta HTTPS da foto do speaker */
   photo?: string;
 
+  /** object-position CSS para ajuste fino do enquadramento, ex: "center 20%" */
+  photoPosition?: string;
+
   /** URL absoluta HTTPS do logo da empresa */
   companyLogo?: string;
 
@@ -129,11 +132,14 @@ export interface Member {
   source: DataSource;
 
   name: string;
-  email: string;
+  email?: string;
   phone?: string;
   company?: string;
+  roleLabel?: string;
   role?: string;
   city?: string;
+  photo?: string;
+  companyLogo?: string;
 
   /** Nível de acesso / tier */
   tier?: string;

@@ -1,0 +1,75 @@
+---
+import { existsSync, readdirSync } from 'node:fs';
+
+/**
+ * Carrega automaticamente as logos presentes em public/logos.
+ * Os arquivos devem estar normalizados em branco puro e fundo transparente.
+ */
+const logoDirectories = [
+  new URL('../../public/logos/', import.meta.url),
+  new URL('../../client/logos/', import.meta.url),
+];
+const logosDirectory = logoDirectories.find((directory) => existsSync(directory));
+const supportedLogoExtensions = new Set(['.svg', '.png', '.webp', '.avif', '.jpg', '.jpeg']);
+const getLogoExtension = (filename: string) => filename.slice(filename.lastIndexOf('.')).toLowerCase();
+
+const getLogoName = (filename: string) =>
+  filename
+    .replace(/\.[^.]+$/, '')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+const logos = logosDirectory
+  ? readdirSync(logosDirectory, { withFileTypes: true })
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name)
+      .filter((filename) => {
+        const extension = getLogoExtension(filename);
+        return supportedLogoExtensions.has(extension);
+      })
+      .sort((first, second) => first.localeCompare(second, 'pt-BR'))
+      .map((filename) => ({
+        name: getLogoName(filename),
+        extension: getLogoExtension(filename).replace('.', ''),
+        src: `/logos/${filename}`,
+      }))
+  : [];
+
+const repetitions = Math.max(2, Math.ceil(12 / Math.max(logos.length, 1)));
+const marqueeLogos = Array.from({ length: repetitions }, () => logos).flat();
+---
+
+<section
+  class="logo-marquee-section"
+  aria-label="Empresas dos nossos membros"
+>
+  <!-- Label acima -->
+  <p class="text-center text-white text-xs font-700 uppercase tracking-[0.22em] mb-6">
+    Empresas dos nossos membros
+  </p>
+
+  <!-- Carrossel -->
+  <div class="logo-marquee-wrapper" aria-hidden="true">
+    <div class="logo-marquee-track">
+      {marqueeLogos.map((logo) => (
+        <div
+          class="logo-marquee-item"
+          data-logo={logo.name.toLowerCase().replace(/\s+/g, '-')}
+          data-logo-extension={logo.extension}
+        >
+          {logo.src ? (
+            <img
+              src={logo.src}
+              alt={logo.name}
+              loading="lazy"
+              decoding="async"
+              height="32"
+            />
+          ) : (
+            <span class="logo-marquee-text">{logo.name}</span>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

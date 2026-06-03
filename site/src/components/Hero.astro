@@ -7,11 +7,21 @@
   class="hero-section relative min-h-screen flex flex-col justify-center overflow-hidden bg-mb-black"
   aria-label="Introdução ao Masterboard"
 >
-  <!-- Background: grid + radial glow -->
+  <!-- Background: video runs once, then settles on the static banner -->
+  <div class="hero-static-bg absolute inset-0" aria-hidden="true"></div>
+  <video
+    class="hero-video absolute inset-0"
+    autoplay
+    muted
+    playsinline
+    preload="metadata"
+    poster="/images/bg-banner.png"
+    aria-hidden="true"
+  >
+    <source src="/videos/hero-background.mp4" type="video/mp4" />
+  </video>
+  <div class="hero-video-overlay absolute inset-0" aria-hidden="true"></div>
   <div class="hero-bg absolute inset-0" aria-hidden="true"></div>
-  <div class="paper-stack paper-stack--hero" aria-hidden="true">
-    <span></span><span></span><span></span>
-  </div>
   <div class="hero-orb hero-orb--primary" aria-hidden="true"></div>
   <div class="hero-orb hero-orb--secondary" aria-hidden="true"></div>
 
@@ -34,7 +44,7 @@
         >
           <span class="block">Dizem que</span>
           <span class="block">o topo é</span>
-          <span class="block text-mb-yellow">solitário.</span>
+          <span class="block text-gradient-yellow">solitário.</span>
           <span class="block">Nós discordamos.</span>
         </h1>
 
@@ -91,7 +101,7 @@
             ))}
           </div>
           <p class="text-sm text-white/55">
-            <span class="text-white font-700">Aprenda com quem está no jogo</span> em mesas, jantares e imersões curadas
+            <span class="brand-keyword text-white">Aprenda com quem está no jogo</span> em mesas, jantares e imersões curadas
           </p>
         </div>
       </div>
@@ -132,3 +142,21 @@
     </div>
   </div>
 </section>
+
+<script>
+  const heroSection = document.querySelector('.hero-section');
+  const heroVideo = document.querySelector('.hero-video');
+
+  if (heroSection instanceof HTMLElement && heroVideo instanceof HTMLVideoElement) {
+    heroVideo.addEventListener(
+      'ended',
+      () => {
+        heroSection.classList.add('hero-section--video-ended');
+        window.setTimeout(() => {
+          heroVideo.remove();
+        }, 950);
+      },
+      { once: true }
+    );
+  }
+</script>

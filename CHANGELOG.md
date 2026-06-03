@@ -137,3 +137,43 @@
 - Convertidos os seis PNGs oficiais para WebP via `ffmpeg`, mantendo PNG como fallback.
 - Gerados `favicon.png` e `apple-touch-icon.png` quadrados a partir do simbolo oficial amarelo em fundo preto.
 - Header e footer passaram a usar `<picture>` com WebP + PNG fallback; JSON-LD passou a usar o logo oficial em PNG.
+
+### Seção `// MASTERBOARD`
+- Substituido o grafismo SVG das abas por imagens oficiais do WordPress: `arte-01.png` para `Conexoes estrategicas`, `arte-03.png` para `Acesso exclusivo` e `arte-02.png` para `Mentoria real`.
+- Reordenadas as abas para `01 Conexoes estrategicas`, `02 Acesso exclusivo` e `03 Mentoria real`.
+- Adicionada sincronizacao por scroll para alternar automaticamente entre as abas `01`, `02` e `03`, mantendo tambem a troca por clique.
+- Transformada a secao em experiencia sticky/pin: o bloco `// MASTERBOARD` permanece fixo durante o scroll ate a aba `03` aparecer, liberando a pagina apenas depois.
+- Reduzida pela metade a margem/padding superior do bloco sticky da secao, preservando o respiro inferior e o efeito de scroll.
+- Validacao: lints sem erros; `npm run build` com sucesso apos reiniciar o processo com `ASTRO_TELEMETRY_DISABLED=1`.
+
+### Logos de empresas
+- Corrigida a origem das logos do carrossel para assets antigos do WordPress quando aplicavel.
+- Hard Rock aumentado em 100% e Apex em 80%, com limites de largura proprios para nao serem cortados.
+- Hard Rock e Apex reduzidos em 50% apos revisao visual do carrossel.
+- Roca, Artesian, Kurytyba Gastronomia e Simplecon aumentados em 15% no carrossel.
+- Logos do carrossel deixadas mais brancas, brilhantes e premium com filtro global de brilho/contraste e sombra suave.
+- Filtro das logos ajustado para o padrão visual de Viasoft/Driva: branco sólido, brilho controlado e glow sutil.
+- Restaurada a logo antiga do Bom Gourmet (`8-2.png`) no lugar da versao externa vermelha.
+- Removida a duplicidade visual do Kurytyba: `Simplecon` voltou para `1-1.png` e `Kurytyba Gastronomia` ficou como entrada unica, com filtro mais branco.
+- Logos do carrossel normalizadas como assets locais em branco puro (`#fff`) com fundo transparente e alpha binario; validacao dos PNGs: `partialAlpha=0`, `nonWhiteVisible=0`, `blackVisible=0`.
+- Removidos filtros, blend mode, sombras e opacidade parcial das imagens do carrossel para evitar tons cinza; validacao: `npm run build` com sucesso em `12.90s` de server build.
+- Hard Rock regenerado com limiar mais restrito para remover pixels residuais de borda do JPEG original e aumentado em 15% no carrossel (`5.5rem` -> `6.325rem`, `11rem` -> `12.65rem`); validacao: `partialAlpha=0`, `nonWhiteVisible=0`, `blackVisible=0`, `npm run build` com sucesso.
+
+### Documentacao visual
+- Gerado `site/docs/site-structure-diagram.pdf` com diagrama vertical multipagina da estrutura atual da homepage, dividido em 5 paginas vetoriais para preservar legibilidade/qualidade.
+
+### Speakers
+- Adaptado o carrossel de `// Speakers` para o comportamento de referencia: card ativo centralizado, colorido e maior; cards laterais em preto e branco/dim; clique nas fotos alterna o speaker ativo.
+- Texto lateral agora troca junto com o card ativo, exibindo nome, cargo/contexto e descricao curta com fade.
+- Adicionado overlay com logo da empresa no card ativo quando o dado vier do Bubble.
+- Validacao: lints sem erros; `npm run build` com sucesso.
+
+## 2026-06-03
+
+### Hero
+- Copiado o video informado para `site/public/videos/hero-background.mp4` e usado como fundo da primeira secao.
+- Adicionado fade visual no video, com mascara no topo/rodape e overlay escuro para preservar a leitura da headline.
+- Validacao: lints do Cursor sem erros; `npm run build` com sucesso. `npm run check` foi interrompido porque varreu `dist` e `node_modules.failed-install-20260602153812`, gerando erro externo de dependencia `vitest`.
+- Copiado `C:\Users\Owner\Desktop\bg-banner.png` para `site/public/images/bg-banner.png`.
+- Ajustado o video da hero para tocar apenas uma vez e, ao terminar, fazer fade out para a imagem estatica `bg-banner.png`.
+- Removidas as tres silhuetas de cards (`paper-stack`) da primeira secao.

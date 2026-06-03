@@ -12,15 +12,17 @@
 
 import {
   fetchAllEvents,
+  fetchAllMembers,
   fetchAllSpeakers,
   fetchMemberCount,
   formatBubbleDate,
   formatBubbleTime,
 } from '../../bubble';
 import { mapBubbleEventToEvent, buildSlugMap } from './events';
+import { mapBubbleUserToMember } from './members';
 import { mapBubbleSpeakerToSpeaker, buildSpeakerSlugMap } from './speakers';
 import type { ContentDataSource, ListEventsOptions } from '../../data-source';
-import type { Event, Speaker } from '../../../types/domain';
+import type { Event, Member, Speaker } from '../../../types/domain';
 
 // ─── Internal cache of mapped domain objects ──────────────────────────────────
 
@@ -28,6 +30,8 @@ let _eventsCache: Event[] | null = null;
 let _eventsCacheExpiry = 0;
 let _speakersCache: Speaker[] | null = null;
 let _speakersCacheExpiry = 0;
+let _membersCache: Member[] | null = null;
+let _membersCacheExpiry = 0;
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 min
 
@@ -79,6 +83,43 @@ async function getCachedSpeakers(): Promise<Speaker[]> {
   _speakersCache = uniqueSpeakers;
   _speakersCacheExpiry = Date.now() + CACHE_TTL;
   return uniqueSpeakers;
+}
+
+async function getCachedMembers(): Promise<Member[]> {
+  if (_membersCache && Date.now() < _membersCacheExpiry) {
+    return _membersCache;
+  }
+
+  const raws = await fetchAllMembers();
+  const mapped = raws
+    .map((raw) => mapBubbleUserToMember(raw))
+    .filter((member): member is Member => Boolean(member));
+  const seenMemberNames = new Set<string>();
+  const seenMemberPhotos = new Set<string>();
+  const uniqueMembers = mapped.filter((member) => {
+    const nameKey = member.name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+    const photoKey = member.photo?.toLowerCase().trim();
+
+    if (!nameKey || seenMemberNames.has(nameKey) || (photoKey && seenMemberPhotos.has(photoKey))) {
+      return false;
+    }
+
+    seenMemberNames.add(nameKey);
+    if (photoKey) {
+      seenMemberPhotos.add(photoKey);
+    }
+
+    return true;
+  });
+
+  _membersCache = uniqueMembers;
+  _membersCacheExpiry = Date.now() + CACHE_TTL;
+  return uniqueMembers;
 }
 
 // ─── BubbleDataSource implementation ─────────────────────────────────────────
@@ -137,6 +178,10 @@ export const bubbleDataSource: ContentDataSource = {
   },
 
   // ─── Members ──────────────────────────────────────────────────
+
+  async listMembers(): Promise<Member[]> {
+    return getCachedMembers();
+  },
 
   async getMemberCount(): Promise<number> {
     return fetchMemberCount();

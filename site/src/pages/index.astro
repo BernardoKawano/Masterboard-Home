@@ -11,6 +11,9 @@ import Metrics from '../components/Metrics.astro';
 import About from '../components/About.astro';
 import WhatWeDo from '../components/WhatWeDo.astro';
 import Speakers from '../components/Speakers.astro';
+import Members from '../components/Members.astro';
+import ValueProps from '../components/ValueProps.astro';
+import LogoMarquee from '../components/LogoMarquee.astro';
 import Events from '../components/Events.astro';
 import Ecosystem from '../components/Ecosystem.astro';
 import Testimonials from '../components/Testimonials.astro';
@@ -21,9 +24,11 @@ import faqsData from '../data/faqs.json';
 import { dataSource } from '../lib/data-source';
 
 // Busca em paralelo via data source (não Bubble diretamente)
-const [upcomingEvents, speakers] = await Promise.all([
+const [upcomingEvents, speakers, members, memberCount] = await Promise.all([
   dataSource.listEvents({ status: 'upcoming', sortAscending: true, limit: 5 }),
   dataSource.listSpeakers(),
+  dataSource.listMembers?.(),
+  dataSource.getMemberCount?.(),
 ]);
 
 const faqSchema = {
@@ -46,12 +51,15 @@ const faqSchema = {
 
   <main id="main-content">
     <Hero />
+    <ValueProps />
+    <LogoMarquee />
     <ChoicePath />
     <Marquee />
     <Metrics />
     <About />
     <WhatWeDo />
     <Speakers speakers={speakers} />
+    <Members members={members ?? []} totalCount={memberCount} />
     <Events events={upcomingEvents} limit={5} showViewAll={true} />
     <Ecosystem />
     <Testimonials />

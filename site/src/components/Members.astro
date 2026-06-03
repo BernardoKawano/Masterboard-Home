@@ -1,27 +1,66 @@
 ---
 /**
  * Seção de comunidade de membros.
- * Dados: src/data/members.json (curado manualmente).
- * Contagem real: buscada do Bubble user endpoint se disponível,
- * caso contrário usa fallback estático.
- *
- * NOTA: Para mostrar perfis reais, substituir members.json por dados
- * reais quando o endpoint de usuário do Bubble for acessível com auth.
+ * Dados reais: recebe membros do Bubble quando o endpoint /obj/user expõe dados públicos.
  */
 
-import membersData from '../data/members.json';
+import type { Member } from '../types/domain';
 
 interface Props {
-  /** Contagem real de membros (do Bubble). Default: dados do JSON. */
+  members?: Member[];
   totalCount?: number;
 }
 
-const { totalCount } = Astro.props;
-const displayCount = totalCount ?? 1450;
-const members = membersData;
+const { members = [], totalCount } = Astro.props;
 
-// Setores únicos para filtro visual
-const sectors = [...new Set(members.map((m) => m.sector))];
+const featuredCompanySignals = [
+  'viasoft', 'rp trader', 'fight music show', 'driva', 'vpx',
+  'coca-cola', 'auda', '+1 cafe', 'ivs franquias',
+];
+
+const normalize = (value: string) =>
+  value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+const getMemberScore = (member: Member) => {
+  const searchable = normalize([member.roleLabel, member.role, member.company].filter(Boolean).join(' '));
+  let score = 0;
+
+  if (featuredCompanySignals.some((signal) => searchable.includes(signal))) score += 120;
+  if (/\b(ceo|cfo|cto|coo|cmo|cco|cso|cro)\b/.test(searchable)) score += 110;
+  if (/\b(presidente|vice-presidente|vp)\b/.test(searchable)) score += 72;
+  if (/\b(founder|fundador|fundadora|co-founder|socio|socia|owner)\b/.test(searchable)) score += 62;
+  if (/\b(diretor|diretora|executivo|executiva)\b/.test(searchable)) score += 36;
+  if (member.photo) score += 20;
+  if (member.companyLogo) score += 8;
+
+  return score;
+};
+
+const visibleMembers = [...members]
+  .filter((member) => member.name && member.photo)
+  .sort((a, b) => getMemberScore(b) - getMemberScore(a))
+  .slice(0, 18);
+
+const displayCount = totalCount ?? Math.max(members.length, visibleMembers.length);
+const moreMembersLabel = `E MAIS ${displayCount.toLocaleString('pt-BR')} MEMBROS`;
+const ecosystemSegments = [
+  'Tecnologia',
+  'SaaS B2B',
+  'Finanças',
+  'Varejo',
+  'Franquias',
+  'Construção',
+  'Saúde',
+  'Educação',
+  'Agronegócio',
+  'Logística',
+  'Indústria',
+  'Gastronomia',
+  'Marketing',
+  'Entretenimento',
+  'Investimentos',
+  'Serviços',
+];
 ---
 
 <section
@@ -55,69 +94,64 @@ const sectors = [...new Set(members.map((m) => m.sector))];
       </p>
     </div>
 
-    <!-- Grade de membros -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
-      {members.map((member, i) => (
-        <div
-          class="member-card group"
-          data-animate
-          data-animate-delay={String((i % 6) * 60)}
-          aria-label={`${member.name}, ${member.role}`}
-        >
-          <!-- Avatar com iniciais -->
-          <div class="member-card__avatar" aria-hidden="true">
-            <span>{member.initials}</span>
-          </div>
+    <div class="members-grid-shell" data-animate data-animate-delay="200">
+      {visibleMembers.length > 0 ? (
+        <!-- Grade de membros reais: 3 linhas no desktop -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
+          {visibleMembers.map((member, i) => (
+            <div
+              class="member-card group"
+              data-animate
+              data-animate-delay={String((i % 6) * 60)}
+              aria-label={`${member.name}, ${member.role ?? member.roleLabel ?? 'membro Masterboard'}`}
+            >
+              <img
+                src={member.photo}
+                alt={member.name}
+                loading={i < 6 ? 'eager' : 'lazy'}
+                decoding="async"
+                width="320"
+                height="320"
+                class="member-card__photo"
+              />
 
-          <!-- Info -->
-          <div class="member-card__info">
-            <p class="member-card__name">{member.name}</p>
-            <p class="member-card__role">{member.role}</p>
-            <p class="member-card__company">{member.company}</p>
-          </div>
+              <!-- Overlay inferior -->
+              <div class="member-card__info">
+                <p class="member-card__name">{member.name}</p>
+                <p class="member-card__meta">
+                  {[member.role, member.company].filter(Boolean).join(' / ') || member.roleLabel}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="member-card-empty" aria-hidden="true">
+          <span>Membros em curadoria</span>
+        </div>
+      )}
 
-          <!-- Cidade -->
-          <p class="member-card__city">{member.city}</p>
-        </div>
-      ))}
-
-      <!-- Card "+" — mostra que há muito mais -->
-      <div
-        class="member-card member-card--more"
-        data-animate
-        data-animate-delay="720"
-        aria-hidden="true"
-      >
-        <div class="member-card__avatar member-card__avatar--more">
-          <span>+{(displayCount - members.length).toLocaleString('pt-BR')}</span>
-        </div>
-        <div class="member-card__info">
-          <p class="member-card__name text-mb-yellow">E muito mais</p>
-          <p class="member-card__role">em todo o Brasil</p>
-        </div>
+      <div class="members-grid-fade" aria-hidden="true"></div>
+      <div class="members-more">
+        <a href="#eventos" class="members-more__button">
+          {moreMembersLabel}
+        </a>
       </div>
     </div>
 
-    <!-- Setores representados -->
+    <!-- Segmentos representados -->
     <div class="mt-10 pt-8 border-t border-mb-border" data-animate>
-      <p class="text-xs text-white/30 uppercase tracking-widest mb-4">Setores representados</p>
+      <p class="text-xs text-white/30 uppercase tracking-widest mb-4">Segmentos representados</p>
       <div class="flex flex-wrap gap-2">
-        {sectors.map((sector) => (
+        {ecosystemSegments.map((segment) => (
           <span class="text-xs px-3 py-1 rounded-full bg-white/5 border border-mb-border text-white/45">
-            {sector}
+            {segment}
           </span>
         ))}
-        <span class="text-xs px-3 py-1 rounded-full bg-white/5 border border-mb-border text-white/45">
-          e mais de 20 outros…
+        <span class="text-xs px-3 py-1 rounded-full bg-mb-yellow/10 border border-mb-yellow/20 text-mb-yellow/75">
+          e mais
         </span>
       </div>
-    </div>
-
-    <!-- CTA -->
-    <div class="text-center mt-12" data-animate>
-      <button type="button" class="btn-primary" data-open-modal>
-        Fazer parte desta comunidade
-      </button>
     </div>
 
   </div>
@@ -125,100 +159,152 @@ const sectors = [...new Set(members.map((m) => m.sector))];
 
 <style>
 /* ─── Member card ──────────────────────────────────────────── */
+.members-grid-shell {
+  position: relative;
+}
+
 .member-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 1rem 0.75rem;
-  border-radius: 1rem;
-  border: 1px solid var(--mb-border);
-  background: var(--mb-card);
-  gap: 0.6rem;
-  transition: border-color 0.22s ease, background 0.22s ease, transform 0.22s ease;
+  position: relative;
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(255,255,255,0.045);
+  transition: border-color 0.22s ease, background 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
   cursor: default;
+}
+
+.member-card-empty {
+  min-height: 16rem;
+  border: 1px dashed rgba(255,255,255,0.12);
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015)),
+    rgba(255,255,255,0.025);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.22);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .member-card:hover {
   border-color: rgba(251, 190, 10, 0.2);
   background: rgba(255, 255, 255, 0.06);
   transform: translateY(-3px);
+  box-shadow: 0 18px 44px rgba(0,0,0,0.32);
 }
 
-.member-card__avatar {
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 9999px;
-  background: linear-gradient(135deg, rgba(251,190,10,0.18), rgba(251,190,10,0.06));
-  border: 1px solid rgba(251,190,10,0.22);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+.member-card__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  filter: grayscale(0.08) contrast(1.04);
+  transition: transform 0.3s ease, filter 0.3s ease;
 }
 
-.member-card__avatar span {
-  font-size: 0.8rem;
-  font-weight: 800;
-  color: var(--mb-yellow);
-  letter-spacing: 0.02em;
-}
-
-.member-card__avatar--more {
-  background: rgba(251,190,10,0.08);
-  border-color: rgba(251,190,10,0.15);
-}
-
-.member-card__avatar--more span {
-  font-size: 0.65rem;
-  font-weight: 800;
+.member-card:hover .member-card__photo {
+  transform: scale(1.06);
+  filter: grayscale(0) contrast(1.06);
 }
 
 .member-card__info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
-  min-width: 0;
+  justify-content: flex-end;
+  min-height: 45%;
+  padding: 3rem 0.85rem 0.85rem;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.92) 0%,
+    rgba(0,0,0,0.72) 45%,
+    rgba(0,0,0,0) 100%
+  );
+  pointer-events: none;
 }
 
 .member-card__name {
-  font-size: 0.75rem;
-  font-weight: 700;
+  margin: 0;
+  font-size: clamp(0.82rem, 1.2vw, 0.95rem);
+  font-weight: 800;
   color: var(--mb-white);
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 14px rgba(0,0,0,0.85);
 }
 
-.member-card__role {
-  font-size: 0.65rem;
-  color: rgba(255,255,255,0.45);
-  line-height: 1.3;
-}
-
-.member-card__company {
-  font-size: 0.65rem;
-  color: rgba(255,255,255,0.32);
-  line-height: 1.3;
+.member-card__meta {
+  margin: 0.25rem 0 0;
+  font-size: clamp(0.64rem, 0.95vw, 0.75rem);
+  font-weight: 600;
+  color: rgba(255,255,255,0.82);
+  line-height: 1.25;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.9);
   display: -webkit-box;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.member-card__city {
-  font-size: 0.6rem;
-  color: rgba(251,190,10,0.55);
-  font-weight: 700;
-  letter-spacing: 0.06em;
+.members-grid-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: min(14rem, 48%);
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    var(--mb-black) 0%,
+    rgba(5,5,5,0.92) 32%,
+    rgba(5,5,5,0.54) 68%,
+    rgba(5,5,5,0) 100%
+  );
+}
+
+.members-more {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(0.6rem, 2vw, 1.15rem);
+  transform: translateX(-50%);
+  width: min(100%, 38rem);
+  padding-inline: 1rem;
+  display: flex;
+  justify-content: center;
+  z-index: 3;
+}
+
+.members-more__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: min(100%, 34rem);
+  min-height: 3.4rem;
+  padding: 0.95rem 1.5rem;
+  border-radius: 1rem;
+  background: var(--mb-yellow);
+  color: var(--mb-black);
+  font-size: clamp(0.9rem, 2vw, 1.4rem);
+  font-weight: 900;
+  letter-spacing: 0.035em;
   text-transform: uppercase;
+  box-shadow: 0 18px 44px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08);
+  transition: transform 0.2s ease, filter 0.2s ease;
 }
 
-.member-card--more {
-  border-style: dashed;
-  border-color: rgba(255,255,255,0.1);
-}
-
-.member-card--more:hover {
-  border-color: rgba(251,190,10,0.25);
+.members-more__button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
 }
 </style>

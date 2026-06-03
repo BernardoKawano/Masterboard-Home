@@ -1,0 +1,115 @@
+---
+import mentorsData from '../data/mentors.json';
+
+interface Mentor {
+  name: string;
+  role: string;
+  company: string;
+  photo?: string;
+  companyLogo?: string;
+}
+
+const mentors: Mentor[] = mentorsData as Mentor[];
+---
+
+<section
+  id="mentores"
+  class="section-py bg-mb-black relative overflow-hidden"
+  aria-labelledby="mentors-heading"
+>
+  <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+
+  <!-- Background glow -->
+  <div
+    class="pointer-events-none absolute inset-0"
+    aria-hidden="true"
+    style="background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(251,190,10,0.055), transparent 68%);"
+  ></div>
+
+  <div class="container relative">
+
+    <!-- Header centrado -->
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <p class="eyebrow mb-4" data-animate>Um time exclusivo</p>
+      <h2
+        id="mentors-heading"
+        class="section-title text-balance"
+        data-animate
+        data-animate-delay="100"
+      >
+        Conheça seus
+        <span class="text-mb-yellow"> mentores</span>
+      </h2>
+      <p
+        class="text-white/50 text-base mt-5 leading-relaxed"
+        data-animate
+        data-animate-delay="200"
+      >
+        Fundadores, CEOs e executivos que transformaram ideias em impérios —
+        e agora compartilham o que nenhum livro ensina.
+      </p>
+    </div>
+
+    {mentors.length > 0 ? (
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6">
+        {mentors.map((mentor, i) => (
+          <article
+            class="mentor-card"
+            data-animate
+            data-animate-delay={String(Math.min(i * 60, 500))}
+            aria-label={`${mentor.name}, ${mentor.role}${mentor.company ? ` — ${mentor.company}` : ''}`}
+          >
+            <!-- Foto circular -->
+            <div class="mentor-card__photo">
+              {mentor.photo ? (
+                <img
+                  src={mentor.photo}
+                  alt={mentor.name}
+                  loading="lazy"
+                  decoding="async"
+                  width="96"
+                  height="96"
+                  onerror={`this.style.display='none';this.nextElementSibling.style.display='flex'`}
+                />
+              ) : null}
+              <span
+                aria-hidden="true"
+                style={mentor.photo ? 'display:none' : 'display:flex'}
+              >
+                {mentor.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+
+            <!-- Informações -->
+            <div class="mentor-card__body">
+              <p class="mentor-card__name">{mentor.name}</p>
+              <p class="mentor-card__role">{mentor.role}</p>
+              {mentor.company && (
+                <p class="mentor-card__company">{mentor.company}</p>
+              )}
+            </div>
+
+            <!-- Logo da empresa -->
+            {mentor.companyLogo && (
+              <div class="mentor-card__logo" aria-hidden="true">
+                <img
+                  src={mentor.companyLogo}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  width="80"
+                  height="24"
+                />
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+    ) : (
+      <p class="text-white/40 text-center py-16 text-sm tracking-widest uppercase">
+        Mentores em breve.
+      </p>
+    )}
+
+  </div>
+</section>
