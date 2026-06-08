@@ -55,7 +55,6 @@ const visibleSpeakers = [...speakers]
   .slice(0, 10);
 
 const total = visibleSpeakers.length;
-const pad = (n: number) => String(n).padStart(2, '0');
 
 const describeSpeaker = (speaker: Speaker) => {
   if (speaker.bio) return speaker.bio;
@@ -78,24 +77,21 @@ const describeSpeaker = (speaker: Speaker) => {
   <div class="container">
 
     <!-- ── Cabeçalho ───────────────────────────────────────── -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-14">
-      <div>
-        <p class="eyebrow mb-4" data-animate>// Speakers</p>
-        <h2
-          id="speakers-heading"
-          class="section-title text-white text-balance"
-          data-animate data-animate-delay="100"
-        >
-          Speakers do<br />
-          <span class="text-mb-yellow">Masterboard</span>
-        </h2>
-      </div>
-      <div class="flex lg:items-end" data-animate data-animate-delay="150">
-        <p class="text-white/50 text-base leading-relaxed max-w-md">
-          Aqui você aprende com empresários que estão no jogo, liderando
+    <div class="max-w-2xl mb-14">
+      <p class="eyebrow mb-4" data-animate>// Speakers</p>
+      <h2
+        id="speakers-heading"
+        class="section-title text-white text-balance"
+        data-animate data-animate-delay="100"
+      >
+        Speakers do<br />
+        <span class="text-mb-yellow">Masterboard</span>
+      </h2>
+      <p class="text-white/55 text-base leading-relaxed max-w-xl mt-6" data-animate data-animate-delay="150">
+        Aqui você aprende com
+        <span class="speaker-highlight">empresários que estão no jogo</span>, liderando
           empresas e compartilhando os bastidores reais do crescimento.
-        </p>
-      </div>
+      </p>
     </div>
 
     <!-- ── Stage ───────────────────────────────────────────── -->
@@ -106,12 +102,6 @@ const describeSpeaker = (speaker: Speaker) => {
 
       <!-- Coluna esquerda: info do speaker ativo -->
       <div class="spk-info order-2 lg:order-1">
-
-        <p class="spk-counter">
-          <span id="spk-current">{pad(1)}</span>
-          <span class="opacity-30 mx-1.5">/</span>
-          <span class="opacity-30">{pad(total)}</span>
-        </p>
 
         <!-- Badge empresa -->
         <div id="spk-company-wrap" class="spk-company-wrap">
@@ -234,6 +224,18 @@ const describeSpeaker = (speaker: Speaker) => {
 </section>
 )}
 
+<style>
+  .speaker-highlight {
+    display: inline;
+    padding: 0.04em 0.12em 0.08em;
+    background: var(--mb-yellow);
+    color: var(--mb-black);
+    font-weight: 800;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+</style>
+
 <!-- Dados passados para o script -->
 <div
   id="spk-data"
@@ -287,10 +289,11 @@ const describeSpeaker = (speaker: Speaker) => {
   var bioEl       = document.getElementById('spk-bio');
   var companyEl   = document.getElementById('spk-company');
   var companyWrap = document.getElementById('spk-company-wrap');
-  var currEl      = document.getElementById('spk-current');
   var dataEl      = document.getElementById('spk-data');
   var prevBtn     = document.querySelector('.spk-arrow-prev');
   var nextBtn     = document.querySelector('.spk-arrow-next');
+  var autoplayMs  = 3500;
+  var autoplayId  = null;
 
   var speakersData = [];
   try { speakersData = dataEl ? JSON.parse(dataEl.dataset.json || '[]') : []; } catch (_) {}
@@ -344,7 +347,6 @@ const describeSpeaker = (speaker: Speaker) => {
       if (roleEl)    roleEl.textContent    = data.role;
       if (bioEl)     bioEl.textContent     = data.bio;
       if (companyEl) companyEl.textContent = data.company;
-      if (currEl)    currEl.textContent    = String(realIdx + 1).padStart(2, '0');
       [nameEl, roleEl, bioEl, companyWrap].forEach(function (el) { if (el) el.classList.remove('spk-fade'); });
     }, 180);
   }
@@ -381,35 +383,86 @@ const describeSpeaker = (speaker: Speaker) => {
     }, 560);
   }
 
+  function stopAutoplay() {
+    if (autoplayId) {
+      window.clearInterval(autoplayId);
+      autoplayId = null;
+    }
+  }
+
+  function startAutoplay() {
+    if (total <= 1 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    stopAutoplay();
+    autoplayId = window.setInterval(function () {
+      goTo(vCurrent + 1);
+    }, autoplayMs);
+  }
+
+  function restartAutoplay() {
+    stopAutoplay();
+    startAutoplay();
+  }
+
   // ── Inicializa posição ───────────────────────────────────
   applyTransform(vCurrent, true);
+  startAutoplay();
 
   // ── Eventos: cliques em todos os itens (reais + clones) ─
   allItems.forEach(function (item, vi) {
-    item.addEventListener('click', function () { goTo(vi); });
+    item.addEventListener('click', function () {
+      goTo(vi);
+      restartAutoplay();
+    });
   });
 
   dots.forEach(function (dot, i) {
-    dot.addEventListener('click', function () { goTo(CLONES + i); });
+    dot.addEventListener('click', function () {
+      goTo(CLONES + i);
+      restartAutoplay();
+    });
   });
 
-  if (prevBtn) prevBtn.addEventListener('click', function () { goTo(vCurrent - 1); });
-  if (nextBtn) nextBtn.addEventListener('click', function () { goTo(vCurrent + 1); });
+  if (prevBtn) prevBtn.addEventListener('click', function () {
+    goTo(vCurrent - 1);
+    restartAutoplay();
+  });
+  if (nextBtn) nextBtn.addEventListener('click', function () {
+    goTo(vCurrent + 1);
+    restartAutoplay();
+  });
+
+  trackEl.addEventListener('mouseenter', stopAutoplay);
+  trackEl.addEventListener('mouseleave', startAutoplay);
+  trackEl.addEventListener('focusin', stopAutoplay);
+  trackEl.addEventListener('focusout', startAutoplay);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) stopAutoplay();
+    else startAutoplay();
+  });
 
   document.addEventListener('keydown', function (e) {
     var section = document.getElementById('speakers');
     if (!section) return;
     var r = section.getBoundingClientRect();
     if (r.bottom < 0 || r.top > window.innerHeight) return;
-    if (e.key === 'ArrowLeft')  goTo(vCurrent - 1);
-    if (e.key === 'ArrowRight') goTo(vCurrent + 1);
+    if (e.key === 'ArrowLeft') {
+      goTo(vCurrent - 1);
+      restartAutoplay();
+    }
+    if (e.key === 'ArrowRight') {
+      goTo(vCurrent + 1);
+      restartAutoplay();
+    }
   });
 
   var touchX = 0;
   trackEl.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
   trackEl.addEventListener('touchend',   function (e) {
     var diff = touchX - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) goTo(diff > 0 ? vCurrent + 1 : vCurrent - 1);
+    if (Math.abs(diff) > 50) {
+      goTo(diff > 0 ? vCurrent + 1 : vCurrent - 1);
+      restartAutoplay();
+    }
   }, { passive: true });
 
   var resizeTimer;

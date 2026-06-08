@@ -14,15 +14,18 @@ import {
   fetchAllEvents,
   fetchAllMembers,
   fetchAllSpeakers,
+  fetchMemberCompanies,
   fetchMemberCount,
+  fetchMemberCompanyCount,
   formatBubbleDate,
   formatBubbleTime,
 } from '../../bubble';
-import { mapBubbleEventToEvent, buildSlugMap } from './events';
+import { mapBubbleEventToEvent, buildSlugMap, slugify } from './events';
 import { mapBubbleUserToMember } from './members';
 import { mapBubbleSpeakerToSpeaker, buildSpeakerSlugMap } from './speakers';
-import type { ContentDataSource, ListEventsOptions } from '../../data-source';
-import type { Event, Member, Speaker } from '../../../types/domain';
+import type { ContentDataSource, ListEventsOptions, ListMemberCompaniesOptions } from '../../data-source';
+import type { Event, Member, MemberCompany, Speaker } from '../../../types/domain';
+import fallbackMembersData from '../../../data/members.json';
 
 // ─── Internal cache of mapped domain objects ──────────────────────────────────
 
@@ -32,8 +35,54 @@ let _speakersCache: Speaker[] | null = null;
 let _speakersCacheExpiry = 0;
 let _membersCache: Member[] | null = null;
 let _membersCacheExpiry = 0;
+let _memberCompaniesCache: MemberCompany[] | null = null;
+let _memberCompaniesCacheExpiry = 0;
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 min
+
+interface FallbackMember {
+  id: string;
+  name: string;
+  role?: string;
+  company?: string;
+  city?: string;
+}
+
+const fallbackMembers = (fallbackMembersData as FallbackMember[]).map((member): Member => ({
+  id: member.id,
+  sourceId: member.id,
+  source: 'mock',
+  name: member.name,
+  role: member.role,
+  company: member.company,
+  roleLabel: [member.role, member.company].filter(Boolean).join(' / ') || undefined,
+  city: member.city,
+}));
+
+const cleanPublicText = (value: unknown): string | undefined => {
+  if (typeof value !== 'string') return undefined;
+  const cleaned = value.replace(/\s+/g, ' ').trim();
+  if (!cleaned || /^pre?ncher$/i.test(cleaned)) return undefined;
+  return cleaned;
+};
+
+const mapCompanyToMemberCompany = (raw: Awaited<ReturnType<typeof fetchMemberCompanies>>[number]): MemberCompany | null => {
+  const name = cleanPublicText(raw.Nome_Empresa);
+  if (!name) return null;
+
+  return {
+    id: slugify(name) || raw._id.slice(-12),
+    sourceId: raw._id,
+    source: 'bubble',
+    name,
+    city: cleanPublicText(raw['Localização']),
+    size: cleanPublicText(raw.Tamanho),
+    revenue: cleanPublicText(raw.Faturamento),
+    sector: cleanPublicText(raw['Setores - Outro']),
+    services: cleanPublicText(raw.Serviços_ofertados),
+    completedProfile: raw.Cadastro_completo,
+  };
+};
 
 async function getCachedEvents(): Promise<Event[]> {
   if (_eventsCache && Date.now() < _eventsCacheExpiry) {
@@ -94,9 +143,10 @@ async function getCachedMembers(): Promise<Member[]> {
   const mapped = raws
     .map((raw) => mapBubbleUserToMember(raw))
     .filter((member): member is Member => Boolean(member));
+  const usableMembers = mapped.length > 0 ? mapped : fallbackMembers;
   const seenMemberNames = new Set<string>();
   const seenMemberPhotos = new Set<string>();
-  const uniqueMembers = mapped.filter((member) => {
+  const uniqueMembers = usableMembers.filter((member) => {
     const nameKey = member.name
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
@@ -120,6 +170,47 @@ async function getCachedMembers(): Promise<Member[]> {
   _membersCache = uniqueMembers;
   _membersCacheExpiry = Date.now() + CACHE_TTL;
   return uniqueMembers;
+}
+
+async function getCachedMemberCompanies(options: ListMemberCompaniesOptions = {}): Promise<MemberCompany[]> {
+  const limit = options.limit ?? 18;
+  const offset = options.offset ?? 0;
+
+  if (_memberCompaniesCache && Date.now() < _memberCompaniesCacheExpiry && offset === 0 && limit <= _memberCompaniesCache.length) {
+    return _memberCompaniesCache.slice(0, limit);
+  }
+
+  const raws = await fetchMemberCompanies(Math.max(limit + 16, 40), offset);
+  const seenCompanyNames = new Set<string>();
+  const companies = raws
+    .map(mapCompanyToMemberCompany)
+    .filter((company): company is MemberCompany => Boolean(company))
+    .filter((company) => {
+      const key = company.name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      if (!key || seenCompanyNames.has(key)) return false;
+      seenCompanyNames.add(key);
+      return true;
+    })
+    .sort((first, second) => {
+      if (first.completedProfile !== second.completedProfile) {
+        return first.completedProfile ? -1 : 1;
+      }
+
+      return first.name.localeCompare(second.name, 'pt-BR');
+    });
+
+  if (offset === 0) {
+    _memberCompaniesCache = companies;
+    _memberCompaniesCacheExpiry = Date.now() + CACHE_TTL;
+  }
+
+  return companies.slice(0, limit);
 }
 
 // ─── BubbleDataSource implementation ─────────────────────────────────────────
@@ -183,8 +274,16 @@ export const bubbleDataSource: ContentDataSource = {
     return getCachedMembers();
   },
 
+  async listMemberCompanies(options: ListMemberCompaniesOptions = {}): Promise<MemberCompany[]> {
+    return getCachedMemberCompanies(options);
+  },
+
   async getMemberCount(): Promise<number> {
     return fetchMemberCount();
+  },
+
+  async getMemberCompanyCount(): Promise<number> {
+    return fetchMemberCompanyCount();
   },
 
   // ─── Helpers exposed via data source ──────────────────────────

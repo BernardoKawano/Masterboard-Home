@@ -1,50 +1,40 @@
 ---
-const benefits = [
+const timelineItems = [
   {
-    icon: 'calendar_month',
-    title: 'Calendário de experiências',
-    description: 'Encontros estratégicos para se conectar com quem move o mercado.',
+    step: '01',
+    label: 'Encontros de decisão',
+    title: 'Mesas privadas',
+    description: 'Encontros em grupos reduzidos para discutir decisões reais com pares do mesmo nível.',
   },
   {
-    icon: 'psychology',
-    title: 'Mentorias e conselhos',
-    description: 'Direcionamento prático para transformar desafios em crescimento.',
+    step: '02',
+    label: 'Confiança antes do negócio',
+    title: 'Jantares curados',
+    description: 'Conversas de alto contexto, sem palco e sem pitch, para construir confiança antes do negócio.',
   },
   {
-    icon: 'workspace_premium',
-    title: 'Imersão executiva',
-    description: 'Bastidores do mercado, visitas, CEOs e novas estratégias.',
+    step: '03',
+    label: 'Bastidor e estratégia',
+    title: 'Imersões executivas',
+    description: 'Dias de conteúdo, bastidor e troca prática com líderes que já atravessaram ciclos de escala.',
   },
   {
-    icon: 'handshake',
-    title: 'Parcerias e oportunidades',
-    description: 'Contato com investidores, potenciais clientes e novos mercados.',
+    step: '04',
+    label: 'Referências que já fizeram',
+    title: 'Speakers e conselheiros',
+    description: 'Encontros com líderes convidados para abrir bastidores de decisão, gestão e crescimento.',
   },
   {
-    icon: 'phone_iphone',
-    title: 'App exclusivo',
-    description: 'A camada privada para continuar conversas fora dos encontros.',
-  },
-  {
-    icon: 'mic',
-    title: 'Conteúdo de bastidor',
-    description: 'Palestras, painéis e insights que nascem dentro da comunidade.',
-  },
-  {
-    icon: 'location_on',
-    title: 'Presença nacional',
-    description: 'Capítulos locais conectados por uma mesma régua de curadoria.',
-  },
-  {
-    icon: 'key',
-    title: 'Acesso prioritário',
-    description: 'Convites e experiências antes de virarem oportunidade pública.',
+    step: '05',
+    label: 'Rede viva entre encontros',
+    title: 'Conexões contínuas',
+    description: 'App exclusivo, matchmaking com contexto e capítulos nacionais mantêm a comunidade ativa além da agenda presencial.',
   },
 ];
 ---
 
 <section
-  id="ecossistema"
+  id="experiencias"
   class="section-py relative section-glow"
   style="background: linear-gradient(180deg, var(--mb-black) 0%, rgba(251,190,10,0.02) 50%, var(--mb-black) 100%);"
   aria-labelledby="ecosystem-heading"
@@ -53,50 +43,107 @@ const benefits = [
 
   <div class="container">
 
-    <!-- Cabeçalho -->
-    <div class="text-center max-w-2xl mx-auto mb-14 md:mb-16">
-      <p class="eyebrow mb-4" data-animate>O que você acessa</p>
-      <h2
-        id="ecosystem-heading"
-        class="section-title text-balance"
-        data-animate
-        data-animate-delay="100"
-      >
-        A rede que sustenta decisões
-        <span class="text-mb-yellow"> que ninguém vê de fora.</span>
-      </h2>
-      <p class="text-white/55 mt-4 leading-relaxed" data-animate data-animate-delay="150">
-        Calendário, matchmaking, conteúdo de bastidor, presença nacional — a estrutura invisível por trás das relações que movem negócios.
-      </p>
-    </div>
-
-    <!-- Grid de benefícios -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-      {benefits.map((b, i) => (
-        <article
-          class="flex gap-4 p-5 rounded-xl border border-mb-border bg-mb-card hover:border-mb-yellow/20 hover:bg-white/[0.03] transition-all group"
+    <div class="grid grid-cols-1 lg:grid-cols-[0.78fr_1.22fr] gap-10 lg:gap-16 items-start">
+      <!-- Cabeçalho -->
+      <div class="lg:sticky lg:top-28 max-w-xl">
+        <p class="eyebrow mb-4" data-animate>O que você acessa</p>
+        <h2
+          id="ecosystem-heading"
+          class="section-title text-balance"
           data-animate
-          data-animate-delay={String((i % 4) * 80)}
+          data-animate-delay="100"
         >
-          <div class="ecosystem-icon shrink-0" aria-hidden="true">
-            <span class="material-symbols-rounded icon-md">{b.icon}</span>
-          </div>
-          <div>
-            <h3 class="font-700 text-white text-sm mb-1.5 group-hover:text-mb-yellow transition-colors">
-              {b.title}
-            </h3>
-            <p class="text-white/45 text-xs leading-relaxed">{b.description}</p>
-          </div>
-        </article>
-      ))}
-    </div>
+          Uma jornada de experiências
+          <span class="text-mb-yellow"> para quem decide no alto nível.</span>
+        </h2>
+        <p class="text-white/55 mt-5 leading-relaxed" data-animate data-animate-delay="150">
+          A lógica é simples: menos volume, mais contexto. Cada encontro aproxima líderes certos, no momento certo, com espaço para conversa de verdade.
+        </p>
+        <div class="mt-8" data-animate data-animate-delay="200">
+          <button type="button" class="btn-primary" data-open-modal>
+            Pedir acesso às experiências
+          </button>
+        </div>
+      </div>
 
-    <!-- CTA inline -->
-    <div class="text-center mt-12" data-animate>
-      <button type="button" class="btn-primary" data-open-modal>
-        Pedir acesso ao ecossistema
-      </button>
+      <!-- Timeline de experiências -->
+      <div class="experience-timeline relative pl-8 md:pl-10" data-animate data-animate-delay="200">
+        <div
+          class="experience-timeline__rail absolute left-3 md:left-4 top-2 bottom-2 w-px"
+          aria-hidden="true"
+        ></div>
+
+        <div class="space-y-5 md:space-y-6">
+          {timelineItems.map((item, i) => (
+            <article
+              class="experience-timeline__card relative rounded-2xl p-5 md:p-6 transition-all"
+              data-animate
+              data-animate-delay={String(240 + i * 80)}
+            >
+              <div
+                class="experience-timeline__marker absolute -left-[2.35rem] md:-left-[2.6rem] top-6 flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-800"
+                aria-hidden="true"
+              >
+                {item.step}
+              </div>
+
+              <p class="experience-timeline__label text-[11px] uppercase tracking-[0.22em] mb-3">
+                {item.label}
+              </p>
+              <h3 class="text-white font-800 text-xl md:text-2xl leading-tight tracking-tight mb-3">
+                {item.title}
+              </h3>
+              <p class="text-white/56 text-sm md:text-base leading-relaxed max-w-2xl">
+                {item.description}
+              </p>
+            </article>
+          ))}
+        </div>
+      </div>
     </div>
 
   </div>
 </section>
+
+<style>
+  .experience-timeline__rail {
+    background: linear-gradient(
+      180deg,
+      rgba(251, 190, 10, 0.46) 0%,
+      rgba(251, 190, 10, 0.18) 42%,
+      rgba(255, 255, 255, 0.08) 78%,
+      transparent 100%
+    );
+  }
+
+  .experience-timeline__card {
+    border: 1px solid rgba(255, 255, 255, 0.085);
+    background:
+      linear-gradient(135deg, rgba(251, 190, 10, 0.055) 0%, rgba(255, 255, 255, 0.032) 34%, rgba(255, 255, 255, 0.018) 100%),
+      rgba(0, 0, 0, 0.38);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.055),
+      0 18px 48px rgba(0, 0, 0, 0.22);
+  }
+
+  .experience-timeline__card:hover {
+    border-color: rgba(251, 190, 10, 0.24);
+    background:
+      linear-gradient(135deg, rgba(251, 190, 10, 0.08) 0%, rgba(255, 255, 255, 0.04) 38%, rgba(255, 255, 255, 0.022) 100%),
+      rgba(0, 0, 0, 0.42);
+    transform: translateY(-2px);
+  }
+
+  .experience-timeline__marker {
+    border: 1px solid rgba(251, 190, 10, 0.34);
+    background: linear-gradient(180deg, rgba(251, 190, 10, 0.18), rgba(251, 190, 10, 0.08)), var(--mb-black);
+    color: rgba(251, 190, 10, 0.9);
+    box-shadow:
+      0 0 0 6px rgba(0, 0, 0, 0.92),
+      0 0 24px rgba(251, 190, 10, 0.12);
+  }
+
+  .experience-timeline__label {
+    color: rgba(251, 190, 10, 0.62);
+  }
+</style>

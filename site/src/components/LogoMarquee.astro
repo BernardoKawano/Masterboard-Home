@@ -11,23 +11,42 @@ const logoDirectories = [
 ];
 const logosDirectory = logoDirectories.find((directory) => existsSync(directory));
 const supportedLogoExtensions = new Set(['.svg', '.png', '.webp', '.avif', '.jpg', '.jpeg']);
+const preferredLogoExtensions = ['.avif', '.webp', '.svg', '.png', '.jpg', '.jpeg'];
 const getLogoExtension = (filename: string) => filename.slice(filename.lastIndexOf('.')).toLowerCase();
+const getLogoBase = (filename: string) => filename.replace(/\.[^.]+$/, '');
 
 const getLogoName = (filename: string) =>
-  filename
-    .replace(/\.[^.]+$/, '')
+  getLogoBase(filename)
     .replace(/[-_]+/g, ' ')
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
 const logos = logosDirectory
-  ? readdirSync(logosDirectory, { withFileTypes: true })
+  ? Array.from(
+      readdirSync(logosDirectory, { withFileTypes: true })
       .filter((entry) => entry.isFile())
       .map((entry) => entry.name)
       .filter((filename) => {
         const extension = getLogoExtension(filename);
         return supportedLogoExtensions.has(extension);
       })
-      .sort((first, second) => first.localeCompare(second, 'pt-BR'))
+      .reduce((bestByBase, filename) => {
+        const base = getLogoBase(filename);
+        const current = bestByBase.get(base);
+        const extension = getLogoExtension(filename);
+        const currentExtension = current ? getLogoExtension(current) : undefined;
+
+        if (
+          !current ||
+          preferredLogoExtensions.indexOf(extension) < preferredLogoExtensions.indexOf(currentExtension ?? '.jpeg')
+        ) {
+          bestByBase.set(base, filename);
+        }
+
+        return bestByBase;
+      }, new Map<string, string>())
+      .values(),
+    )
+      .sort((first, second) => getLogoName(first).localeCompare(getLogoName(second), 'pt-BR'))
       .map((filename) => ({
         name: getLogoName(filename),
         extension: getLogoExtension(filename).replace('.', ''),
@@ -51,7 +70,7 @@ const marqueeLogos = Array.from({ length: repetitions }, () => logos).flat();
   <!-- Carrossel -->
   <div class="logo-marquee-wrapper" aria-hidden="true">
     <div class="logo-marquee-track">
-      {marqueeLogos.map((logo) => (
+      {marqueeLogos.map((logo, i) => (
         <div
           class="logo-marquee-item"
           data-logo={logo.name.toLowerCase().replace(/\s+/g, '-')}
@@ -61,9 +80,10 @@ const marqueeLogos = Array.from({ length: repetitions }, () => logos).flat();
             <img
               src={logo.src}
               alt={logo.name}
-              loading="lazy"
+              loading={i < logos.length ? 'eager' : 'lazy'}
               decoding="async"
-              height="32"
+              width="160"
+              height="48"
             />
           ) : (
             <span class="logo-marquee-text">{logo.name}</span>

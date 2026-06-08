@@ -19,66 +19,61 @@
     aria-hidden="true"
   ></div>
 
-  <div class="container relative z-10 text-center">
+  <div class="container relative z-10">
 
-    <!-- Eyebrow -->
-    <p class="eyebrow mb-6" data-animate>Pronto para fazer parte?</p>
+    <div class="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-16 items-end">
+      <div>
+        <!-- Eyebrow -->
+        <p class="eyebrow mb-6" data-animate>Pronto para fazer parte?</p>
 
-    <!-- Headline -->
-    <h2
-      id="cta-heading"
-      class="section-title max-w-3xl mx-auto text-balance mb-6"
-      data-animate
-      data-animate-delay="100"
-    >
-      Tava faltando você
-      <span class="text-mb-yellow"> nessa conversa.</span>
-    </h2>
+        <!-- Headline -->
+        <h2
+          id="cta-heading"
+          class="section-title max-w-3xl text-balance"
+          data-animate
+          data-animate-delay="100"
+        >
+          Peça acesso à comunidade
+          <span class="text-mb-yellow"> que protege a qualidade da sala.</span>
+        </h2>
+      </div>
 
-    <!-- Subtítulo -->
-    <p
-      class="text-white/60 text-lg leading-relaxed max-w-xl mx-auto mb-10"
-      data-animate
-      data-animate-delay="200"
-    >
-      Sente aqui com a gente. O <span class="brand-keyword text-white">Masterboard</span> existe para provocar com cuidado,
-      acolher com exigência e elevar líderes que ainda estão construindo.
-    </p>
+      <div data-animate data-animate-delay="200">
+        <!-- Subtítulo -->
+        <p class="text-white/60 text-lg leading-relaxed mb-8">
+          A candidatura existe para entender seu momento, sua empresa e o tipo de conexão que pode gerar valor real para você e para quem já está dentro.
+        </p>
 
-    <!-- CTA principal -->
-    <div
-      class="flex flex-col sm:flex-row gap-4 justify-center items-center"
-      data-animate
-      data-animate-delay="300"
-    >
-      <button
-        type="button"
-        class="btn-primary text-lg px-8 py-4"
-        data-open-modal
-        aria-label="Iniciar processo de candidatura ao Masterboard"
-      >
-        Faça parte do club
-        <svg class="w-5 h-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-        </svg>
-      </button>
+        <!-- CTA principal -->
+        <button
+          type="button"
+          class="btn-primary text-lg px-8 py-4"
+          data-open-modal
+          aria-label="Iniciar processo de candidatura ao Masterboard"
+        >
+          Iniciar candidatura
+          <svg class="w-5 h-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+          </svg>
+        </button>
+
+        <!-- Microcopy de confiança -->
+        <p class="text-white/30 text-sm mt-6">
+          Acesso por curadoria para proteger quem está dentro.
+        </p>
+      </div>
     </div>
-
-    <!-- Microcopy de confiança -->
-    <p class="text-white/30 text-sm mt-6" data-animate data-animate-delay="350">
-      Acesso por curadoria para proteger quem está dentro.
-    </p>
 
     <!-- Logos / certificações (placeholder) -->
     <div
-      class="flex flex-wrap justify-center items-center gap-6 mt-12 pt-10 border-t border-mb-border"
+      class="flex flex-wrap items-center gap-6 mt-12 pt-10 border-t border-mb-border"
       data-animate
       data-animate-delay="400"
       aria-label="Informações de membros"
     >
       {[
         { number: '800+', label: 'membros ativos' },
-        { number: '1.200+', label: 'encontros realizados' },
+        { number: '1.200+', label: 'experiências realizadas' },
         { number: '12+', label: 'cidades' },
         { number: 'R$5bi+', label: 'faturamento combinado' },
       ].map(({ number, label }) => (

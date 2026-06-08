@@ -2,37 +2,36 @@
 const tabs = [
   {
     id: '01',
-    title: 'Conexões estratégicas',
-    text: 'Mais do que conexões, estruturamos encontros entre líderes que podem gerar negócios, abrir mercados e resolver desafios concretos. Cada interação é pensada para evoluir o nível estratégico da sua empresa.',
+    title: 'Curadoria antes do convite',
+    text: 'A entrada começa por análise de perfil, momento da empresa e fit com a comunidade. A régua existe para proteger a qualidade da sala e o tempo de quem já está dentro.',
     image: 'https://www.masterboard.com.br/wp-content/uploads/2026/04/arte-01.png',
-    imageAlt: 'Grafismo Masterboard para conexões estratégicas',
+    imageAlt: 'Grafismo Masterboard para curadoria de entrada',
   },
   {
     id: '02',
-    title: 'Acesso exclusivo',
-    text: 'Um ecossistema fechado onde a qualidade começa antes de a sala ser aberta. Curadoria rigorosa, grupos reduzidos e o compromisso de que cada pessoa na sala vale o tempo de todos.',
+    title: 'Experiências com contexto',
+    text: 'Mesas privadas, jantares, imersões e visitas aproximam líderes que vivem desafios parecidos. O encontro não é genérico: cada formato nasce para gerar conversa útil e decisão melhor.',
     image: 'https://www.masterboard.com.br/wp-content/uploads/2026/04/arte-03.png',
-    imageAlt: 'Grafismo Masterboard para acesso exclusivo',
+    imageAlt: 'Grafismo Masterboard para experiências executivas',
   },
   {
     id: '03',
-    title: 'Mentoria real',
-    text: 'Acesse líderes que já passaram pelos desafios que você enfrenta hoje. Mentorias diretas, sem script, com quem está no jogo e compartilha o bastidor — não a palestra ensaiada.',
+    title: 'Continuidade entre encontros',
+    text: 'A relação não termina quando o evento acaba. Matchmaking, app exclusivo e acompanhamento da comunidade mantêm as conexões vivas entre uma mesa e outra.',
     image: 'https://www.masterboard.com.br/wp-content/uploads/2026/04/arte-02.png',
-    imageAlt: 'Grafismo Masterboard para mentoria real',
+    imageAlt: 'Grafismo Masterboard para continuidade entre membros',
   },
 ];
 ---
 
 <section
-  id="proposta"
-  class="vp-scroll-lock bg-mb-black section-glow relative"
+  id="sobre"
+  class="section-py bg-mb-black section-glow relative"
   aria-labelledby="vp-heading"
-  data-vp-section
 >
   <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
 
-  <div class="container vp-scroll-sticky">
+  <div class="container">
     <div class="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-12 lg:gap-20 items-center">
 
       <!-- ── Coluna esquerda ─────────────────────────────── -->
@@ -41,7 +40,7 @@ const tabs = [
           class="text-mb-yellow/70 font-800 text-xs tracking-[0.28em] uppercase mb-6"
           data-animate
         >
-          // MASTERBOARD
+          // O QUE É O MASTERBOARD
         </p>
 
         <h2
@@ -51,7 +50,7 @@ const tabs = [
           data-animate-delay="100"
         >
           Um <span class="text-gradient-yellow">club empresarial</span>
-          {' '}para líderes que definem o rumo do jogo.
+          {' '}para quem lidera negócios em crescimento.
         </h2>
 
         <p
@@ -59,13 +58,13 @@ const tabs = [
           data-animate
           data-animate-delay="200"
         >
-          O ecossistema fechado onde as melhores decisões são tomadas entre quem já está jogando no mesmo nível.
+          Uma comunidade fechada de fundadores, CEOs e executivos que combina curadoria, experiências presenciais e conexões contínuas para acelerar decisões.
         </p>
 
         <div
           class="flex flex-col xs:flex-row gap-3"
           data-animate
-          data-animate-delay="300"
+          data-animate-delay="260"
         >
           <button
             type="button"
@@ -73,12 +72,12 @@ const tabs = [
             data-open-modal
             aria-label="Abrir formulário de candidatura"
           >
-            Faça parte do club
+            Candidatar-se ao club
             <svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
             </svg>
           </button>
-          <a href="#sobre" class="btn-secondary">Saiba mais</a>
+          <a href="#experiencias" class="btn-secondary">Ver experiências</a>
         </div>
       </div>
 
@@ -104,6 +103,16 @@ const tabs = [
                 {tab.id}
               </button>
             ))}
+            <button
+              class="vp-next-btn ml-auto"
+              type="button"
+              aria-label="Ver próximo pilar do Masterboard"
+              data-vp-next
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
 
           <!-- Painéis de conteúdo -->
@@ -116,7 +125,7 @@ const tabs = [
               data-panel={tab.id}
               hidden={i !== 0}
             >
-              <h3 class="text-white font-800 text-xl mb-4 leading-tight tracking-tight">
+              <h3 class="vp-panel-title-badge font-800 text-xl mb-4 leading-tight tracking-tight">
                 {tab.title}
               </h3>
               <p class="text-white/60 text-base leading-relaxed">
@@ -147,7 +156,7 @@ const tabs = [
 <script>
   const btns = document.querySelectorAll<HTMLButtonElement>('.vp-tab-btn');
   const panels = document.querySelectorAll<HTMLElement>('.vp-tab-panel');
-  const section = document.querySelector<HTMLElement>('[data-vp-section]');
+  const nextBtn = document.querySelector<HTMLButtonElement>('[data-vp-next]');
   const tabIds = Array.from(btns).map((btn) => btn.dataset.tab).filter(Boolean);
   let activeId = tabIds[0] ?? '01';
 
@@ -164,39 +173,48 @@ const tabs = [
     });
   };
 
+  const goToNextTab = () => {
+    if (tabIds.length <= 1) return;
+    const currentIndex = Math.max(tabIds.indexOf(activeId), 0);
+    const nextIndex = (currentIndex + 1) % tabIds.length;
+    setActiveTab(tabIds[nextIndex]);
+  };
+
   btns.forEach((btn) => {
     btn.addEventListener('click', () => {
       setActiveTab(btn.dataset.tab);
     });
   });
 
-  if (section && tabIds.length > 1) {
-    let ticking = false;
-
-    const syncTabWithScroll = () => {
-      ticking = false;
-
-      const rect = section.getBoundingClientRect();
-      const triggerY = window.innerHeight * 0.58;
-
-      if (rect.top > triggerY || rect.bottom < triggerY) return;
-
-      const scrollRange = Math.max(rect.height - window.innerHeight, 1);
-      const rawProgress = (triggerY - rect.top) / scrollRange;
-      const progress = Math.min(Math.max(rawProgress, 0), 0.999);
-      const index = Math.min(Math.floor(progress * tabIds.length), tabIds.length - 1);
-
-      setActiveTab(tabIds[index]);
-    };
-
-    const requestScrollSync = () => {
-      if (ticking) return;
-      ticking = true;
-      window.requestAnimationFrame(syncTabWithScroll);
-    };
-
-    window.addEventListener('scroll', requestScrollSync, { passive: true });
-    window.addEventListener('resize', requestScrollSync);
-    requestScrollSync();
-  }
+  nextBtn?.addEventListener('click', goToNextTab);
 </script>
+
+<style>
+  .vp-next-btn {
+    display: inline-flex;
+    width: 2.35rem;
+    height: 2.35rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(251, 190, 10, 0.26);
+    border-radius: 999px;
+    background: rgba(251, 190, 10, 0.08);
+    color: var(--mb-yellow);
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .vp-next-btn:hover {
+    border-color: rgba(251, 190, 10, 0.48);
+    background: rgba(251, 190, 10, 0.14);
+    transform: translateX(2px);
+  }
+
+  .vp-panel-title-badge {
+    display: inline;
+    padding: 0.04em 0.12em 0.08em;
+    background: var(--mb-yellow);
+    color: var(--mb-black);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+</style>

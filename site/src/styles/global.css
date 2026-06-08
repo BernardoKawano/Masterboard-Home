@@ -97,12 +97,7 @@
   }
 
   .text-gradient-yellow {
-    background: linear-gradient(120deg, #FBBE0A 0%, #FFE166 45%, #FBBE0A 100%);
-    background-size: 200% 200%;
-    animation: gradient-shift 5s ease infinite;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--mb-yellow);
   }
 
   /* Section glow — radial yellow tint no topo da seção */
@@ -367,10 +362,8 @@
     animation: none !important;
   }
 
-  .hero-video,
   .hero-orb--primary,
-  .hero-orb--secondary,
-  .text-gradient-yellow {
+  .hero-orb--secondary {
     animation: none !important;
   }
 }
@@ -395,13 +388,6 @@
   animation: orb-float 14s ease-in-out infinite reverse,
              orb-pulse 9s ease-in-out infinite;
   animation-delay: -5s, -3s;
-}
-
-/* ─── Gradient shimmer text ──────────────────────────────── */
-@keyframes gradient-shift {
-  0%   { background-position: 0%   50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0%   50%; }
 }
 
 /* ─── Header ─────────────────────────────────────────────── */
@@ -446,8 +432,7 @@
   font-weight: 800;
 }
 
-.hero-static-bg,
-.hero-video {
+.hero-static-bg {
   width: 100%;
   height: 100%;
   pointer-events: none;
@@ -457,25 +442,18 @@
 
 .hero-static-bg {
   z-index: 0;
-  background: url('/images/bg-banner.png') center / cover no-repeat;
+  background-image: image-set(
+    url('/images/bg-banner.avif') type('image/avif'),
+    url('/images/bg-banner.webp') type('image/webp'),
+    url('/images/bg-banner.png') type('image/png')
+  );
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
   opacity: 0.64;
 }
 
-.hero-video {
-  z-index: 1;
-  object-fit: cover;
-  object-position: center;
-  opacity: 0.64;
-  animation: hero-video-entrance 1.4s ease-out both;
-  transition: opacity 0.9s ease;
-}
-
-.hero-section--video-ended .hero-video {
-  animation: none;
-  opacity: 0;
-}
-
-.hero-video-overlay {
+.hero-image-overlay {
   z-index: 2;
   pointer-events: none;
   background:
@@ -486,11 +464,6 @@
 .hero-bg {
   z-index: 3;
   pointer-events: none;
-}
-
-@keyframes hero-video-entrance {
-  from { opacity: 0; }
-  to   { opacity: 0.64; }
 }
 
 @media (max-width: 1100px) {
@@ -1724,23 +1697,6 @@
 }
 
 /* ─── Value Proposition (// MASTERBOARD + tabs) ─────────── */
-.vp-scroll-lock {
-  min-height: 300vh;
-  overflow: visible;
-}
-
-.vp-scroll-sticky {
-  position: sticky;
-  top: clamp(4.75rem, 9vh, 6.5rem);
-  min-height: calc(100vh - clamp(4.75rem, 9vh, 6.5rem));
-  display: flex;
-  align-items: center;
-  padding-block: clamp(1.75rem, 3.5vw, 3rem) clamp(3.5rem, 7vw, 6rem);
-}
-
-.vp-scroll-sticky > .grid {
-  width: 100%;
-}
 
 .vp-headline {
   font-size: clamp(2rem, 4.5vw, 3.4rem);
@@ -1802,21 +1758,9 @@
   opacity: 0.92;
 }
 
-@media (max-width: 767px) {
-  .vp-scroll-lock {
-    min-height: 260vh;
-  }
-
-  .vp-scroll-sticky {
-    top: 4.5rem;
-    min-height: calc(100vh - 4.5rem);
-    padding-block: 1rem 2rem;
-  }
-}
-
 /* ─── Logo Marquee (parceiros) ───────────────────────────── */
 .logo-marquee-section {
-  padding-block: 2.5rem;
+  padding-block: clamp(1.25rem, 2vw, 1.75rem);
   border-top: 1px solid var(--mb-border);
   border-bottom: 1px solid var(--mb-border);
   overflow: hidden;
@@ -1850,17 +1794,27 @@
   justify-content: center;
 }
 
-.logo-marquee-item[data-logo-extension="png"] {
+.logo-marquee-item[data-logo-extension="png"],
+.logo-marquee-item[data-logo-extension="webp"],
+.logo-marquee-item[data-logo-extension="avif"] {
   height: 10rem;
 }
 
-.logo-marquee-item[data-logo="artesian"][data-logo-extension="png"] {
+.logo-marquee-item[data-logo="artesian"][data-logo-extension="png"],
+.logo-marquee-item[data-logo="artesian"][data-logo-extension="webp"],
+.logo-marquee-item[data-logo="artesian"][data-logo-extension="avif"] {
   height: 12.65rem;
 }
 
 .logo-marquee-item[data-logo="hardrock"][data-logo-extension="png"],
 .logo-marquee-item[data-logo="hard-rock"][data-logo-extension="png"],
-.logo-marquee-item[data-logo="hard-rock-cafe"][data-logo-extension="png"] {
+.logo-marquee-item[data-logo="hard-rock-cafe"][data-logo-extension="png"],
+.logo-marquee-item[data-logo="hardrock"][data-logo-extension="webp"],
+.logo-marquee-item[data-logo="hard-rock"][data-logo-extension="webp"],
+.logo-marquee-item[data-logo="hard-rock-cafe"][data-logo-extension="webp"],
+.logo-marquee-item[data-logo="hardrock"][data-logo-extension="avif"],
+.logo-marquee-item[data-logo="hard-rock"][data-logo-extension="avif"],
+.logo-marquee-item[data-logo="hard-rock-cafe"][data-logo-extension="avif"] {
   height: 8.5rem;
 }
 

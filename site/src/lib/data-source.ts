@@ -13,6 +13,7 @@ import type {
   Event,
   Speaker,
   Member,
+  MemberCompany,
   ContentPost,
   EventStatus,
 } from '../types/domain';
@@ -30,6 +31,11 @@ export interface ListEventsOptions {
   limit?: number;
 
   /** Offset para paginação */
+  offset?: number;
+}
+
+export interface ListMemberCompaniesOptions {
+  limit?: number;
   offset?: number;
 }
 
@@ -63,12 +69,14 @@ export interface ContentDataSource {
 
   // ─── Optional (implementados conforme a fonte suportar) ────────
   listMembers?(): Promise<Member[]>;
+  listMemberCompanies?(options?: ListMemberCompaniesOptions): Promise<MemberCompany[]>;
 
   /**
    * Contagem total de membros registrados.
    * Fonte pública: Bubble user endpoint (count + remaining).
    */
   getMemberCount?(): Promise<number>;
+  getMemberCompanyCount?(): Promise<number>;
 
   listPosts?(): Promise<ContentPost[]>;
   getPostById?(id: string): Promise<ContentPost | null>;

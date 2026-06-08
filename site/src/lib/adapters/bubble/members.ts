@@ -2,7 +2,7 @@
  * Bubble → Member mapper.
  *
  * O endpoint /obj/user pode expor campos diferentes conforme permissões do Bubble.
- * Este mapper aceita variações comuns e ignora registros sem nome ou foto pública.
+ * Este mapper aceita variações comuns e ignora apenas registros sem nome.
  */
 
 import type { BubbleUser } from '../../bubble';
@@ -33,7 +33,7 @@ export function mapBubbleUserToMember(raw: BubbleUser): Member | null {
   const name = getMemberName(raw);
   const photo = getMemberPhoto(raw);
 
-  if (!name || !photo) {
+  if (!name) {
     return null;
   }
 

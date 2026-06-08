@@ -82,6 +82,20 @@ export interface BubbleUser {
   [key: string]: unknown;
 }
 
+export interface BubbleEmpresa {
+  _id: string;
+  Nome_Empresa?: string;
+  Faturamento?: string;
+  'Localização'?: string;
+  Tamanho?: string;
+  Cadastro_completo?: boolean;
+  'Setores - Outro'?: string;
+  Serviços_ofertados?: string;
+  'Created Date'?: string;
+  'Modified Date'?: string;
+  [key: string]: unknown;
+}
+
 export type EventStatus = 'upcoming' | 'past';
 
 interface BubbleListResponse<T> {
@@ -310,6 +324,38 @@ export async function fetchAllSpeakers(): Promise<BubbleSpeaker[]> {
  */
 export async function fetchAllMembers(): Promise<BubbleUser[]> {
   return fetchAllPages<BubbleUser>('user');
+}
+
+/**
+ * Fetches public company profiles attached to members.
+ * This endpoint exposes company data, not personal member names/photos.
+ */
+export async function fetchMemberCompanies(
+  limit = 40,
+  cursor = 0,
+): Promise<BubbleEmpresa[]> {
+  const data = await bubbleFetch<BubbleListResponse<BubbleEmpresa>>('/obj/empresa', {
+    limit: String(limit),
+    cursor: String(cursor),
+  });
+
+  return data?.response.results ?? [];
+}
+
+export async function fetchMemberCompanyCount(): Promise<number> {
+  const cacheKey = 'member_company_count';
+  const cached = cacheGet<number>(cacheKey);
+  if (cached !== null) return cached;
+
+  const data = await bubbleFetch<BubbleListResponse<{ _id: string }>>('/obj/empresa', {
+    limit: '1',
+    cursor: '0',
+  });
+
+  if (!data?.response) return 0;
+  const total = data.response.count + data.response.remaining;
+  cacheSet(cacheKey, total);
+  return total;
 }
 
 /**

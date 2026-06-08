@@ -1,30 +1,35 @@
 ---
 const metrics = [
   {
-    value: '800',
+    target: 800,
     suffix: '+',
     label: 'Membros ativos',
-    description: 'Empresários, C-levels e decisores curados',
+    description: 'Fundadores, CEOs, C-levels e decisores curados',
   },
   {
-    value: '1.200',
+    target: 1200,
     suffix: '+',
-    label: 'Encontros realizados',
-    description: 'Experiências, mesas, imersões e summits',
+    label: 'Experiências realizadas',
+    description: 'Mesas, jantares, imersões e eventos executivos',
   },
   {
-    value: '12',
+    target: 12,
     suffix: '+',
     label: 'Cidades atendidas',
     description: 'Capítulos e experiências em expansão',
   },
   {
-    value: 'R$5bi',
+    target: 5,
+    prefix: 'R$',
+    unit: 'bi',
     suffix: '+',
     label: 'Faturamento combinado',
-    description: 'Nas empresas dos membros do club',
+    description: 'Nas empresas representadas por membros',
   },
 ];
+
+const formatMetricValue = (metric: (typeof metrics)[number]) =>
+  `${metric.prefix ?? ''}${metric.target.toLocaleString('pt-BR')}${metric.unit ?? ''}${metric.suffix}`;
 ---
 
 <section
@@ -38,11 +43,11 @@ const metrics = [
   <div class="container">
 
     <!-- Intro -->
-    <div class="text-center mb-14 md:mb-16" data-animate>
-      <p class="eyebrow mb-3">Números que falam</p>
-      <h2 class="section-title max-w-2xl mx-auto text-balance">
-        Não estão no feed.
-        <span class="text-mb-yellow"> Estão na sala.</span>
+    <div class="max-w-2xl mb-14 md:mb-16" data-animate>
+      <p class="eyebrow mb-3">Masterboard em números</p>
+      <h2 class="section-title text-balance">
+        A força da comunidade aparece
+        <span class="text-mb-yellow"> quando líderes certos se encontram.</span>
       </h2>
     </div>
 
@@ -54,8 +59,15 @@ const metrics = [
           data-animate
           data-animate-delay={String(i * 100)}
         >
-          <p class="metrics-number mb-2" aria-label={`${m.value}${m.suffix} ${m.label}`}>
-            {m.value}<span class="text-mb-yellow">{m.suffix}</span>
+          <p class="metrics-number mb-2" aria-label={`${formatMetricValue(m)} ${m.label}`}>
+            <span
+              data-count-up
+              data-target={String(m.target)}
+              data-prefix={m.prefix ?? ''}
+              data-unit={m.unit ?? ''}
+            >
+              {m.prefix ?? ''}0{m.unit ?? ''}
+            </span><span class="text-mb-yellow">{m.suffix}</span>
           </p>
           <p class="font-700 text-white text-sm md:text-base mb-1">{m.label}</p>
           <p class="text-white/45 text-xs leading-snug">{m.description}</p>
@@ -65,3 +77,59 @@ const metrics = [
 
   </div>
 </section>
+
+<script>
+  const countUpEls = document.querySelectorAll<HTMLElement>('[data-count-up]');
+
+  const formatCountUpValue = (value: number, prefix: string, unit: string) =>
+    `${prefix}${Math.round(value).toLocaleString('pt-BR')}${unit}`;
+
+  const setFinalValues = () => {
+    countUpEls.forEach((el) => {
+      const target = Number(el.dataset.target ?? 0);
+      el.textContent = formatCountUpValue(target, el.dataset.prefix ?? '', el.dataset.unit ?? '');
+    });
+  };
+
+  const animateCountUp = (el: HTMLElement) => {
+    const target = Number(el.dataset.target ?? 0);
+    const prefix = el.dataset.prefix ?? '';
+    const unit = el.dataset.unit ?? '';
+    const duration = 1400;
+    const start = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = formatCountUpValue(target * eased, prefix, unit);
+
+      if (progress < 1) {
+        window.requestAnimationFrame(tick);
+      }
+    };
+
+    window.requestAnimationFrame(tick);
+  };
+
+  if (countUpEls.length > 0) {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+      setFinalValues();
+    } else {
+      const metricsObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            countUpEls.forEach(animateCountUp);
+            metricsObserver.disconnect();
+          });
+        },
+        { threshold: 0.35 },
+      );
+
+      metricsObserver.observe(countUpEls[0].closest('section') ?? countUpEls[0]);
+    }
+  }
+</script>

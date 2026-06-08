@@ -1,66 +1,57 @@
 ---
 /**
- * Seção de comunidade de membros.
- * Dados reais: recebe membros do Bubble quando o endpoint /obj/user expõe dados públicos.
+ * Seção de comunidade.
+ * O endpoint público de usuários do Bubble não expõe nomes/fotos de membros.
+ * Por isso, a seção usa a coleção pública `empresa`, que traz empresas reais
+ * vinculadas à comunidade sem criar associações pessoais ambíguas.
  */
 
-import type { Member } from '../types/domain';
+import type { MemberCompany } from '../types/domain';
 
 interface Props {
-  members?: Member[];
-  totalCount?: number;
+  companies?: MemberCompany[];
+  companyCount?: number;
+  memberCount?: number;
 }
 
-const { members = [], totalCount } = Astro.props;
+const { companies = [], companyCount, memberCount } = Astro.props;
 
-const featuredCompanySignals = [
-  'viasoft', 'rp trader', 'fight music show', 'driva', 'vpx',
-  'coca-cola', 'auda', '+1 cafe', 'ivs franquias',
-];
-
-const normalize = (value: string) =>
-  value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-
-const getMemberScore = (member: Member) => {
-  const searchable = normalize([member.roleLabel, member.role, member.company].filter(Boolean).join(' '));
-  let score = 0;
-
-  if (featuredCompanySignals.some((signal) => searchable.includes(signal))) score += 120;
-  if (/\b(ceo|cfo|cto|coo|cmo|cco|cso|cro)\b/.test(searchable)) score += 110;
-  if (/\b(presidente|vice-presidente|vp)\b/.test(searchable)) score += 72;
-  if (/\b(founder|fundador|fundadora|co-founder|socio|socia|owner)\b/.test(searchable)) score += 62;
-  if (/\b(diretor|diretora|executivo|executiva)\b/.test(searchable)) score += 36;
-  if (member.photo) score += 20;
-  if (member.companyLogo) score += 8;
-
-  return score;
-};
-
-const visibleMembers = [...members]
-  .filter((member) => member.name && member.photo)
-  .sort((a, b) => getMemberScore(b) - getMemberScore(a))
+const visibleCompanies = companies
+  .filter((company) => company.name)
   .slice(0, 18);
 
-const displayCount = totalCount ?? Math.max(members.length, visibleMembers.length);
-const moreMembersLabel = `E MAIS ${displayCount.toLocaleString('pt-BR')} MEMBROS`;
-const ecosystemSegments = [
-  'Tecnologia',
-  'SaaS B2B',
-  'Finanças',
-  'Varejo',
-  'Franquias',
-  'Construção',
-  'Saúde',
-  'Educação',
-  'Agronegócio',
-  'Logística',
-  'Indústria',
-  'Gastronomia',
-  'Marketing',
-  'Entretenimento',
-  'Investimentos',
-  'Serviços',
-];
+const displayCompanyCount = companyCount ?? Math.max(companies.length, visibleCompanies.length);
+const displayMemberCount = memberCount ?? 0;
+const moreCompaniesLabel = `E MAIS ${displayCompanyCount.toLocaleString('pt-BR')} EMPRESAS MAPEADAS`;
+
+const getCompanyInitials = (name: string) => {
+  const ignored = new Set(['de', 'da', 'do', 'das', 'dos', 'e']);
+  const parts = name
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/)
+    .map((part) => part.trim())
+    .filter((part) => part && !ignored.has(part.toLowerCase()));
+
+  return parts
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('') || 'MB';
+};
+
+const compactRevenue = (revenue?: string) =>
+  revenue
+    ?.replace(/ao ano/gi, '')
+    .replace(/De\s+/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const segments = Array.from(
+  new Set(
+    visibleCompanies
+      .map((company) => company.sector)
+      .filter((sector): sector is string => Boolean(sector)),
+  ),
+).slice(0, 10);
 ---
 
 <section
@@ -70,14 +61,11 @@ const ecosystemSegments = [
 >
   <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
 
-  <!-- Grid pattern decorativo -->
   <div class="brand-grid-mark" aria-hidden="true" style="opacity:0.35; right: 2%; bottom: 5%;"></div>
 
   <div class="container">
-
-    <!-- Cabeçalho -->
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 md:mb-14">
-      <div class="max-w-xl">
+    <div class="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-14 mb-12 md:mb-14">
+      <div>
         <p class="eyebrow mb-4" data-animate>A comunidade</p>
         <h2
           id="members-heading"
@@ -85,65 +73,73 @@ const ecosystemSegments = [
           data-animate
           data-animate-delay="100"
         >
-          <span class="text-mb-yellow">{displayCount.toLocaleString('pt-BR')}+</span> líderes
-          que já estão na sala.
+          <span class="text-mb-yellow">{displayCompanyCount.toLocaleString('pt-BR')}+</span> empresas
+          conectadas pela sala certa.
         </h2>
       </div>
-      <p class="text-white/50 text-sm max-w-xs leading-relaxed" data-animate data-animate-delay="150">
-        Identidades preservadas quando a conversa envolve bastidor, estratégia e acesso — como toda comunidade séria protege seus membros.
-      </p>
+
+      <div class="community-summary" data-animate data-animate-delay="150">
+        <p class="text-white/56 leading-relaxed">
+          Os nomes e fotos pessoais dos membros não são expostos pelo endpoint público.
+          Por isso, mostramos empresas reais cadastradas na comunidade, com dados públicos de porte,
+          cidade e momento de negócio.
+        </p>
+        {displayMemberCount > 0 && (
+          <p class="community-summary__count">
+            {displayMemberCount.toLocaleString('pt-BR')}+ líderes cadastrados no ecossistema.
+          </p>
+        )}
+      </div>
     </div>
 
     <div class="members-grid-shell" data-animate data-animate-delay="200">
-      {visibleMembers.length > 0 ? (
-        <!-- Grade de membros reais: 3 linhas no desktop -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-          {visibleMembers.map((member, i) => (
-            <div
-              class="member-card group"
+      {visibleCompanies.length > 0 ? (
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          {visibleCompanies.map((company, i) => (
+            <article
+              class="member-company-card"
               data-animate
               data-animate-delay={String((i % 6) * 60)}
-              aria-label={`${member.name}, ${member.role ?? member.roleLabel ?? 'membro Masterboard'}`}
+              aria-label={`${company.name}${company.city ? `, ${company.city}` : ''}`}
             >
-              <img
-                src={member.photo}
-                alt={member.name}
-                loading={i < 6 ? 'eager' : 'lazy'}
-                decoding="async"
-                width="320"
-                height="320"
-                class="member-card__photo"
-              />
-
-              <!-- Overlay inferior -->
-              <div class="member-card__info">
-                <p class="member-card__name">{member.name}</p>
-                <p class="member-card__meta">
-                  {[member.role, member.company].filter(Boolean).join(' / ') || member.roleLabel}
-                </p>
+              <div class="member-company-card__mark" aria-hidden="true">
+                {getCompanyInitials(company.name)}
               </div>
-            </div>
+              <div class="member-company-card__body">
+                <div>
+                  <p class="member-company-card__eyebrow">
+                    {company.city ?? company.sector ?? 'Empresa membro'}
+                  </p>
+                  <h3 class="member-company-card__name">{company.name}</h3>
+                </div>
+
+                <div class="member-company-card__meta">
+                  {company.size && <span>{company.size}</span>}
+                  {compactRevenue(company.revenue) && <span>{compactRevenue(company.revenue)}</span>}
+                  {company.sector && <span>{company.sector}</span>}
+                </div>
+              </div>
+            </article>
           ))}
         </div>
       ) : (
-        <div class="member-card-empty" aria-hidden="true">
-          <span>Membros em curadoria</span>
+        <div class="member-company-empty">
+          <span>Empresas da comunidade em sincronização.</span>
         </div>
       )}
 
       <div class="members-grid-fade" aria-hidden="true"></div>
       <div class="members-more">
         <a href="#eventos" class="members-more__button">
-          {moreMembersLabel}
+          {moreCompaniesLabel}
         </a>
       </div>
     </div>
 
-    <!-- Segmentos representados -->
     <div class="mt-10 pt-8 border-t border-mb-border" data-animate>
       <p class="text-xs text-white/30 uppercase tracking-widest mb-4">Segmentos representados</p>
       <div class="flex flex-wrap gap-2">
-        {ecosystemSegments.map((segment) => (
+        {(segments.length > 0 ? segments : ['Tecnologia', 'Gastronomia', 'Governança', 'Marketing', 'Energia']).map((segment) => (
           <span class="text-xs px-3 py-1 rounded-full bg-white/5 border border-mb-border text-white/45">
             {segment}
           </span>
@@ -153,158 +149,193 @@ const ecosystemSegments = [
         </span>
       </div>
     </div>
-
   </div>
 </section>
 
 <style>
-/* ─── Member card ──────────────────────────────────────────── */
-.members-grid-shell {
-  position: relative;
-}
+  .community-summary {
+    align-self: end;
+    max-width: 38rem;
+  }
 
-.member-card {
-  position: relative;
-  display: block;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  border-radius: 1.25rem;
-  border: 1px solid rgba(255,255,255,0.09);
-  background: rgba(255,255,255,0.045);
-  transition: border-color 0.22s ease, background 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
-  cursor: default;
-}
+  .community-summary__count {
+    margin-top: 1rem;
+    color: rgba(251,190,10,0.78);
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
 
-.member-card-empty {
-  min-height: 16rem;
-  border: 1px dashed rgba(255,255,255,0.12);
-  border-radius: 1.25rem;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015)),
-    rgba(255,255,255,0.025);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255,255,255,0.22);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
+  .members-grid-shell {
+    position: relative;
+  }
 
-.member-card:hover {
-  border-color: rgba(251, 190, 10, 0.2);
-  background: rgba(255, 255, 255, 0.06);
-  transform: translateY(-3px);
-  box-shadow: 0 18px 44px rgba(0,0,0,0.32);
-}
+  .member-company-card {
+    min-height: 11.5rem;
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 1fr);
+    gap: 1rem;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 1.25rem;
+    padding: 1.1rem;
+    background:
+      linear-gradient(135deg, rgba(251,190,10,0.075), rgba(255,255,255,0.035) 45%, rgba(255,255,255,0.018)),
+      rgba(255,255,255,0.035);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.055);
+    transition: border-color 0.22s ease, background 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
+  }
 
-.member-card__photo {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  filter: grayscale(0.08) contrast(1.04);
-  transition: transform 0.3s ease, filter 0.3s ease;
-}
+  .member-company-card:hover {
+    border-color: rgba(251,190,10,0.24);
+    background:
+      linear-gradient(135deg, rgba(251,190,10,0.11), rgba(255,255,255,0.045) 45%, rgba(255,255,255,0.02)),
+      rgba(255,255,255,0.045);
+    transform: translateY(-3px);
+    box-shadow: 0 18px 44px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.07);
+  }
 
-.member-card:hover .member-card__photo {
-  transform: scale(1.06);
-  filter: grayscale(0) contrast(1.06);
-}
+  .member-company-card__mark {
+    width: 4rem;
+    height: 4rem;
+    border: 1px solid rgba(251,190,10,0.24);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(circle at 32% 24%, rgba(251,190,10,0.22), transparent 40%),
+      rgba(0,0,0,0.34);
+    color: rgba(251,190,10,0.88);
+    font-size: 1.05rem;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+  }
 
-.member-card__info {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  min-height: 45%;
-  padding: 3rem 0.85rem 0.85rem;
-  background: linear-gradient(
-    to top,
-    rgba(0,0,0,0.92) 0%,
-    rgba(0,0,0,0.72) 45%,
-    rgba(0,0,0,0) 100%
-  );
-  pointer-events: none;
-}
+  .member-company-card__body {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+  }
 
-.member-card__name {
-  margin: 0;
-  font-size: clamp(0.82rem, 1.2vw, 0.95rem);
-  font-weight: 800;
-  color: var(--mb-white);
-  line-height: 1.12;
-  letter-spacing: -0.02em;
-  text-shadow: 0 2px 14px rgba(0,0,0,0.85);
-}
+  .member-company-card__eyebrow {
+    margin: 0 0 0.35rem;
+    color: rgba(251,190,10,0.68);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
 
-.member-card__meta {
-  margin: 0.25rem 0 0;
-  font-size: clamp(0.64rem, 0.95vw, 0.75rem);
-  font-weight: 600;
-  color: rgba(255,255,255,0.82);
-  line-height: 1.25;
-  text-shadow: 0 1px 10px rgba(0,0,0,0.9);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+  .member-company-card__name {
+    margin: 0;
+    color: var(--mb-white);
+    font-size: clamp(1.05rem, 1.6vw, 1.28rem);
+    font-weight: 900;
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+  }
 
-.members-grid-fade {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: min(14rem, 48%);
-  pointer-events: none;
-  background: linear-gradient(
-    to top,
-    var(--mb-black) 0%,
-    rgba(5,5,5,0.92) 32%,
-    rgba(5,5,5,0.54) 68%,
-    rgba(5,5,5,0) 100%
-  );
-}
+  .member-company-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
 
-.members-more {
-  position: absolute;
-  left: 50%;
-  bottom: clamp(0.6rem, 2vw, 1.15rem);
-  transform: translateX(-50%);
-  width: min(100%, 38rem);
-  padding-inline: 1rem;
-  display: flex;
-  justify-content: center;
-  z-index: 3;
-}
+  .member-company-card__meta span {
+    max-width: 100%;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 999px;
+    padding: 0.3rem 0.52rem;
+    background: rgba(0,0,0,0.22);
+    color: rgba(255,255,255,0.56);
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
 
-.members-more__button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: min(100%, 34rem);
-  min-height: 3.4rem;
-  padding: 0.95rem 1.5rem;
-  border-radius: 1rem;
-  background: var(--mb-yellow);
-  color: var(--mb-black);
-  font-size: clamp(0.9rem, 2vw, 1.4rem);
-  font-weight: 900;
-  letter-spacing: 0.035em;
-  text-transform: uppercase;
-  box-shadow: 0 18px 44px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08);
-  transition: transform 0.2s ease, filter 0.2s ease;
-}
+  .member-company-empty {
+    min-height: 16rem;
+    border: 1px dashed rgba(255,255,255,0.12);
+    border-radius: 1.25rem;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015)),
+      rgba(255,255,255,0.025);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.22);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
 
-.members-more__button:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.06);
-}
+  .members-grid-fade {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: min(10rem, 40%);
+    pointer-events: none;
+    background: linear-gradient(
+      to top,
+      var(--mb-black) 0%,
+      rgba(5,5,5,0.9) 34%,
+      rgba(5,5,5,0.44) 72%,
+      rgba(5,5,5,0) 100%
+    );
+  }
+
+  .members-more {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(0.6rem, 2vw, 1.15rem);
+    transform: translateX(-50%);
+    width: min(100%, 38rem);
+    padding-inline: 1rem;
+    display: flex;
+    justify-content: center;
+    z-index: 3;
+  }
+
+  .members-more__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: min(100%, 34rem);
+    min-height: 3.4rem;
+    padding: 0.95rem 1.5rem;
+    border-radius: 1rem;
+    background: var(--mb-yellow);
+    color: var(--mb-black);
+    font-size: clamp(0.86rem, 1.8vw, 1.25rem);
+    font-weight: 900;
+    letter-spacing: 0.035em;
+    text-align: center;
+    text-transform: uppercase;
+    box-shadow: 0 18px 44px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08);
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+
+  .members-more__button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+  }
+
+  @media (max-width: 640px) {
+    .member-company-card {
+      grid-template-columns: 3.35rem minmax(0, 1fr);
+    }
+
+    .member-company-card__mark {
+      width: 3.35rem;
+      height: 3.35rem;
+      border-radius: 0.85rem;
+    }
+  }
 </style>

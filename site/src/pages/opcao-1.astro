@@ -1,0 +1,281 @@
+---
+export const prerender = false;
+
+import { existsSync, readdirSync } from 'node:fs';
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Hero from '../components/Hero.astro';
+import ValueProps from '../components/ValueProps.astro';
+import About from '../components/About.astro';
+import Speakers from '../components/Speakers.astro';
+import Members from '../components/Members.astro';
+import Events from '../components/Events.astro';
+import Ecosystem from '../components/Ecosystem.astro';
+import CTAFinal from '../components/CTAFinal.astro';
+import LeadModal from '../components/LeadModal.astro';
+import faqsData from '../data/faqs.json';
+import testimonialsData from '../data/testimonials.json';
+import { dataSource } from '../lib/data-source';
+import type { FAQ, Testimonial } from '../types';
+
+const [upcomingEvents, speakers, memberCompanies, memberCompanyCount, memberCount] = await Promise.all([
+  dataSource.listEvents({ status: 'upcoming', sortAscending: true, limit: 5 }),
+  dataSource.listSpeakers(),
+  dataSource.listMemberCompanies?.({ limit: 18 }),
+  dataSource.getMemberCompanyCount?.(),
+  dataSource.getMemberCount?.(),
+]);
+
+const metrics = [
+  { value: '800+', label: 'membros ativos' },
+  { value: '1.200+', label: 'encontros realizados' },
+  { value: '12+', label: 'cidades atendidas' },
+  { value: 'R$5bi+', label: 'faturamento combinado' },
+];
+
+const pillars = [
+  {
+    label: 'Curadoria de entrada',
+    title: 'Curadoria ativa de perfil',
+    description:
+      'Selecionamos empresários pelo momento da empresa, maturidade de gestão e desafios estratégicos atuais.',
+  },
+  {
+    label: 'Conexões qualificadas',
+    title: 'Match empresarial',
+    description:
+      'Conectamos empresários por estágio de crescimento, desafios semelhantes e complementaridade de competências.',
+  },
+  {
+    label: 'Decisões estratégicas',
+    title: 'Ambiente controlado',
+    description:
+      'Encontros em grupos reduzidos, com mediação qualificada e conversas orientadas para decisão.',
+  },
+];
+
+const logosDirectory = [
+  new URL('../../public/logos/', import.meta.url),
+  new URL('../../client/logos/', import.meta.url),
+].find((directory) => existsSync(directory));
+
+const supportedLogoExtensions = new Set(['.svg', '.png', '.webp', '.avif', '.jpg', '.jpeg']);
+const preferredLogoExtensions = ['.avif', '.webp', '.svg', '.png', '.jpg', '.jpeg'];
+const getLogoExtension = (filename: string) => filename.slice(filename.lastIndexOf('.')).toLowerCase();
+const getLogoBase = (filename: string) => filename.replace(/\.[^.]+$/, '');
+const getLogoName = (filename: string) =>
+  getLogoBase(filename)
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+const logos = logosDirectory
+  ? Array.from(
+      readdirSync(logosDirectory, { withFileTypes: true })
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name)
+      .filter((filename) => supportedLogoExtensions.has(getLogoExtension(filename)))
+      .reduce((bestByBase, filename) => {
+        const base = getLogoBase(filename);
+        const current = bestByBase.get(base);
+        const extension = getLogoExtension(filename);
+        const currentExtension = current ? getLogoExtension(current) : undefined;
+
+        if (
+          !current ||
+          preferredLogoExtensions.indexOf(extension) < preferredLogoExtensions.indexOf(currentExtension ?? '.jpeg')
+        ) {
+          bestByBase.set(base, filename);
+        }
+
+        return bestByBase;
+      }, new Map<string, string>())
+      .values(),
+    )
+      .sort((first, second) => getLogoName(first).localeCompare(getLogoName(second), 'pt-BR'))
+      .slice(0, 10)
+      .map((filename) => ({
+        name: getLogoName(filename),
+        src: `/logos/${filename}`,
+      }))
+  : [];
+
+const faqs = (faqsData as FAQ[]).slice(0, 4);
+const testimonials = (testimonialsData as Testimonial[]).slice(0, 2);
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((faq) => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+  })),
+};
+---
+
+<BaseLayout
+  title="Masterboard | Opção 1 Compacta"
+  description="Variação compacta da home Masterboard, mantendo a estrutura atual com seções agrupadas para comparação visual."
+  noindex={true}
+  jsonLd={[faqSchema]}
+>
+  <Header />
+
+  <main id="main-content">
+    <Hero />
+    <ValueProps />
+
+    <section
+      id="prova-social"
+      class="section-py bg-mb-black relative overflow-hidden"
+      aria-labelledby="proof-heading"
+    >
+      <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+      <div class="container">
+        <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-10 lg:gap-14 items-center">
+          <div>
+            <p class="eyebrow mb-4" data-animate>Prova social</p>
+            <h2 id="proof-heading" class="section-title text-balance mb-5" data-animate data-animate-delay="100">
+              Empresas, números e presença
+              <span class="text-mb-yellow"> em um só lugar.</span>
+            </h2>
+            <p class="text-white/55 leading-relaxed max-w-xl" data-animate data-animate-delay="150">
+              A leitura fica mais curta: logos e métricas passam a funcionar como uma única evidência de força do ecossistema.
+            </p>
+          </div>
+
+          <div class="space-y-6" data-animate data-animate-delay="200">
+            {logos.length > 0 && (
+              <div class="card">
+                <p class="text-xs uppercase tracking-[0.22em] text-white/35 mb-5">Empresas dos membros</p>
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 items-center">
+                  {logos.map((logo) => (
+                    <div class="h-12 rounded-lg border border-mb-border bg-white/[0.025] flex items-center justify-center px-3">
+                      <img src={logo.src} alt={logo.name} loading="eager" decoding="async" width="160" height="48" class="max-h-6 max-w-full opacity-70" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div class="grid grid-cols-2 gap-4">
+              {metrics.map((metric, i) => (
+                <div class="card compact-metric" data-animate data-animate-delay={String(240 + i * 60)}>
+                  <p class="metrics-number mb-1">{metric.value}</p>
+                  <p class="text-white/55 text-xs uppercase tracking-wide">{metric.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section
+      id="o-que-fazemos-compacto"
+      class="section-py bg-mb-black relative section-glow"
+      aria-labelledby="compact-work-heading"
+    >
+      <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+      <div class="container">
+        <div class="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-10 lg:gap-14">
+          <div>
+            <p class="eyebrow mb-4" data-animate>// O QUE FAZEMOS</p>
+            <h2 id="compact-work-heading" class="section-title text-balance mb-5" data-animate data-animate-delay="100">
+              A qualidade da sala começa
+              <span class="text-mb-yellow"> antes dela abrir.</span>
+            </h2>
+            <p class="text-white/55 leading-relaxed" data-animate data-animate-delay="150">
+              Esta versão junta a explicação institucional e os cards operacionais em um único bloco.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5" data-animate data-animate-delay="200">
+            {pillars.map((pillar, i) => (
+              <article class="card flex flex-col gap-4" data-animate data-animate-delay={String(220 + i * 80)}>
+                <p class="text-[11px] uppercase tracking-[0.18em] text-mb-yellow/65">{pillar.label}</p>
+                <h3 class="font-800 text-white text-xl leading-tight">{pillar.title}</h3>
+                <p class="text-white/55 text-sm leading-relaxed">{pillar.description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <About />
+    <Speakers speakers={speakers} />
+    <Members companies={memberCompanies ?? []} companyCount={memberCompanyCount} memberCount={memberCount} />
+    <Events events={upcomingEvents} limit={5} showViewAll={true} />
+    <Ecosystem />
+
+    <section
+      id="confianca"
+      class="section-py bg-mb-black relative"
+      aria-labelledby="trust-heading"
+    >
+      <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+      <div class="container">
+        <div class="text-center max-w-2xl mx-auto mb-12">
+          <p class="eyebrow mb-4" data-animate>Confiança</p>
+          <h2 id="trust-heading" class="section-title text-balance" data-animate data-animate-delay="100">
+            Depoimentos e dúvidas
+            <span class="text-mb-yellow"> no mesmo fechamento.</span>
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          <div class="space-y-4" data-animate data-animate-delay="150">
+            {testimonials.map((testimonial) => (
+              <figure class="testimonial-card">
+                <blockquote>
+                  <p class="text-white/85 leading-relaxed text-sm md:text-base mb-4">"{testimonial.text}"</p>
+                  {testimonial.highlight && (
+                    <p class="text-mb-yellow text-sm font-700 border-l-2 border-mb-yellow/40 pl-3">
+                      {testimonial.highlight}
+                    </p>
+                  )}
+                </blockquote>
+                <figcaption class="mt-4 pt-4 border-t border-mb-border">
+                  <p class="text-white font-700 text-sm">{testimonial.author}</p>
+                  <p class="text-white/45 text-xs">{testimonial.role} · {testimonial.company}</p>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+
+          <div class="card" data-animate data-animate-delay="200">
+            <p class="text-xs uppercase tracking-[0.22em] text-white/35 mb-3">Perguntas frequentes</p>
+            <dl>
+              {faqs.map((faq) => (
+                <div class="border-b border-mb-border last:border-b-0">
+                  <details class="group">
+                    <summary class="flex items-center justify-between gap-4 py-5 cursor-pointer list-none text-white font-700 hover:text-mb-yellow transition-colors">
+                      <span>{faq.question}</span>
+                      <span class="text-mb-yellow text-xl leading-none group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <dd class="text-white/55 text-sm leading-relaxed pb-5">{faq.answer}</dd>
+                  </details>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <CTAFinal />
+  </main>
+
+  <Footer />
+  <LeadModal />
+</BaseLayout>
+
+<style>
+  .compact-metric {
+    padding-block: clamp(1.25rem, 3vw, 1.75rem);
+    text-align: center;
+  }
+</style>

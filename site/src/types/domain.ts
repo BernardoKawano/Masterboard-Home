@@ -148,6 +148,22 @@ export interface Member {
   joinedAt?: string;
 }
 
+// ─── MemberCompany ─────────────────────────────────────────────────────────────
+
+export interface MemberCompany {
+  id: string;
+  sourceId: string;
+  source: DataSource;
+
+  name: string;
+  city?: string;
+  size?: string;
+  revenue?: string;
+  sector?: string;
+  services?: string;
+  completedProfile?: boolean;
+}
+
 // ─── ContentPost (Blog) ───────────────────────────────────────────────────────
 
 export interface ContentPost {

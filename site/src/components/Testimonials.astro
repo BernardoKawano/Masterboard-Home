@@ -3,56 +3,155 @@ import type { Testimonial } from '../types';
 import testimonialsData from '../data/testimonials.json';
 
 const testimonials = testimonialsData as Testimonial[];
+
+const videoTestimonials = [
+  {
+    label: 'Vídeo 01',
+    title: 'Relatos de quem encontrou a mesa certa.',
+    description: 'Relatos em vídeo, cortes de eventos e bastidores ajudam a mostrar o que a lista de membros não conta sozinha: a qualidade das conversas.',
+    duration: 'Em destaque',
+    embedUrl: '',
+  },
+  {
+    label: 'Vídeo 02',
+    title: 'Decisões que saem da conversa.',
+    description: 'Um espaço para depoimentos sobre negócios, parcerias e decisões que nasceram depois de uma mesa Masterboard.',
+    duration: '+ vídeo',
+    embedUrl: '',
+  },
+  {
+    label: 'Vídeo 03',
+    title: 'Bastidores dos encontros.',
+    description: 'Registros curtos de jantares, imersões e experiências para mostrar a profundidade das conexões presenciais.',
+    duration: '+ vídeo',
+    embedUrl: '',
+  },
+  {
+    label: 'Vídeo 04',
+    title: 'A sala certa muda o ritmo.',
+    description: 'Depoimentos sobre clareza, repertório e acesso entre empresários que vivem problemas parecidos.',
+    duration: '+ vídeo',
+    embedUrl: '',
+  },
+];
+
+const featuredVideo = videoTestimonials[0];
 ---
 
 <section
   id="depoimentos"
-  class="section-py bg-mb-black relative section-glow"
+  class="section-py bg-mb-black relative overflow-hidden section-glow"
   aria-labelledby="testimonials-heading"
 >
   <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+  <div class="brand-grid-mark" aria-hidden="true" style="opacity:0.22; left: 4%; bottom: 8%;"></div>
 
   <div class="container">
 
     <!-- Cabeçalho -->
-    <div class="text-center max-w-2xl mx-auto mb-14 md:mb-16">
-      <p class="eyebrow mb-4" data-animate>Quem já está dentro</p>
-      <h2
-        id="testimonials-heading"
-        class="section-title text-balance"
-        data-animate
-        data-animate-delay="100"
-      >
-        Quem entra pela sala certa
-        <span class="text-mb-yellow"> volta diferente.</span>
-      </h2>
+    <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-8 lg:gap-14 mb-12 md:mb-16">
+      <div>
+        <p class="eyebrow mb-4" data-animate>Depoimentos</p>
+        <h2
+          id="testimonials-heading"
+          class="section-title text-balance"
+          data-animate
+          data-animate-delay="100"
+        >
+          O que nasce dentro da sala
+          <span class="text-mb-yellow"> aparece nos relatos.</span>
+        </h2>
+      </div>
+      <p class="text-white/55 leading-relaxed max-w-xl lg:self-end" data-animate data-animate-delay="150">
+        Além dos membros e eventos, este bloco organiza a prova social do Masterboard:
+        vídeos, frases, bastidores e relatos que mostram como as conexões se transformam em decisão.
+      </p>
     </div>
 
-    <!-- Masonry / grid de depoimentos -->
+    <div class="grid grid-cols-1 lg:grid-cols-[1.08fr_0.92fr] gap-5 md:gap-6 mb-6">
+      <article class="testimonial-video-card" data-video-featured data-animate data-animate-delay="200">
+        <div class="testimonial-video-card__media" data-video-media>
+          <iframe
+            class="testimonial-video-card__iframe"
+            data-video-frame
+            title={featuredVideo.title}
+            src={featuredVideo.embedUrl}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            hidden={!featuredVideo.embedUrl}
+          ></iframe>
+          <div class="testimonial-video-card__placeholder" data-video-placeholder hidden={Boolean(featuredVideo.embedUrl)}>
+            <div class="testimonial-video-card__play" aria-hidden="true">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 5.14v13.72a1 1 0 0 0 1.52.86l11.24-6.86a1 1 0 0 0 0-1.72L9.52 4.28A1 1 0 0 0 8 5.14Z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-video-card__body">
+          <p class="text-[11px] uppercase tracking-[0.22em] text-mb-yellow/70 mb-3" data-video-label>{featuredVideo.label}</p>
+          <h3 class="text-white font-800 text-2xl md:text-3xl leading-tight tracking-tight mb-4" data-video-title>
+            {featuredVideo.title}
+          </h3>
+          <p class="text-white/56 leading-relaxed max-w-xl" data-video-description>
+            {featuredVideo.description}
+          </p>
+        </div>
+      </article>
+
+      <div class="testimonial-video-playlist" aria-label="Outros vídeos de depoimentos">
+        {videoTestimonials.slice(1).map((item, i) => (
+          <button
+            class="testimonial-video-thumb"
+            type="button"
+            data-video-trigger
+            data-video-label={item.label}
+            data-video-title={item.title}
+            data-video-description={item.description}
+            data-video-url={item.embedUrl}
+            data-animate
+            data-animate-delay={String(240 + i * 80)}
+            aria-label={`Assistir ${item.title}`}
+            aria-pressed="false"
+          >
+            <span class="testimonial-video-thumb__media" aria-hidden="true">
+              <span class="testimonial-video-thumb__play">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 5.14v13.72a1 1 0 0 0 1.52.86l11.24-6.86a1 1 0 0 0 0-1.72L9.52 4.28A1 1 0 0 0 8 5.14Z" />
+                </svg>
+              </span>
+            </span>
+            <span class="testimonial-video-thumb__content">
+              <span class="testimonial-video-thumb__label">{item.label}</span>
+              <span class="testimonial-video-thumb__title">{item.title}</span>
+              <span class="testimonial-video-thumb__description">{item.description}</span>
+            </span>
+            <span class="testimonial-video-thumb__badge">{item.duration}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <!-- Frases / depoimentos -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
       {testimonials.map((t, i) => (
         <figure
           class="testimonial-card"
           data-animate
-          data-animate-delay={String(i * 100)}
+          data-animate-delay={String(320 + i * 80)}
           aria-label={`Depoimento de ${t.author}`}
         >
-          <!-- Aspas decorativas -->
-          <div class="testimonial-quote-mark" aria-hidden="true">"</div>
-
-          <!-- Texto destacado -->
           <blockquote>
-            <p class="text-white/85 leading-relaxed text-sm md:text-base mb-4">
-              "{t.text}"
-            </p>
             {t.highlight && (
-              <p class="text-mb-yellow text-sm font-700 border-l-2 border-mb-yellow/40 pl-3">
+              <p class="testimonial-highlight mb-4">
                 {t.highlight}
               </p>
             )}
+            <p class="text-white/72 leading-relaxed text-sm md:text-base">
+              "{t.text}"
+            </p>
           </blockquote>
 
-          <!-- Autor -->
           <figcaption class="flex items-center gap-3 mt-4 pt-4 border-t border-mb-border">
             <div
               class="w-10 h-10 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center text-sm font-800 text-white/60 shrink-0"
@@ -64,19 +163,251 @@ const testimonials = testimonialsData as Testimonial[];
               <p class="text-white font-700 text-sm">{t.author}</p>
               <p class="text-white/45 text-xs">{t.role} · {t.company}</p>
             </div>
-            <!-- Badge membro -->
             <span class="ml-auto badge badge-upcoming text-[10px] shrink-0">Membro</span>
           </figcaption>
         </figure>
       ))}
     </div>
 
-    <!-- Social proof reforço -->
-    <div class="text-center mt-12" data-animate>
-      <p class="text-white/40 text-sm">
-        Relatos de membros ativos. Identidades preservadas quando a conversa envolve bastidor, estratégia e acesso.
-      </p>
-    </div>
-
   </div>
 </section>
+
+<script>
+  const featured = document.querySelector<HTMLElement>('[data-video-featured]');
+  const frame = featured?.querySelector<HTMLIFrameElement>('[data-video-frame]');
+  const placeholder = featured?.querySelector<HTMLElement>('[data-video-placeholder]');
+  const label = featured?.querySelector<HTMLElement>('[data-video-label]');
+  const title = featured?.querySelector<HTMLElement>('[data-video-title]');
+  const description = featured?.querySelector<HTMLElement>('[data-video-description]');
+  const triggers = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-video-trigger]'));
+
+  const setFeaturedVideo = (trigger: HTMLButtonElement) => {
+    const videoUrl = trigger.dataset.videoUrl ?? '';
+
+    if (label) label.textContent = trigger.dataset.videoLabel ?? '';
+    if (title) title.textContent = trigger.dataset.videoTitle ?? '';
+    if (description) description.textContent = trigger.dataset.videoDescription ?? '';
+
+    if (frame) {
+      frame.title = trigger.dataset.videoTitle ?? 'Depoimento em vídeo';
+      frame.src = videoUrl;
+      frame.hidden = !videoUrl;
+    }
+
+    if (placeholder) {
+      placeholder.hidden = Boolean(videoUrl);
+    }
+
+    triggers.forEach((button) => button.setAttribute('aria-pressed', String(button === trigger)));
+  };
+
+  triggers.forEach((trigger) => {
+    trigger.addEventListener('click', () => setFeaturedVideo(trigger));
+  });
+</script>
+
+<style>
+  .testimonial-video-card,
+  .testimonial-video-thumb {
+    border: 1px solid rgba(255,255,255,0.09);
+    background:
+      linear-gradient(135deg, rgba(251,190,10,0.07), rgba(255,255,255,0.035) 42%, rgba(255,255,255,0.018)),
+      rgba(0,0,0,0.34);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.055), 0 18px 48px rgba(0,0,0,0.22);
+  }
+
+  .testimonial-video-card {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    min-height: 24rem;
+    overflow: hidden;
+    border-radius: 1.5rem;
+  }
+
+  .testimonial-video-card__media {
+    position: relative;
+    min-height: 18rem;
+    background:
+      radial-gradient(circle at 38% 36%, rgba(251,190,10,0.22), transparent 24%),
+      linear-gradient(135deg, rgba(255,255,255,0.11), rgba(255,255,255,0.025)),
+      rgba(255,255,255,0.04);
+  }
+
+  .testimonial-video-card__placeholder {
+    position: absolute;
+    inset: 0;
+  }
+
+  .testimonial-video-card__placeholder::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(45deg, rgba(0,0,0,0.54), transparent 52%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.045) 0 1px, transparent 1px 18px);
+    opacity: 0.6;
+  }
+
+  .testimonial-video-card__iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .testimonial-video-card__play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 2;
+    width: 4.25rem;
+    height: 4.25rem;
+    transform: translate(-50%, -50%);
+    border-radius: 999px;
+    background: var(--mb-yellow);
+    color: var(--mb-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.45), 0 0 0 10px rgba(251,190,10,0.11);
+  }
+
+  .testimonial-video-card__body {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: clamp(1.4rem, 3vw, 2rem);
+  }
+
+  .testimonial-video-playlist {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .testimonial-video-thumb {
+    min-height: 8.6rem;
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr) auto;
+    align-items: flex-start;
+    gap: 1rem;
+    border-radius: 1.2rem;
+    padding: 0.85rem;
+    text-align: left;
+    transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  }
+
+  .testimonial-video-thumb:hover,
+  .testimonial-video-thumb[aria-pressed="true"] {
+    border-color: rgba(251,190,10,0.32);
+    background:
+      linear-gradient(135deg, rgba(251,190,10,0.11), rgba(255,255,255,0.045) 46%, rgba(255,255,255,0.02)),
+      rgba(0,0,0,0.42);
+    transform: translateY(-2px);
+  }
+
+  .testimonial-video-thumb__media {
+    position: relative;
+    width: 7rem;
+    aspect-ratio: 16 / 10;
+    border-radius: 0.8rem;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 42% 38%, rgba(251,190,10,0.2), transparent 26%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.045) 0 1px, transparent 1px 12px),
+      rgba(255,255,255,0.05);
+  }
+
+  .testimonial-video-thumb__play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 2.15rem;
+    height: 2.15rem;
+    transform: translate(-50%, -50%);
+    border-radius: 999px;
+    background: var(--mb-yellow);
+    color: var(--mb-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.36);
+  }
+
+  .testimonial-video-thumb__content {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .testimonial-video-thumb__label {
+    color: rgba(251,190,10,0.68);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .testimonial-video-thumb__title {
+    color: var(--mb-white);
+    font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+    font-weight: 800;
+    line-height: 1.08;
+  }
+
+  .testimonial-video-thumb__description {
+    color: rgba(255,255,255,0.48);
+    font-size: 0.78rem;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .testimonial-video-thumb__badge {
+    flex-shrink: 0;
+    border: 1px solid rgba(251,190,10,0.22);
+    border-radius: 999px;
+    padding: 0.35rem 0.6rem;
+    background: rgba(251,190,10,0.08);
+    color: rgba(251,190,10,0.82);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .testimonial-highlight {
+    display: inline;
+    padding: 0.05em 0.12em 0.08em;
+    background: var(--mb-yellow);
+    color: var(--mb-black);
+    font-size: clamp(1.05rem, 2vw, 1.35rem);
+    font-weight: 800;
+    line-height: 1.22;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  @media (max-width: 767px) {
+    .testimonial-video-card {
+      grid-template-columns: 1fr;
+    }
+
+    .testimonial-video-thumb {
+      grid-template-columns: 5.8rem minmax(0, 1fr);
+    }
+
+    .testimonial-video-thumb__media {
+      width: 5.8rem;
+    }
+
+    .testimonial-video-thumb__badge {
+      grid-column: 2;
+      justify-self: flex-start;
+    }
+  }
+</style>
