@@ -1,28 +1,52 @@
 ---
 /**
- * Seção de comunidade.
- * O endpoint público de usuários do Bubble não expõe nomes/fotos de membros.
- * Por isso, a seção usa a coleção pública `empresa`, que traz empresas reais
- * vinculadas à comunidade sem criar associações pessoais ambíguas.
+ * Seção de membros.
+ * Formato principal esperado: foto do membro, inicial do primeiro nome,
+ * sobrenome e empresa. Se o Bubble público não expuser perfis pessoais
+ * completos, a seção cai para empresas reais da comunidade sem inventar pessoas.
  */
 
-import type { MemberCompany } from '../types/domain';
+import type { Member, MemberCompany } from '../types/domain';
 
 interface Props {
+  members?: Member[];
   companies?: MemberCompany[];
   companyCount?: number;
   memberCount?: number;
 }
 
-const { companies = [], companyCount, memberCount } = Astro.props;
+const { members = [], companies = [], companyCount, memberCount } = Astro.props;
+
+const getNameParts = (name: string) =>
+  name
+    .replace(/\./g, ' ')
+    .split(/\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+const getMemberDisplayName = (name: string) => {
+  const parts = getNameParts(name);
+  const firstName = parts[0] ?? '';
+  const surname = parts.length > 1 ? parts[parts.length - 1] : firstName;
+  const initial = firstName.charAt(0).toUpperCase();
+
+  return initial && surname ? `${initial}. ${surname}` : name;
+};
+
+const visibleMembers = members
+  .filter((member) => member.name && member.photo && member.company && getNameParts(member.name).length >= 2)
+  .slice(0, 18);
 
 const visibleCompanies = companies
   .filter((company) => company.name)
-  .slice(0, 18);
+  .slice(0, 12);
 
+const hasMemberProfiles = visibleMembers.length > 0;
+const displayMemberCount = memberCount ?? Math.max(members.length, visibleMembers.length);
 const displayCompanyCount = companyCount ?? Math.max(companies.length, visibleCompanies.length);
-const displayMemberCount = memberCount ?? 0;
-const moreCompaniesLabel = `E MAIS ${displayCompanyCount.toLocaleString('pt-BR')} EMPRESAS MAPEADAS`;
+const moreLabel = hasMemberProfiles
+  ? `E MAIS ${displayMemberCount.toLocaleString('pt-BR')} MEMBROS`
+  : `E MAIS ${displayCompanyCount.toLocaleString('pt-BR')} EMPRESAS MAPEADAS`;
 
 const getCompanyInitials = (name: string) => {
   const ignored = new Set(['de', 'da', 'do', 'das', 'dos', 'e']);
@@ -44,14 +68,6 @@ const compactRevenue = (revenue?: string) =>
     .replace(/De\s+/gi, '')
     .replace(/\s+/g, ' ')
     .trim();
-
-const segments = Array.from(
-  new Set(
-    visibleCompanies
-      .map((company) => company.sector)
-      .filter((sector): sector is string => Boolean(sector)),
-  ),
-).slice(0, 10);
 ---
 
 <section
@@ -73,27 +89,47 @@ const segments = Array.from(
           data-animate
           data-animate-delay="100"
         >
-          <span class="text-mb-yellow">{displayCompanyCount.toLocaleString('pt-BR')}+</span> empresas
-          conectadas pela sala certa.
+          <span class="text-mb-yellow">{displayMemberCount.toLocaleString('pt-BR')}+</span> líderes
+          conectados pela sala certa.
         </h2>
       </div>
 
       <div class="community-summary" data-animate data-animate-delay="150">
         <p class="text-white/56 leading-relaxed">
-          Os nomes e fotos pessoais dos membros não são expostos pelo endpoint público.
-          Por isso, mostramos empresas reais cadastradas na comunidade, com dados públicos de porte,
-          cidade e momento de negócio.
+          {hasMemberProfiles
+            ? 'Perfis selecionados da comunidade, com foto do membro, sobrenome e empresa.'
+            : 'A API pública ainda não expõe fotos e nomes completos dos membros. Enquanto isso, mostramos empresas reais cadastradas no ecossistema.'}
         </p>
-        {displayMemberCount > 0 && (
-          <p class="community-summary__count">
-            {displayMemberCount.toLocaleString('pt-BR')}+ líderes cadastrados no ecossistema.
-          </p>
-        )}
       </div>
     </div>
 
     <div class="members-grid-shell" data-animate data-animate-delay="200">
-      {visibleCompanies.length > 0 ? (
+      {hasMemberProfiles ? (
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
+          {visibleMembers.map((member, i) => (
+            <article
+              class="member-profile-card"
+              data-animate
+              data-animate-delay={String((i % 6) * 60)}
+              aria-label={`${getMemberDisplayName(member.name)}, ${member.company}`}
+            >
+              <img
+                src={member.photo}
+                alt={member.name}
+                loading={i < 6 ? 'eager' : 'lazy'}
+                decoding="async"
+                width="320"
+                height="360"
+                class="member-profile-card__photo"
+              />
+              <div class="member-profile-card__info">
+                <p class="member-profile-card__name">{getMemberDisplayName(member.name)}</p>
+                <p class="member-profile-card__company">{member.company}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {visibleCompanies.map((company, i) => (
             <article
@@ -122,31 +158,13 @@ const segments = Array.from(
             </article>
           ))}
         </div>
-      ) : (
-        <div class="member-company-empty">
-          <span>Empresas da comunidade em sincronização.</span>
-        </div>
       )}
 
       <div class="members-grid-fade" aria-hidden="true"></div>
       <div class="members-more">
         <a href="#eventos" class="members-more__button">
-          {moreCompaniesLabel}
+          {moreLabel}
         </a>
-      </div>
-    </div>
-
-    <div class="mt-10 pt-8 border-t border-mb-border" data-animate>
-      <p class="text-xs text-white/30 uppercase tracking-widest mb-4">Segmentos representados</p>
-      <div class="flex flex-wrap gap-2">
-        {(segments.length > 0 ? segments : ['Tecnologia', 'Gastronomia', 'Governança', 'Marketing', 'Energia']).map((segment) => (
-          <span class="text-xs px-3 py-1 rounded-full bg-white/5 border border-mb-border text-white/45">
-            {segment}
-          </span>
-        ))}
-        <span class="text-xs px-3 py-1 rounded-full bg-mb-yellow/10 border border-mb-yellow/20 text-mb-yellow/75">
-          e mais
-        </span>
       </div>
     </div>
   </div>
@@ -158,17 +176,73 @@ const segments = Array.from(
     max-width: 38rem;
   }
 
-  .community-summary__count {
-    margin-top: 1rem;
-    color: rgba(251,190,10,0.78);
-    font-size: 0.82rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
   .members-grid-shell {
     position: relative;
+  }
+
+  .member-profile-card {
+    position: relative;
+    aspect-ratio: 0.86 / 1;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 1.25rem;
+    background: rgba(255,255,255,0.04);
+    transition: border-color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
+  }
+
+  .member-profile-card:hover {
+    border-color: rgba(251,190,10,0.25);
+    transform: translateY(-3px);
+    box-shadow: 0 18px 44px rgba(0,0,0,0.32);
+  }
+
+  .member-profile-card__photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    filter: contrast(1.04);
+    transition: transform 0.3s ease;
+  }
+
+  .member-profile-card:hover .member-profile-card__photo {
+    transform: scale(1.045);
+  }
+
+  .member-profile-card__info {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    padding: 3rem 0.85rem 0.85rem;
+    background: linear-gradient(
+      to top,
+      rgba(0,0,0,0.96) 0%,
+      rgba(0,0,0,0.76) 48%,
+      rgba(0,0,0,0) 100%
+    );
+  }
+
+  .member-profile-card__name {
+    margin: 0;
+    color: var(--mb-white);
+    font-size: clamp(0.98rem, 1.35vw, 1.12rem);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    text-shadow: 0 2px 16px rgba(0,0,0,0.95);
+  }
+
+  .member-profile-card__company {
+    margin: 0.35rem 0 0;
+    color: rgba(251,190,10,0.82);
+    font-size: clamp(0.68rem, 0.95vw, 0.78rem);
+    font-weight: 800;
+    line-height: 1.2;
+    text-transform: uppercase;
   }
 
   .member-company-card {
@@ -256,23 +330,6 @@ const segments = Array.from(
     font-size: 0.68rem;
     font-weight: 700;
     line-height: 1.2;
-  }
-
-  .member-company-empty {
-    min-height: 16rem;
-    border: 1px dashed rgba(255,255,255,0.12);
-    border-radius: 1.25rem;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015)),
-      rgba(255,255,255,0.025);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255,255,255,0.22);
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
   }
 
   .members-grid-fade {

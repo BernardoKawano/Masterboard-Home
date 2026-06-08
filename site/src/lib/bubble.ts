@@ -327,6 +327,19 @@ export async function fetchAllMembers(): Promise<BubbleUser[]> {
 }
 
 /**
+ * Fetches a small public preview of users for homepage member cards.
+ * Count remains handled by fetchMemberCount; this avoids paginating 1k+ users.
+ */
+export async function fetchMemberPreview(limit = 80): Promise<BubbleUser[]> {
+  const data = await bubbleFetch<BubbleListResponse<BubbleUser>>('/obj/user', {
+    limit: String(limit),
+    cursor: '0',
+  });
+
+  return data?.response.results ?? [];
+}
+
+/**
  * Fetches public company profiles attached to members.
  * This endpoint exposes company data, not personal member names/photos.
  */

@@ -20,9 +20,10 @@ import testimonialsData from '../data/testimonials.json';
 import { dataSource } from '../lib/data-source';
 import type { FAQ, Testimonial } from '../types';
 
-const [upcomingEvents, speakers, memberCompanies, memberCompanyCount, memberCount] = await Promise.all([
+const [upcomingEvents, speakers, members, memberCompanies, memberCompanyCount, memberCount] = await Promise.all([
   dataSource.listEvents({ status: 'upcoming', sortAscending: true, limit: 5 }),
   dataSource.listSpeakers(),
+  dataSource.listMembers?.(),
   dataSource.listMemberCompanies?.({ limit: 18 }),
   dataSource.getMemberCompanyCount?.(),
   dataSource.getMemberCount?.(),
@@ -207,7 +208,7 @@ const faqSchema = {
 
     <About />
     <Speakers speakers={speakers} />
-    <Members companies={memberCompanies ?? []} companyCount={memberCompanyCount} memberCount={memberCount} />
+    <Members members={members ?? []} companies={memberCompanies ?? []} companyCount={memberCompanyCount} memberCount={memberCount} />
     <Events events={upcomingEvents} limit={5} showViewAll={true} />
     <Ecosystem />
 

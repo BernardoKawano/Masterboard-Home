@@ -240,3 +240,7 @@
 - Validacao: lints do Cursor sem erros nos arquivos editados; `npm run build` concluído com sucesso, com server build em `34.91s`; `GET /` local confirmou empresas reais (`3MIND Tecnologia`, `Contraktor Tecnologia`, `Driva`) e ausência dos nomes abreviados antigos (`R. Kawano`, `P. H.`).
 - Removido da hero o bloco auxiliar `Entre por curadoria para acessar mesas, jantares e imersões curadas` e suas tags `Curadoria`, `Mesas`, `Jantares` e `Imersões`, junto com os estilos `hero-access-strip`.
 - Validacao: lints do Cursor sem erros em `Hero.astro` e `global.css`; `npm run build` concluído com sucesso, com server build em `16.23s`.
+- Ajustada a seção `A comunidade` para suportar o formato correto de membro pessoal quando houver dados completos: foto do membro, inicial do primeiro nome, sobrenome e nome da empresa.
+- Removido o fallback local de membros abreviados do adapter Bubble; `listMembers` agora só retorna perfis reais mapeados da API e usa leitura limitada (`fetchMemberPreview`) para evitar paginar todos os usuários na home.
+- Como a API pública atual não expõe perfis pessoais completos, a home mantém fallback para empresas reais da comunidade sem inventar nomes/fotos de membros.
+- Validacao: lints do Cursor sem erros nos arquivos editados; `npm run build` concluído com sucesso, com server build em `13.86s`; `GET /` local confirmou `0` cards pessoais públicos, `12` cards de empresas reais, ausência de `R. Kawano`/`P. H.` e presença de `3MIND Tecnologia`.

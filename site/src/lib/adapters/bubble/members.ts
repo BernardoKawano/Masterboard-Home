@@ -22,11 +22,32 @@ const getString = (raw: BubbleUser, keys: string[]): string | undefined => {
 };
 
 const getMemberName = (raw: BubbleUser) =>
-  getString(raw, ['Nome', 'Name', 'name', 'Full Name', 'Nome completo', 'Nome Completo']);
+  getString(raw, [
+    'Nome',
+    'Name',
+    'name',
+    'Full Name',
+    'full_name',
+    'Nome completo',
+    'Nome Completo',
+    'Nome_Completo',
+    'display_name',
+  ]);
 
 const getMemberPhoto = (raw: BubbleUser) =>
   normalizeImageUrl(
-    getString(raw, ['Foto', 'Imagem', 'Photo', 'Avatar', 'Profile Picture', 'Foto de Perfil']),
+    getString(raw, [
+      'Foto',
+      'Imagem',
+      'Photo',
+      'Avatar',
+      'Profile Picture',
+      'Foto de Perfil',
+      'Foto_Perfil',
+      'profile_picture',
+      'profilePicture',
+      'Imagem Perfil',
+    ]),
   ) || undefined;
 
 export function mapBubbleUserToMember(raw: BubbleUser): Member | null {
@@ -37,8 +58,16 @@ export function mapBubbleUserToMember(raw: BubbleUser): Member | null {
     return null;
   }
 
-  const role = getString(raw, ['Cargo', 'Role', 'Funcao', 'Função', 'Titulo', 'Título']);
-  const company = getString(raw, ['Empresa', 'Company', 'Organizacao', 'Organização']);
+  const role = getString(raw, ['Cargo', 'Role', 'Funcao', 'Função', 'Titulo', 'Título', 'Title']);
+  const company = getString(raw, [
+    'Empresa',
+    'Company',
+    'Organizacao',
+    'Organização',
+    'Nome_Empresa',
+    'Empresa Nome',
+    'company_name',
+  ]);
   const roleLabel = [role, company].filter(Boolean).join(' / ') || undefined;
 
   return {
