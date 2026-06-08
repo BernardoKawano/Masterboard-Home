@@ -244,3 +244,15 @@
 - Removido o fallback local de membros abreviados do adapter Bubble; `listMembers` agora só retorna perfis reais mapeados da API e usa leitura limitada (`fetchMemberPreview`) para evitar paginar todos os usuários na home.
 - Como a API pública atual não expõe perfis pessoais completos, a home mantém fallback para empresas reais da comunidade sem inventar nomes/fotos de membros.
 - Validacao: lints do Cursor sem erros nos arquivos editados; `npm run build` concluído com sucesso, com server build em `13.86s`; `GET /` local confirmou `0` cards pessoais públicos, `12` cards de empresas reais, ausência de `R. Kawano`/`P. H.` e presença de `3MIND Tecnologia`.
+- Movida a frase editorial da seção `Speakers` para a lateral do título em desktop, reduzindo a altura do cabeçalho sem remover o destaque amarelo em `empresários que estão no jogo`.
+- Reduzido o espaçamento vertical geral das seções (`--section-py`) e compactados gaps/margens internos em `Metrics`, `Members`, `Events`, `Testimonials`, `Ecosystem`, `ValueProps` e `CTAFinal`.
+- Validacao: lints do Cursor sem erros nos arquivos editados; `npm run build` concluído com sucesso, com server build em `14.00s`.
+- Reposicionada a frase editorial de `Speakers` para o espaço acima do nome do speaker ativo, removendo-a do cabeçalho superior da seção.
+- Validacao: lints do Cursor sem erros em `Speakers.astro`; `npm run build` concluído com sucesso, com server build em `17.32s`.
+- Reaplicada a tela de membros com cards pessoais quadrados e fotos nas duas primeiras linhas: `listMembers` volta a usar `members.json` quando o Bubble público não expõe perfis mapeáveis, e `index.astro` injeta fotos públicas de speakers nos 12 primeiros cards sem alterar a estrutura estável de `Members`.
+- Validacao: lints do Cursor sem erros em `Members.astro`, `index.astro` e adapter Bubble; `npm run build` concluído com sucesso, com server build em `83.14s`; `GET /` local confirmou `12` articles `member-profile-card`, `12` imagens de membros e `0` articles `member-company-card`.
+
+### Landing MBA experimental
+- Substituida a rota experimental `site/src/pages/opcao-1.astro` por uma landing de MBA Masterboard, com hero escura, marquee, metricas, motivos, processo, especialistas, programa aplicado, depoimentos, FAQ e CTA final.
+- A pagina usa dados locais e estilos escopados, preservando `BaseLayout`, `Header`, `Footer` e `LeadModal` sem acoplar a rota aos dados dinamicos da home.
+- Validacao: lints do Cursor sem erros em `opcao-1.astro`; `npm run build` ficou bloqueado por erro preexistente em `site/src/components/Members.astro:126:26` (`Unexpected ":"`), causado por versoes concatenadas do componente e nao importado pela nova rota.

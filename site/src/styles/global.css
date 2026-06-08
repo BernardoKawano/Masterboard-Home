@@ -18,7 +18,7 @@
   --font-brand: "Funnel Display", system-ui, sans-serif;
   --font-masterboard: var(--font-brand);
   --container: 1280px;
-  --section-py: clamp(4rem, 8vw, 7rem);
+  --section-py: clamp(3rem, 6vw, 5.25rem);
 }
 
 /* ─── Base ───────────────────────────────────────────────── */

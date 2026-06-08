@@ -1,114 +1,129 @@
 ---
 export const prerender = false;
 
-import { existsSync, readdirSync } from 'node:fs';
-
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import Hero from '../components/Hero.astro';
-import ValueProps from '../components/ValueProps.astro';
-import About from '../components/About.astro';
-import Speakers from '../components/Speakers.astro';
-import Members from '../components/Members.astro';
-import Events from '../components/Events.astro';
-import Ecosystem from '../components/Ecosystem.astro';
-import CTAFinal from '../components/CTAFinal.astro';
 import LeadModal from '../components/LeadModal.astro';
-import faqsData from '../data/faqs.json';
-import testimonialsData from '../data/testimonials.json';
-import { dataSource } from '../lib/data-source';
-import type { FAQ, Testimonial } from '../types';
 
-const [upcomingEvents, speakers, members, memberCompanies, memberCompanyCount, memberCount] = await Promise.all([
-  dataSource.listEvents({ status: 'upcoming', sortAscending: true, limit: 5 }),
-  dataSource.listSpeakers(),
-  dataSource.listMembers?.(),
-  dataSource.listMemberCompanies?.({ limit: 18 }),
-  dataSource.getMemberCompanyCount?.(),
-  dataSource.getMemberCount?.(),
-]);
-
-const metrics = [
+const stats = [
   { value: '800+', label: 'membros ativos' },
-  { value: '1.200+', label: 'encontros realizados' },
-  { value: '12+', label: 'cidades atendidas' },
-  { value: 'R$5bi+', label: 'faturamento combinado' },
+  { value: '120h', label: 'de prática aplicada' },
+  { value: '12+', label: 'encontros estratégicos' },
+  { value: '100%', label: 'professores do mercado' },
 ];
 
-const pillars = [
+const reasons = [
   {
-    label: 'Curadoria de entrada',
-    title: 'Curadoria ativa de perfil',
-    description:
-      'Selecionamos empresários pelo momento da empresa, maturidade de gestão e desafios estratégicos atuais.',
+    icon: 'verified',
+    title: 'Certificação MEC',
+    text: 'MBA próprio com credibilidade acadêmica e foco em aplicação executiva.',
   },
   {
-    label: 'Conexões qualificadas',
-    title: 'Match empresarial',
-    description:
-      'Conectamos empresários por estágio de crescimento, desafios semelhantes e complementaridade de competências.',
+    icon: 'groups',
+    title: 'Turmas reduzidas',
+    text: 'Aprendizado individualizado, conversas profundas e troca qualificada.',
   },
   {
-    label: 'Decisões estratégicas',
-    title: 'Ambiente controlado',
-    description:
-      'Encontros em grupos reduzidos, com mediação qualificada e conversas orientadas para decisão.',
+    icon: 'hub',
+    title: 'Networking de alto nível',
+    text: 'Conexão direta com líderes, empreendedores e decisores do ecossistema.',
+  },
+  {
+    icon: 'track_changes',
+    title: 'Projeto aplicado',
+    text: 'Cada módulo gera decisões, rituais e experimentos para o negócio real.',
   },
 ];
 
-const logosDirectory = [
-  new URL('../../public/logos/', import.meta.url),
-  new URL('../../client/logos/', import.meta.url),
-].find((directory) => existsSync(directory));
+const steps = [
+  {
+    title: 'Inscrição',
+    text: 'Preencha o formulário e conte seu momento, desafios e objetivos.',
+  },
+  {
+    title: 'Seleção',
+    text: 'Avaliamos experiência, perfil executivo e aderência à turma.',
+  },
+  {
+    title: 'Comece o MBA',
+    text: 'Integre a turma e inicie uma jornada prática com pares qualificados.',
+  },
+];
 
-const supportedLogoExtensions = new Set(['.svg', '.png', '.webp', '.avif', '.jpg', '.jpeg']);
-const preferredLogoExtensions = ['.avif', '.webp', '.svg', '.png', '.jpg', '.jpeg'];
-const getLogoExtension = (filename: string) => filename.slice(filename.lastIndexOf('.')).toLowerCase();
-const getLogoBase = (filename: string) => filename.replace(/\.[^.]+$/, '');
-const getLogoName = (filename: string) =>
-  getLogoBase(filename)
-    .replace(/[-_]+/g, ' ')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+const speakers = [
+  { name: 'Ana Ribeiro', role: 'Estratégia e crescimento' },
+  { name: 'Bruno Martins', role: 'Finanças e M&A' },
+  { name: 'Carla Mendes', role: 'Liderança executiva' },
+  { name: 'Daniel Costa', role: 'Marketing e posicionamento' },
+  { name: 'Eduarda Lima', role: 'Operações e escala' },
+  { name: 'Felipe Rocha', role: 'Governança e conselho' },
+  { name: 'Gabriela Torres', role: 'Inovação e tecnologia' },
+  { name: 'Henrique Alves', role: 'Vendas B2B' },
+];
 
-const logos = logosDirectory
-  ? Array.from(
-      readdirSync(logosDirectory, { withFileTypes: true })
-      .filter((entry) => entry.isFile())
-      .map((entry) => entry.name)
-      .filter((filename) => supportedLogoExtensions.has(getLogoExtension(filename)))
-      .reduce((bestByBase, filename) => {
-        const base = getLogoBase(filename);
-        const current = bestByBase.get(base);
-        const extension = getLogoExtension(filename);
-        const currentExtension = current ? getLogoExtension(current) : undefined;
+const programPoints = [
+  'Diagnóstico estratégico da empresa',
+  'Decisão orientada por dados e contexto',
+  'Governança, conselho e sucessão',
+  'Crescimento, capital e novas oportunidades',
+  'Comunicação executiva e influência',
+];
 
-        if (
-          !current ||
-          preferredLogoExtensions.indexOf(extension) < preferredLogoExtensions.indexOf(currentExtension ?? '.jpeg')
-        ) {
-          bestByBase.set(base, filename);
-        }
+const practiceCards = [
+  {
+    icon: 'school',
+    title: 'Teoria que vira decisão',
+    text: 'Conteúdo acadêmico conectado a dilemas reais de liderança e gestão.',
+  },
+  {
+    icon: 'bolt',
+    title: 'Ritmo executivo',
+    text: 'Módulos desenhados para quem precisa aprender sem pausar a operação.',
+  },
+  {
+    icon: 'rocket_launch',
+    title: 'Aplicação entre módulos',
+    text: 'Ferramentas, provocações e acompanhamento para testar no próprio negócio.',
+  },
+];
 
-        return bestByBase;
-      }, new Map<string, string>())
-      .values(),
-    )
-      .sort((first, second) => getLogoName(first).localeCompare(getLogoName(second), 'pt-BR'))
-      .slice(0, 10)
-      .map((filename) => ({
-        name: getLogoName(filename),
-        src: `/logos/${filename}`,
-      }))
-  : [];
+const compactFaqs = [
+  {
+    question: 'Para quem é o MBA Masterboard?',
+    answer:
+      'Para fundadores, CEOs, diretores e líderes que já carregam decisões relevantes e buscam evoluir com pares no mesmo nível.',
+  },
+  {
+    question: 'O MBA é apenas teórico?',
+    answer:
+      'Não. A proposta combina fundamentos, casos reais, discussões entre pares e aplicação prática entre os módulos.',
+  },
+  {
+    question: 'Como funciona a seleção?',
+    answer:
+      'A entrada passa por curadoria para manter a qualidade da turma, o nível das conversas e a troca estratégica.',
+  },
+  {
+    question: 'Existe certificado?',
+    answer:
+      'Sim. A jornada foi pensada como MBA próprio, com credibilidade acadêmica e orientação ao mercado.',
+  },
+];
 
-const faqs = (faqsData as FAQ[]).slice(0, 4);
-const testimonials = (testimonialsData as Testimonial[]).slice(0, 2);
+const mbaFaqs = [
+  ...compactFaqs,
+  {
+    question: 'Qual é o diferencial do Masterboard?',
+    answer:
+      'Além do conteúdo, o participante acessa uma rede empresarial ativa, com experiências, conexões e conversas que continuam além da sala de aula.',
+  },
+];
 
 const faqSchema = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: faqs.map((faq) => ({
+  mainEntity: mbaFaqs.map((faq) => ({
     '@type': 'Question',
     name: faq.question,
     acceptedAnswer: { '@type': 'Answer', text: faq.answer },
@@ -117,157 +132,328 @@ const faqSchema = {
 ---
 
 <BaseLayout
-  title="Masterboard | Opção 1 Compacta"
-  description="Variação compacta da home Masterboard, mantendo a estrutura atual com seções agrupadas para comparação visual."
+  title="MBA Masterboard | Formação executiva para líderes"
+  description="MBA Masterboard é uma formação executiva prática para líderes que querem acelerar decisões, estratégia e conexões com o mercado real."
+  ogImage="/images/bg-banner.png"
   noindex={true}
   jsonLd={[faqSchema]}
 >
   <Header />
 
-  <main id="main-content">
-    <Hero />
-    <ValueProps />
+  <main id="main-content" class="mba-page">
+    <section class="mba-hero" aria-labelledby="mba-hero-title">
+      <div class="mba-hero__grid" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
 
-    <section
-      id="prova-social"
-      class="section-py bg-mb-black relative overflow-hidden"
-      aria-labelledby="proof-heading"
-    >
-      <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+      <div class="mba-hero__content container">
+        <div class="mba-hero__copy" data-animate>
+          <img
+            src="/brand/masterboard-logo-light.png"
+            alt="Masterboard"
+            class="mba-hero__logo"
+            width="2001"
+            height="176"
+            loading="eager"
+            decoding="async"
+          />
+          <h1 id="mba-hero-title">
+            <span>MBA</span>
+            <strong>Master</strong>
+          </h1>
+          <p>
+            Acelere sua trajetória com um MBA orientado à prática. Aprenda com especialistas do mercado e desenvolva competências para liderar em cenários reais.
+          </p>
+          <button type="button" class="mba-button mba-button--yellow" data-open-modal>
+            Faça parte do club
+            <span class="material-symbols-rounded" aria-hidden="true">arrow_outward</span>
+          </button>
+        </div>
+
+        <div class="mba-hero__visual" data-animate-scale aria-hidden="true">
+          <div class="mba-hero__photo">
+            <img
+              src="/images/bg-banner.webp"
+              alt=""
+              width="1200"
+              height="900"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+          <div class="mba-floating-card mba-floating-card--top">
+            <span class="material-symbols-rounded" aria-hidden="true">workspace_premium</span>
+            Certificação e prática
+          </div>
+          <div class="mba-floating-card mba-floating-card--bottom">
+            <strong>100%</strong>
+            professores do mercado
+          </div>
+        </div>
+      </div>
+
+      <div class="mba-marquee" aria-hidden="true">
+        <div>
+          CURADORIA ATIVA - REDE DE ALTO NIVEL - ACESSO DIRETO A QUEM DECIDE - BOARD SELECIONADO - MATCH ESTRATEGICO - RELACIONAMENTOS QUE VIRAM PARCERIAS -
+          CURADORIA ATIVA - REDE DE ALTO NIVEL - ACESSO DIRETO A QUEM DECIDE - BOARD SELECIONADO - MATCH ESTRATEGICO - RELACIONAMENTOS QUE VIRAM PARCERIAS -
+        </div>
+      </div>
+    </section>
+
+    <section class="mba-stats" aria-label="Números do MBA">
       <div class="container">
-        <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-10 lg:gap-14 items-center">
-          <div>
-            <p class="eyebrow mb-4" data-animate>Prova social</p>
-            <h2 id="proof-heading" class="section-title text-balance mb-5" data-animate data-animate-delay="100">
-              Empresas, números e presença
-              <span class="text-mb-yellow"> em um só lugar.</span>
-            </h2>
-            <p class="text-white/55 leading-relaxed max-w-xl" data-animate data-animate-delay="150">
-              A leitura fica mais curta: logos e métricas passam a funcionar como uma única evidência de força do ecossistema.
-            </p>
+        <div class="mba-stats__grid">
+          {stats.map((stat) => (
+            <article class="mba-stat" data-animate>
+              <strong>{stat.value}</strong>
+              <span>{stat.label}</span>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="mba-intro" aria-labelledby="mba-intro-title">
+      <div class="container">
+        <p class="mba-kicker" data-animate>Formação executiva Masterboard</p>
+        <div class="mba-split">
+          <h2 id="mba-intro-title" data-animate data-animate-delay="100">
+            Um MBA para quem precisa transformar conhecimento em decisão.
+          </h2>
+          <p data-animate data-animate-delay="150">
+            A experiência combina aulas com especialistas, discussões em grupos selecionados e desafios aplicados ao contexto de cada líder. O objetivo é formar repertório, clareza estratégica e conexões que seguem depois da sala.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mba-orbit" aria-labelledby="mba-reasons-title">
+      <div class="container">
+        <div class="mba-section-heading mba-section-heading--center" data-animate>
+          <h2 id="mba-reasons-title">Por que escolher o MBA Masterboard?</h2>
+          <p>O MBA Masterboard forma líderes com visão estratégica, aplicação prática e conexão com o mercado real.</p>
+        </div>
+
+        <div class="mba-orbit__stage" data-animate-scale>
+          <div class="mba-orbit__rings" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
           </div>
 
-          <div class="space-y-6" data-animate data-animate-delay="200">
-            {logos.length > 0 && (
-              <div class="card">
-                <p class="text-xs uppercase tracking-[0.22em] text-white/35 mb-5">Empresas dos membros</p>
-                <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 items-center">
-                  {logos.map((logo) => (
-                    <div class="h-12 rounded-lg border border-mb-border bg-white/[0.025] flex items-center justify-center px-3">
-                      <img src={logo.src} alt={logo.name} loading="eager" decoding="async" width="160" height="48" class="max-h-6 max-w-full opacity-70" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+          <div class="mba-phone" aria-hidden="true">
+            <img src="/images/bg-banner.webp" alt="" width="420" height="680" loading="lazy" decoding="async" />
+          </div>
 
-            <div class="grid grid-cols-2 gap-4">
-              {metrics.map((metric, i) => (
-                <div class="card compact-metric" data-animate data-animate-delay={String(240 + i * 60)}>
-                  <p class="metrics-number mb-1">{metric.value}</p>
-                  <p class="text-white/55 text-xs uppercase tracking-wide">{metric.label}</p>
-                </div>
-              ))}
+          {reasons.map((reason, index) => (
+            <article class={`mba-reason-card mba-reason-card--${index + 1}`}>
+              <span class="material-symbols-rounded" aria-hidden="true">{reason.icon}</span>
+              <h3>{reason.title}</h3>
+              <p>{reason.text}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="mba-process" aria-labelledby="mba-process-title">
+      <div class="container">
+        <div class="mba-section-heading mba-section-heading--center" data-animate>
+          <h2 id="mba-process-title">Como funciona?</h2>
+          <p>Um processo simples e criterioso, feito para líderes que buscam resultado real.</p>
+        </div>
+
+        <div class="mba-steps">
+          {steps.map((step, index) => (
+            <article class="mba-step" data-animate data-animate-delay={String(100 + index * 80)}>
+              <span>{index + 1}</span>
+              <div>
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="mba-speakers" aria-labelledby="mba-speakers-title">
+      <div class="container">
+        <p class="mba-kicker" data-animate>Especialistas convidados</p>
+        <div class="mba-split">
+          <h2 id="mba-speakers-title" data-animate data-animate-delay="100">
+            Aprenda com quem decide, executa e já enfrentou cenários reais.
+          </h2>
+          <p data-animate data-animate-delay="150">
+            Professores e convidados trazem casos, frameworks e provocações para elevar a qualidade das decisões da turma.
+          </p>
+        </div>
+      </div>
+
+      <div class="mba-speaker-rail" tabindex="0" aria-label="Lista horizontal de especialistas">
+        {speakers.map((speaker) => (
+          <article class="mba-speaker-card">
+            <div class="mba-speaker-card__avatar" aria-hidden="true">
+              <span>{speaker.name.split(' ').map((part) => part[0]).join('')}</span>
+            </div>
+            <h3>{speaker.name}</h3>
+            <p>{speaker.role}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="mba-quote" aria-labelledby="mba-quote-title">
+      <div class="container">
+        <p class="mba-kicker" id="mba-quote-title">Depoimento</p>
+        <blockquote>
+          "A metodologia do MBA incentiva que cada aprendizado seja aplicado entre os módulos, permitindo testar estratégias no próprio negócio."
+        </blockquote>
+        <figcaption>
+          <strong>Ian Klein</strong>
+          <span>Empresário e mentor convidado</span>
+        </figcaption>
+      </div>
+    </section>
+
+    <section class="mba-program" aria-labelledby="mba-program-title">
+      <div class="container">
+        <div class="mba-program__image" data-animate-scale>
+          <img src="/images/bg-banner.webp" alt="Encontro executivo Masterboard" width="900" height="1000" loading="lazy" decoding="async" />
+          <div class="mba-program__badge">
+            <span class="material-symbols-rounded" aria-hidden="true">call_split</span>
+            <div>
+              <small>New invitation</small>
+              <strong>Interview invitation</strong>
             </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <section
-      id="o-que-fazemos-compacto"
-      class="section-py bg-mb-black relative section-glow"
-      aria-labelledby="compact-work-heading"
-    >
-      <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
-      <div class="container">
-        <div class="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-10 lg:gap-14">
-          <div>
-            <p class="eyebrow mb-4" data-animate>// O QUE FAZEMOS</p>
-            <h2 id="compact-work-heading" class="section-title text-balance mb-5" data-animate data-animate-delay="100">
-              A qualidade da sala começa
-              <span class="text-mb-yellow"> antes dela abrir.</span>
-            </h2>
-            <p class="text-white/55 leading-relaxed" data-animate data-animate-delay="150">
-              Esta versão junta a explicação institucional e os cards operacionais em um único bloco.
-            </p>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-5" data-animate data-animate-delay="200">
-            {pillars.map((pillar, i) => (
-              <article class="card flex flex-col gap-4" data-animate data-animate-delay={String(220 + i * 80)}>
-                <p class="text-[11px] uppercase tracking-[0.18em] text-mb-yellow/65">{pillar.label}</p>
-                <h3 class="font-800 text-white text-xl leading-tight">{pillar.title}</h3>
-                <p class="text-white/55 text-sm leading-relaxed">{pillar.description}</p>
-              </article>
+        <div class="mba-program__content" data-animate>
+          <p class="mba-kicker">Jornada aplicada</p>
+          <h2 id="mba-program-title">Razões para escolher um MBA conectado ao mercado.</h2>
+          <p>
+            O programa foi desenhado para líderes que precisam aprender, decidir e aplicar com velocidade. Cada encontro aproxima repertório acadêmico de desafios reais de gestão.
+          </p>
+          <ul>
+            {programPoints.map((point) => (
+              <li>
+                <span class="material-symbols-rounded" aria-hidden="true">check</span>
+                {point}
+              </li>
             ))}
+          </ul>
+          <div class="mba-actions">
+            <button type="button" class="mba-button mba-button--dark" data-open-modal>Faça parte do club</button>
+            <a class="mba-button mba-button--outline" href="#mba-faq">Ver FAQs</a>
           </div>
         </div>
       </div>
     </section>
 
-    <About />
-    <Speakers speakers={speakers} />
-    <Members members={members ?? []} companies={memberCompanies ?? []} companyCount={memberCompanyCount} memberCount={memberCount} />
-    <Events events={upcomingEvents} limit={5} showViewAll={true} />
-    <Ecosystem />
-
-    <section
-      id="confianca"
-      class="section-py bg-mb-black relative"
-      aria-labelledby="trust-heading"
-    >
-      <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+    <section class="mba-practice" aria-labelledby="mba-practice-title">
       <div class="container">
-        <div class="text-center max-w-2xl mx-auto mb-12">
-          <p class="eyebrow mb-4" data-animate>Confiança</p>
-          <h2 id="trust-heading" class="section-title text-balance" data-animate data-animate-delay="100">
-            Depoimentos e dúvidas
-            <span class="text-mb-yellow"> no mesmo fechamento.</span>
+        <div class="mba-section-heading mba-section-heading--center" data-animate>
+          <h2 id="mba-practice-title">Muito além da teoria</h2>
+        </div>
+
+        <div class="mba-practice__grid">
+          {practiceCards.map((card, index) => (
+            <article class="mba-practice-card" data-animate data-animate-delay={String(100 + index * 80)}>
+              <span class="material-symbols-rounded" aria-hidden="true">{card.icon}</span>
+              <h3>{card.title}</h3>
+              <p>{card.text}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="mba-faq-preview" aria-labelledby="mba-preview-title">
+      <div class="container">
+        <div class="mba-faq-preview__image" data-animate-scale>
+          <img src="/images/bg-banner.webp" alt="Executivos em discussão estratégica" width="880" height="1000" loading="lazy" decoding="async" />
+        </div>
+
+        <div class="mba-faq-preview__content" data-animate>
+          <h2 id="mba-preview-title">Perguntas antes da candidatura</h2>
+          <p>Entenda se a jornada combina com seu momento antes de solicitar acesso à próxima turma.</p>
+          <div class="mba-accordion">
+            {compactFaqs.map((faq, index) => (
+              <details open={index === 0}>
+                <summary>
+                  <span>{faq.question}</span>
+                  <span class="material-symbols-rounded" aria-hidden="true">add</span>
+                </summary>
+                <p>{faq.answer}</p>
+              </details>
+            ))}
+          </div>
+          <button type="button" class="mba-button mba-button--dark" data-open-modal>
+            Solicitar conversa
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="mba-testimonial" aria-labelledby="mba-testimonial-title">
+      <div class="container">
+        <p class="mba-kicker" data-animate>Experiência da turma</p>
+        <div class="mba-split">
+          <h2 id="mba-testimonial-title" data-animate data-animate-delay="100">
+            Uma formação para evoluir estratégia, liderança e relações.
           </h2>
+          <p data-animate data-animate-delay="150">
+            O MBA foi pensado para unir repertório, prática e comunidade em uma experiência objetiva para líderes em movimento.
+          </p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-          <div class="space-y-4" data-animate data-animate-delay="150">
-            {testimonials.map((testimonial) => (
-              <figure class="testimonial-card">
-                <blockquote>
-                  <p class="text-white/85 leading-relaxed text-sm md:text-base mb-4">"{testimonial.text}"</p>
-                  {testimonial.highlight && (
-                    <p class="text-mb-yellow text-sm font-700 border-l-2 border-mb-yellow/40 pl-3">
-                      {testimonial.highlight}
-                    </p>
-                  )}
-                </blockquote>
-                <figcaption class="mt-4 pt-4 border-t border-mb-border">
-                  <p class="text-white font-700 text-sm">{testimonial.author}</p>
-                  <p class="text-white/45 text-xs">{testimonial.role} · {testimonial.company}</p>
-                </figcaption>
-              </figure>
-            ))}
+        <div class="mba-testimonial__card" data-animate-scale>
+          <div class="mba-testimonial__text">
+            <blockquote>
+              A metodologia do MBA incentiva que cada aprendizado seja aplicado entre os módulos, permitindo testar estratégias no próprio negócio.
+            </blockquote>
+            <div class="mba-testimonial__arrows" aria-hidden="true">
+              <span class="material-symbols-rounded">arrow_back</span>
+              <span class="material-symbols-rounded">arrow_forward</span>
+            </div>
           </div>
-
-          <div class="card" data-animate data-animate-delay="200">
-            <p class="text-xs uppercase tracking-[0.22em] text-white/35 mb-3">Perguntas frequentes</p>
-            <dl>
-              {faqs.map((faq) => (
-                <div class="border-b border-mb-border last:border-b-0">
-                  <details class="group">
-                    <summary class="flex items-center justify-between gap-4 py-5 cursor-pointer list-none text-white font-700 hover:text-mb-yellow transition-colors">
-                      <span>{faq.question}</span>
-                      <span class="text-mb-yellow text-xl leading-none group-open:rotate-45 transition-transform">+</span>
-                    </summary>
-                    <dd class="text-white/55 text-sm leading-relaxed pb-5">{faq.answer}</dd>
-                  </details>
-                </div>
-              ))}
-            </dl>
+          <div class="mba-testimonial__video" aria-hidden="true">
+            <img src="/images/bg-banner.webp" alt="" width="700" height="700" loading="lazy" decoding="async" />
           </div>
         </div>
       </div>
     </section>
 
-    <CTAFinal />
+    <section id="mba-faq" class="mba-faq" aria-labelledby="mba-faq-title">
+      <div class="container">
+        <h2 id="mba-faq-title" data-animate>MBA FAQs</h2>
+        <div class="mba-faq__list" data-animate data-animate-delay="100">
+          {mbaFaqs.map((faq, index) => (
+            <details open={index === 0}>
+              <summary>
+                <span>{String(index + 1).padStart(2, '0')}.</span>
+                <strong>{faq.question}</strong>
+                <span class="material-symbols-rounded" aria-hidden="true">add</span>
+              </summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="mba-final-cta" aria-labelledby="mba-final-title">
+      <div class="mba-final-cta__inner">
+        <h2 id="mba-final-title">Pronto para fazer parte do MBA Masterboard?</h2>
+        <button type="button" class="mba-button mba-button--light" data-open-modal>
+          Faça parte do club
+          <span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span>
+        </button>
+      </div>
+    </section>
   </main>
 
   <Footer />
@@ -275,8 +461,1070 @@ const faqSchema = {
 </BaseLayout>
 
 <style>
-  .compact-metric {
-    padding-block: clamp(1.25rem, 3vw, 1.75rem);
+  :global(body) {
+    background: #f9fbfd;
+  }
+
+  .mba-page {
+    background: #f9fbfd;
+    color: #0d0d0d;
+    overflow: hidden;
+  }
+
+  .mba-page :global(.container) {
+    max-width: 1280px;
+  }
+
+  .mba-hero {
+    position: relative;
+    min-height: 811px;
+    background: #111111;
+    color: #ffffff;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .mba-hero__grid {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .mba-hero__grid span {
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .mba-hero__content {
+    min-height: 811px;
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(320px, 0.82fr);
+    align-items: center;
+    gap: clamp(2rem, 6vw, 5rem);
+    padding-top: 5rem;
+    padding-bottom: 7rem;
+  }
+
+  .mba-hero__copy {
+    max-width: 540px;
+    padding-left: clamp(0rem, 8vw, 8.5rem);
+  }
+
+  .mba-hero__logo {
+    width: 141px;
+    height: auto;
+    margin-bottom: 3rem;
+  }
+
+  .mba-hero h1 {
+    margin: 0;
+    font-size: clamp(4.4rem, 9vw, 6.25rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .mba-hero h1 span,
+  .mba-hero h1 strong {
+    display: block;
+    font-weight: 800;
+  }
+
+  .mba-hero h1 strong {
+    color: #fbbe0a;
+  }
+
+  .mba-hero p {
+    max-width: 460px;
+    margin: 3rem 0 2rem;
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    line-height: 1.35;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  .mba-hero__visual {
+    position: relative;
+    min-height: 640px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #252525;
+    overflow: hidden;
+  }
+
+  .mba-hero__photo {
+    position: absolute;
+    inset: 0;
+  }
+
+  .mba-hero__photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(17, 17, 17, 0.92), rgba(17, 17, 17, 0.2) 42%, rgba(251, 190, 10, 0.18)),
+      radial-gradient(circle at 70% 30%, rgba(251, 190, 10, 0.28), transparent 38%);
+  }
+
+  .mba-hero__photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.6;
+    filter: grayscale(0.25) contrast(1.08);
+  }
+
+  .mba-floating-card {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(13, 13, 13, 0.72);
+    color: #ffffff;
+    padding: 1rem;
+    box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.38);
+    backdrop-filter: blur(18px);
+  }
+
+  .mba-floating-card .material-symbols-rounded {
+    color: #fbbe0a;
+  }
+
+  .mba-floating-card--top {
+    top: 17%;
+    left: -2rem;
+  }
+
+  .mba-floating-card--bottom {
+    right: 2rem;
+    bottom: 7rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mba-floating-card--bottom strong {
+    color: #fbbe0a;
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .mba-marquee {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 65px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: #000000;
+  }
+
+  .mba-marquee div {
+    min-width: max-content;
+    padding-left: 2rem;
+    color: #ffffff;
+    font-size: 1rem;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+    animation: mba-marquee 36s linear infinite;
+  }
+
+  .mba-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    min-height: 56px;
+    padding: 1rem 1.875rem;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-weight: 600;
+    line-height: 1.25;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+
+  .mba-button:hover {
+    transform: translateY(-2px);
+  }
+
+  .mba-button--yellow {
+    background: #fbbe0a;
+    color: #0d0d0d;
+    box-shadow: 0 18px 40px rgba(251, 190, 10, 0.24);
+  }
+
+  .mba-button--dark {
+    background: #0d0d0d;
+    color: #f2f2f1;
+  }
+
+  .mba-button--outline {
+    border: 1px solid #0d0d0d;
+    background: transparent;
+    color: #0d0d0d;
+  }
+
+  .mba-button--light {
+    background: #f9fbfd;
+    color: #0d0d0d;
+  }
+
+  .mba-stats {
+    padding: 5rem 0;
+  }
+
+  .mba-stats__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(1rem, 4vw, 2.5rem);
+  }
+
+  .mba-stat {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .mba-stat strong {
+    font-size: clamp(2.4rem, 5vw, 3.75rem);
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: #09090b;
+  }
+
+  .mba-stat span {
+    max-width: 110px;
+    color: #09090b;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .mba-intro,
+  .mba-speakers,
+  .mba-testimonial {
+    padding: clamp(4rem, 8vw, 6rem) 0;
+  }
+
+  .mba-kicker {
+    margin: 0 0 2.5rem;
+    color: #1a1a1a;
+    font-size: 0.875rem;
+    font-weight: 800;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .mba-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.78fr);
+    align-items: end;
+    gap: clamp(2rem, 8vw, 6rem);
+  }
+
+  .mba-split h2 {
+    margin: 0;
+    max-width: 640px;
+    color: #0d0d0d;
+    font-size: clamp(2.25rem, 5vw, 3rem);
+    line-height: 1.16;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+  }
+
+  .mba-split p {
+    margin: 0;
+    color: #0d0d0d;
+    font-size: clamp(1rem, 2vw, 1.125rem);
+    line-height: 1.67;
+  }
+
+  .mba-section-heading {
+    max-width: 560px;
+  }
+
+  .mba-section-heading--center {
+    margin-inline: auto;
     text-align: center;
+  }
+
+  .mba-section-heading h2 {
+    margin: 0;
+    color: #1e242c;
+    font-size: clamp(2.25rem, 5vw, 3rem);
+    line-height: 1.16;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+  }
+
+  .mba-section-heading p {
+    margin: 1rem 0 0;
+    color: #414d60;
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+
+  .mba-orbit {
+    padding: 5.5rem 0;
+  }
+
+  .mba-orbit__stage {
+    position: relative;
+    width: min(100%, 760px);
+    min-height: 690px;
+    margin: 3.25rem auto 0;
+  }
+
+  .mba-orbit__rings,
+  .mba-orbit__rings span {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 999px;
+  }
+
+  .mba-orbit__rings span {
+    border: 1px solid rgba(251, 190, 10, 0.55);
+    background: rgba(251, 190, 10, 0.05);
+  }
+
+  .mba-orbit__rings span:nth-child(1) {
+    width: 636px;
+    height: 636px;
+    opacity: 0.35;
+  }
+
+  .mba-orbit__rings span:nth-child(2) {
+    width: 532px;
+    height: 532px;
+    opacity: 0.55;
+  }
+
+  .mba-orbit__rings span:nth-child(3) {
+    width: 408px;
+    height: 408px;
+    opacity: 0.8;
+  }
+
+  .mba-phone {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 349px;
+    height: 572px;
+    overflow: hidden;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 32px 64px -12px rgba(85, 105, 135, 0.18);
+    transform: translate(-50%, -50%);
+  }
+
+  .mba-phone::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(251, 190, 10, 0) 55%, rgba(251, 190, 10, 0.55) 100%);
+  }
+
+  .mba-phone img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(0.25);
+  }
+
+  .mba-reason-card {
+    position: absolute;
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    border: 1px solid #edeef0;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 32px 64px -12px rgba(85, 105, 135, 0.13);
+    text-align: center;
+  }
+
+  .mba-reason-card .material-symbols-rounded {
+    color: #fbbe0a;
+    font-size: 2.8rem;
+  }
+
+  .mba-reason-card h3 {
+    margin: 0;
+    color: #1e242c;
+    font-size: 1.25rem;
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .mba-reason-card p {
+    margin: 0;
+    color: #414d60;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .mba-reason-card--1 {
+    left: 0;
+    top: 150px;
+  }
+
+  .mba-reason-card--2 {
+    right: 0;
+    top: 180px;
+  }
+
+  .mba-reason-card--3 {
+    right: 0;
+    top: 70px;
+    min-height: 82px;
+    flex-direction: row;
+    text-align: left;
+  }
+
+  .mba-reason-card--4 {
+    left: 0;
+    bottom: 120px;
+    flex-direction: row;
+    text-align: left;
+  }
+
+  .mba-process {
+    padding: clamp(4rem, 8vw, 7.5rem) 0;
+  }
+
+  .mba-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2.5rem;
+    margin-top: 3.75rem;
+  }
+
+  .mba-step {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .mba-step > span {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #0d0d0d;
+    border-radius: 999px;
+    color: #0d0d0d;
+    font-weight: 700;
+  }
+
+  .mba-step:first-child > span {
+    background: #0d0d0d;
+    color: #ffffff;
+  }
+
+  .mba-step h3 {
+    margin: 0 0 0.25rem;
+    color: #0d0d0d;
+    font-size: 1.125rem;
+    line-height: 1.55;
+    font-weight: 600;
+  }
+
+  .mba-step p {
+    margin: 0;
+    color: #0d0d0d;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .mba-speaker-rail {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 224px;
+    gap: 3rem;
+    margin-top: 3.75rem;
+    padding: 0 max(1.25rem, calc((100vw - 1216px) / 2)) 2rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .mba-speaker-card {
+    scroll-snap-align: start;
+    text-align: center;
+  }
+
+  .mba-speaker-card__avatar {
+    width: 224px;
+    height: 224px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 2rem;
+    border-radius: 999px;
+    background:
+      radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.9), transparent 24%),
+      linear-gradient(135deg, #fbbE0a, #0d0d0d);
+    color: #ffffff;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+  }
+
+  .mba-speaker-card__avatar span {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+  }
+
+  .mba-speaker-card h3 {
+    margin: 0;
+    color: #0d0d0d;
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.25;
+  }
+
+  .mba-speaker-card p {
+    margin: 1rem 0 0;
+    color: #0d0d0d;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .mba-quote {
+    padding: 7rem 0;
+    background: #0d0d0d;
+    color: #ffffff;
+    text-align: center;
+  }
+
+  .mba-quote .container {
+    max-width: 1040px;
+  }
+
+  .mba-quote .mba-kicker {
+    color: #fbbe0a;
+  }
+
+  .mba-quote blockquote {
+    margin: 0 auto;
+    max-width: 994px;
+    color: #ffffff;
+    font-size: clamp(1.75rem, 3vw, 2rem);
+    line-height: 1.4;
+    letter-spacing: -0.02em;
+  }
+
+  .mba-quote figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-top: 3rem;
+  }
+
+  .mba-quote figcaption span {
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .mba-program,
+  .mba-faq-preview {
+    padding: clamp(5rem, 9vw, 7.5rem) 0;
+  }
+
+  .mba-program .container,
+  .mba-faq-preview .container {
+    display: grid;
+    grid-template-columns: minmax(320px, 0.92fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(3rem, 8vw, 6.875rem);
+  }
+
+  .mba-program__image,
+  .mba-faq-preview__image {
+    position: relative;
+    min-height: 614px;
+  }
+
+  .mba-program__image::before,
+  .mba-faq-preview__image::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 78%;
+    height: 88%;
+    border-radius: 12px;
+    background: rgba(251, 190, 10, 0.1);
+  }
+
+  .mba-program__image > img,
+  .mba-faq-preview__image > img {
+    position: relative;
+    width: 84%;
+    height: 571px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 31px 34px rgba(0, 0, 0, 0.09);
+    filter: grayscale(0.1);
+  }
+
+  .mba-program__badge {
+    position: absolute;
+    left: 0;
+    bottom: 5.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: min(335px, 88%);
+    padding: 1rem;
+    border-radius: 12px;
+    background: #f9fbfd;
+    box-shadow: 0 32px 64px -12px rgba(85, 105, 135, 0.13);
+  }
+
+  .mba-program__badge > span {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: #fbbe0a;
+    color: #000000;
+  }
+
+  .mba-program__badge small,
+  .mba-program__content > p,
+  .mba-faq-preview__content > p {
+    color: rgba(22, 28, 45, 0.7);
+  }
+
+  .mba-program__badge small,
+  .mba-program__badge strong {
+    display: block;
+  }
+
+  .mba-program__content h2,
+  .mba-faq-preview__content h2 {
+    margin: 0 0 1rem;
+    color: #161c2d;
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    line-height: 1.25;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+
+  .mba-program__content > p,
+  .mba-faq-preview__content > p {
+    margin: 0;
+    max-width: 570px;
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+
+  .mba-program__content ul {
+    display: grid;
+    gap: 1.25rem;
+    margin: 2rem 0 3rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mba-program__content li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #161c2d;
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .mba-program__content li span {
+    color: #fbbe0a;
+  }
+
+  .mba-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .mba-practice {
+    padding: clamp(5rem, 9vw, 7.5rem) 0;
+  }
+
+  .mba-practice__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem;
+    margin-top: 5rem;
+  }
+
+  .mba-practice-card {
+    display: flex;
+    min-height: 298px;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 1.375rem;
+    border-radius: 24px;
+    background: #ffffff;
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.16);
+    text-align: center;
+  }
+
+  .mba-practice-card > span {
+    width: 64px;
+    height: 64px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: #fbbe0a;
+    color: #0d0d0d;
+    font-size: 2rem;
+  }
+
+  .mba-practice-card h3 {
+    margin: 0;
+    color: #1b2559;
+    font-size: 1.5rem;
+    line-height: 1.33;
+    font-weight: 700;
+  }
+
+  .mba-practice-card p {
+    margin: 0;
+    color: #68769f;
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+
+  .mba-faq-preview .container {
+    grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1fr);
+  }
+
+  .mba-faq-preview__content {
+    max-width: 570px;
+  }
+
+  .mba-accordion,
+  .mba-faq__list {
+    margin: 2rem 0;
+  }
+
+  .mba-accordion details,
+  .mba-faq__list details {
+    border-bottom: 1px solid #9b9b9c;
+  }
+
+  .mba-accordion summary,
+  .mba-faq__list summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.5rem 0;
+    color: #0d0d0d;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .mba-accordion summary::-webkit-details-marker,
+  .mba-faq__list summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mba-accordion details[open] summary .material-symbols-rounded,
+  .mba-faq__list details[open] summary .material-symbols-rounded {
+    transform: rotate(45deg);
+  }
+
+  .mba-accordion p,
+  .mba-faq__list p {
+    margin: 0;
+    padding: 0 0 1.5rem;
+    color: #9b9b9c;
+    line-height: 1.5;
+  }
+
+  .mba-testimonial__card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 500px;
+    gap: 1.5rem;
+    margin-top: 4rem;
+    padding: 5.5rem 0;
+    background: #fafafa;
+  }
+
+  .mba-testimonial__text {
+    display: flex;
+    min-height: 500px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+    padding: 3rem 1rem;
+    border-radius: 20px;
+    background: #0d0d0d;
+    color: #ffffff;
+    text-align: center;
+  }
+
+  .mba-testimonial__text blockquote {
+    max-width: 528px;
+    margin: 0;
+    font-size: clamp(1.75rem, 3vw, 2rem);
+    line-height: 1.4;
+    letter-spacing: -0.02em;
+  }
+
+  .mba-testimonial__arrows {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .mba-testimonial__arrows span {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: #edeef0;
+    color: #002b6b;
+  }
+
+  .mba-testimonial__arrows span:last-child {
+    background: #fbbe0a;
+    color: #09090b;
+  }
+
+  .mba-testimonial__video {
+    min-height: 500px;
+    overflow: hidden;
+    border-radius: 20px;
+  }
+
+  .mba-testimonial__video img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .mba-faq {
+    padding: clamp(5rem, 9vw, 7.5rem) 0;
+  }
+
+  .mba-faq h2 {
+    margin: 0 0 5rem;
+    color: #0d0d0d;
+    font-size: clamp(2.5rem, 5vw, 3rem);
+    line-height: 1.3;
+    font-weight: 500;
+    text-align: center;
+    letter-spacing: -0.03em;
+  }
+
+  .mba-faq__list {
+    max-width: 982px;
+    margin-inline: auto;
+  }
+
+  .mba-faq__list details {
+    border-color: #0d0d0d;
+  }
+
+  .mba-faq__list summary {
+    padding: 2rem 1.5rem;
+    font-size: 1.25rem;
+  }
+
+  .mba-faq__list summary span:first-child {
+    color: #0d0d0d;
+    font-weight: 600;
+  }
+
+  .mba-faq__list p {
+    padding: 0 1.5rem 2rem;
+  }
+
+  .mba-final-cta {
+    padding: 1rem;
+    background: #fafafa;
+  }
+
+  .mba-final-cta__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    min-height: 235px;
+    max-width: 1408px;
+    margin: 0 auto;
+    padding: 3rem;
+    border-radius: 24px;
+    background:
+      radial-gradient(circle at 85% 50%, rgba(251, 190, 10, 0.2), transparent 32%),
+      #020609;
+    color: #ffffff;
+  }
+
+  .mba-final-cta h2 {
+    max-width: 980px;
+    margin: 0;
+    font-size: clamp(2.4rem, 5vw, 3.75rem);
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+
+  @keyframes mba-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (max-width: 1100px) {
+    .mba-hero__content,
+    .mba-split,
+    .mba-program .container,
+    .mba-faq-preview .container,
+    .mba-testimonial__card {
+      grid-template-columns: 1fr;
+    }
+
+    .mba-hero__copy {
+      padding-left: 0;
+    }
+
+    .mba-hero__visual {
+      min-height: 520px;
+    }
+
+    .mba-stats__grid,
+    .mba-practice__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mba-steps {
+      grid-template-columns: 1fr;
+    }
+
+    .mba-orbit__stage {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.25rem;
+      min-height: auto;
+    }
+
+    .mba-orbit__rings,
+    .mba-phone {
+      display: none;
+    }
+
+    .mba-reason-card {
+      position: static;
+      width: auto;
+      min-height: 100%;
+      text-align: center;
+      flex-direction: column;
+    }
+
+    .mba-testimonial__card {
+      padding: 0;
+      background: transparent;
+    }
+
+    .mba-final-cta__inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .mba-hero {
+      min-height: auto;
+    }
+
+    .mba-hero__content {
+      min-height: auto;
+      padding-top: 7rem;
+      padding-bottom: 8rem;
+    }
+
+    .mba-hero__visual {
+      display: none;
+    }
+
+    .mba-stats__grid,
+    .mba-practice__grid,
+    .mba-orbit__stage {
+      grid-template-columns: 1fr;
+    }
+
+    .mba-stat {
+      justify-content: flex-start;
+    }
+
+    .mba-program__image,
+    .mba-faq-preview__image,
+    .mba-program__image > img,
+    .mba-faq-preview__image > img {
+      min-height: 360px;
+      height: 360px;
+      width: 100%;
+    }
+
+    .mba-program__badge {
+      bottom: 1rem;
+    }
+
+    .mba-actions,
+    .mba-button {
+      width: 100%;
+    }
+
+    .mba-speaker-rail {
+      grid-auto-columns: 190px;
+      gap: 1.25rem;
+    }
+
+    .mba-speaker-card__avatar {
+      width: 190px;
+      height: 190px;
+    }
+
+    .mba-faq__list summary {
+      padding-inline: 0;
+      font-size: 1rem;
+    }
+
+    .mba-faq__list p {
+      padding-inline: 0;
+    }
+
+    .mba-final-cta__inner {
+      padding: 2rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mba-marquee div {
+      animation: none;
+    }
   }
 </style>

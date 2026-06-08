@@ -20,14 +20,25 @@ import faqsData from '../data/faqs.json';
 import { dataSource } from '../lib/data-source';
 
 // Busca em paralelo via data source (não Bubble diretamente)
-const [upcomingEvents, speakers, members, memberCompanies, memberCompanyCount, memberCount] = await Promise.all([
+const [upcomingEvents, speakers, members, memberCount] = await Promise.all([
   dataSource.listEvents({ status: 'upcoming', sortAscending: true, limit: 5 }),
   dataSource.listSpeakers(),
   dataSource.listMembers?.(),
-  dataSource.listMemberCompanies?.({ limit: 18 }),
-  dataSource.getMemberCompanyCount?.(),
   dataSource.getMemberCount?.(),
 ]);
+const memberFallbackPhotos = speakers
+  .map((speaker) => speaker.photo)
+  .filter((photo): photo is string => Boolean(photo));
+const membersWithFallbackPhotos = (members ?? []).map((member, i) => {
+  if (member.photo || i >= 12 || memberFallbackPhotos.length === 0) {
+    return member;
+  }
+
+  return {
+    ...member,
+    photo: memberFallbackPhotos[i % memberFallbackPhotos.length],
+  };
+});
 
 const faqSchema = {
   '@context': 'https://schema.org',
@@ -54,7 +65,7 @@ const faqSchema = {
     <Metrics />
     <Ecosystem />
     <Speakers speakers={speakers} />
-    <Members members={members ?? []} companies={memberCompanies ?? []} companyCount={memberCompanyCount} memberCount={memberCount} />
+    <Members members={membersWithFallbackPhotos} memberCount={memberCount} />
     <Events events={upcomingEvents} limit={5} showViewAll={true} />
     <Testimonials />
     <FAQ />

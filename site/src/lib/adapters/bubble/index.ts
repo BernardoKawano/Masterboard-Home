@@ -25,6 +25,7 @@ import { mapBubbleUserToMember } from './members';
 import { mapBubbleSpeakerToSpeaker, buildSpeakerSlugMap } from './speakers';
 import type { ContentDataSource, ListEventsOptions, ListMemberCompaniesOptions } from '../../data-source';
 import type { Event, Member, MemberCompany, Speaker } from '../../../types/domain';
+import fallbackMembersData from '../../../data/members.json';
 
 // ─── Internal cache of mapped domain objects ──────────────────────────────────
 
@@ -38,6 +39,25 @@ let _memberCompaniesCache: MemberCompany[] | null = null;
 let _memberCompaniesCacheExpiry = 0;
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 min
+
+interface FallbackMember {
+  id: string;
+  name: string;
+  role?: string;
+  company?: string;
+  city?: string;
+}
+
+const fallbackMembers = (fallbackMembersData as FallbackMember[]).map((member): Member => ({
+  id: member.id,
+  sourceId: member.id,
+  source: 'mock',
+  name: member.name,
+  role: member.role,
+  company: member.company,
+  roleLabel: [member.role, member.company].filter(Boolean).join(' / ') || undefined,
+  city: member.city,
+}));
 
 const cleanPublicText = (value: unknown): string | undefined => {
   if (typeof value !== 'string') return undefined;
@@ -123,9 +143,10 @@ async function getCachedMembers(): Promise<Member[]> {
   const mapped = raws
     .map((raw) => mapBubbleUserToMember(raw))
     .filter((member): member is Member => Boolean(member));
+  const usableMembers = mapped.length > 0 ? mapped : fallbackMembers;
   const seenMemberNames = new Set<string>();
   const seenMemberPhotos = new Set<string>();
-  const uniqueMembers = mapped.filter((member) => {
+  const uniqueMembers = usableMembers.filter((member) => {
     const nameKey = member.name
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')

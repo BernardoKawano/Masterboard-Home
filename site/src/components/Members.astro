@@ -1,4 +1,4 @@
----
+﻿---
 /**
  * Seção de membros.
  * Formato principal esperado: foto do membro, inicial do primeiro nome,
@@ -119,7 +119,7 @@ const compactRevenue = (revenue?: string) =>
                 loading={i < 6 ? 'eager' : 'lazy'}
                 decoding="async"
                 width="320"
-                height="360"
+                height="320"
                 class="member-profile-card__photo"
               />
               <div class="member-profile-card__info">
@@ -182,7 +182,7 @@ const compactRevenue = (revenue?: string) =>
 
   .member-profile-card {
     position: relative;
-    aspect-ratio: 0.86 / 1;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
     border: 1px solid rgba(255,255,255,0.09);
     border-radius: 1.25rem;
