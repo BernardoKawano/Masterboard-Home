@@ -100,7 +100,9 @@ PRIMARY KEY (event_id, speaker_id)
 | `email` | `text` | NO | Único |
 | `phone` | `text` | YES | WhatsApp preferencial |
 | `company_id` | `uuid` | YES | FK → companies.id |
+| `company_name` | `text` | YES | Nome textual da empresa quando a relação não puder ser resolvida |
 | `role` | `text` | YES | Cargo |
+| `photo_url` | `text` | YES | URL da foto pública usada no card do site |
 | `city` | `text` | YES | — |
 | `tier` | `member_tier` | NO | Default: 'member'. Enum: member, vip, founding |
 | `status` | `member_status` | NO | Default: 'active'. Enum: active, inactive, prospect |

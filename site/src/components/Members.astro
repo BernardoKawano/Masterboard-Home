@@ -33,8 +33,10 @@ const getMemberDisplayName = (name: string) => {
   return initial && surname ? `${initial}. ${surname}` : name;
 };
 
+const getMemberRole = (member: Member) => member.role ?? member.roleLabel;
+
 const visibleMembers = members
-  .filter((member) => member.name && member.photo && member.company && getNameParts(member.name).length >= 2)
+  .filter((member) => member.name && member.photo && member.company && getMemberRole(member) && getNameParts(member.name).length >= 2)
   .slice(0, 18);
 
 const visibleCompanies = companies
@@ -111,7 +113,7 @@ const compactRevenue = (revenue?: string) =>
               class="member-profile-card"
               data-animate
               data-animate-delay={String((i % 6) * 60)}
-              aria-label={`${getMemberDisplayName(member.name)}, ${member.company}`}
+              aria-label={`${getMemberDisplayName(member.name)}, ${getMemberRole(member)}, ${member.company}`}
             >
               <img
                 src={member.photo}
@@ -124,6 +126,7 @@ const compactRevenue = (revenue?: string) =>
               />
               <div class="member-profile-card__info">
                 <p class="member-profile-card__name">{getMemberDisplayName(member.name)}</p>
+                <p class="member-profile-card__role">{getMemberRole(member)}</p>
                 <p class="member-profile-card__company">{member.company}</p>
               </div>
             </article>
@@ -237,12 +240,20 @@ const compactRevenue = (revenue?: string) =>
   }
 
   .member-profile-card__company {
-    margin: 0.35rem 0 0;
+    margin: 0.2rem 0 0;
     color: rgba(251,190,10,0.82);
     font-size: clamp(0.68rem, 0.95vw, 0.78rem);
     font-weight: 800;
     line-height: 1.2;
     text-transform: uppercase;
+  }
+
+  .member-profile-card__role {
+    margin: 0.35rem 0 0;
+    color: rgba(255,255,255,0.76);
+    font-size: clamp(0.66rem, 0.9vw, 0.76rem);
+    font-weight: 700;
+    line-height: 1.18;
   }
 
   .member-company-card {

@@ -36,23 +36,8 @@ const photoPositionOverrides: Record<string, string> = {
 const getPhotoPosition = (speaker: Speaker): string | undefined =>
   speaker.photoPosition ?? photoPositionOverrides[normalize(speaker.name)];
 
-const ALLOWED_SPEAKERS = new Set([
-  'bruna faria',
-  'wagner villaverde',
-  'edu picarelli',
-  'marcela zaidem',
-  'allan barros',
-  'leandro baran',
-  'juliana loch',
-]);
-
-const normName = (n: string) =>
-  n.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
-
 const visibleSpeakers = [...speakers]
-  .filter((s) => ALLOWED_SPEAKERS.has(normName(s.name)))
-  .sort((a, b) => getSpeakerScore(b) - getSpeakerScore(a))
-  .slice(0, 10);
+  .sort((a, b) => getSpeakerScore(b) - getSpeakerScore(a));
 
 const total = visibleSpeakers.length;
 
@@ -305,7 +290,6 @@ const describeSpeaker = (speaker: Speaker) => {
   var speakersData = [];
   try { speakersData = dataEl ? JSON.parse(dataEl.dataset.json || '[]') : []; } catch (_) {}
 
-  var current  = 0;       // índice real (0..total-1)
   var vCurrent = CLONES;  // índice virtual em allItems
   var vActive  = CLONES;  // qual allItem está visualmente ativo
   var busy     = false;   // bloqueia input durante transição+jump
@@ -369,7 +353,6 @@ const describeSpeaker = (speaker: Speaker) => {
     setVisualActive(vNext);
     syncReal(realNext);
     updateInfo(realNext);
-    current  = realNext;
     vCurrent = vNext;
     applyTransform(vCurrent);
 

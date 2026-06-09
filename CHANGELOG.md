@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-06-09
+
+### Supabase / Home
+- Atualizada a exibicao de membros para depender de nome, foto, empresa e cargo reais vindos do Supabase, removendo fallback que reaproveitava fotos de speakers.
+- Adicionados campos `photo_url` e `company_name` ao modelo de membros, com SQL seguro em `site/scripts/member-display-migration.sql` para aplicar no Supabase existente.
+- Atualizado o importador Bubble -> Supabase para preencher foto do membro, resolver empresa por ID/nome e evitar exibir IDs tecnicos como nome de empresa.
+- Adicionado fallback temporario no adapter Supabase para enriquecer membros via Bubble quando o banco ainda nao tiver `members.photo_url`, mantendo Supabase como fonte primaria.
+- Removida a allowlist da roleta de speakers; todos os speakers publicados no Supabase entram no carrossel.
+- Validacao local: `/`, `/eventos/` e `/blog/` retornaram 200; home confirmou `memberProfiles=true` e `companyFallback=false`. `npm run test:member-import`, `npm run check` e `npm run build` passaram.
+
 ## 2026-06-01
 
 ### Setup

@@ -21,8 +21,12 @@ const getString = (raw: BubbleUser, keys: string[]): string | undefined => {
   return undefined;
 };
 
+const isLikelyTechnicalId = (value?: string) =>
+  Boolean(value && (/^\d{10,}x\d{3,}$/i.test(value) || /^[a-f0-9]{24}$/i.test(value)));
+
 const getMemberName = (raw: BubbleUser) =>
   getString(raw, [
+    'Pessoal - Nome',
     'Nome',
     'Name',
     'name',
@@ -37,6 +41,7 @@ const getMemberName = (raw: BubbleUser) =>
 const getMemberPhoto = (raw: BubbleUser) =>
   normalizeImageUrl(
     getString(raw, [
+      'Pessoal - Foto_perfil',
       'Foto',
       'Imagem',
       'Photo',
@@ -50,7 +55,7 @@ const getMemberPhoto = (raw: BubbleUser) =>
     ]),
   ) || undefined;
 
-export function mapBubbleUserToMember(raw: BubbleUser): Member | null {
+export function mapBubbleUserToMember(raw: BubbleUser, companyNameBySourceId = new Map<string, string>()): Member | null {
   const name = getMemberName(raw);
   const photo = getMemberPhoto(raw);
 
@@ -58,8 +63,9 @@ export function mapBubbleUserToMember(raw: BubbleUser): Member | null {
     return null;
   }
 
-  const role = getString(raw, ['Cargo', 'Role', 'Funcao', 'Função', 'Titulo', 'Título', 'Title']);
-  const company = getString(raw, [
+  const role = getString(raw, ['Pessoal - Cargo', 'Cargo', 'Role', 'Funcao', 'Função', 'Titulo', 'Título', 'Title']);
+  const rawCompany = getString(raw, [
+    'Pessoal - Empresa',
     'Empresa',
     'Company',
     'Organizacao',
@@ -68,6 +74,7 @@ export function mapBubbleUserToMember(raw: BubbleUser): Member | null {
     'Empresa Nome',
     'company_name',
   ]);
+  const company = rawCompany ? companyNameBySourceId.get(rawCompany) ?? (isLikelyTechnicalId(rawCompany) ? undefined : rawCompany) : undefined;
   const roleLabel = [role, company].filter(Boolean).join(' / ') || undefined;
 
   return {

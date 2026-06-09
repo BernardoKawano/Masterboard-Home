@@ -85,4 +85,4 @@ export interface ContentDataSource {
 // ─── Active data source ───────────────────────────────────────────────────────
 // Troque este import para migrar para outro adapter.
 // O resto do código não muda.
-export { bubbleDataSource as dataSource } from './adapters/bubble/index';
+export { supabaseDataSource as dataSource } from './adapters/supabase/index';
