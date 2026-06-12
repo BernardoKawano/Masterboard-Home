@@ -1,0 +1,230 @@
+---
+export const prerender = true;
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout
+  title="Política de Privacidade | Masterboard"
+  description="Política de privacidade e proteção de dados pessoais do Masterboard, em conformidade com a LGPD."
+  canonicalURL={new URL('/politica-de-privacidade/', Astro.url).href}
+  noindex={false}
+>
+  <Header />
+
+  <main class="legal-page">
+    <div class="container">
+      <div class="legal-shell">
+
+        <header class="legal-header">
+          <p class="eyebrow mb-3">Masterboard</p>
+          <h1>Política de Privacidade</h1>
+          <p class="legal-meta">Última atualização: junho de 2025</p>
+        </header>
+
+        <div class="legal-body prose">
+
+          <h2>1. Quem somos</h2>
+          <p>
+            O Masterboard é um ecossistema empresarial fechado voltado a fundadores, CEOs e executivos.
+            Para fins desta política, "Masterboard", "nós" ou "nosso" refere-se à empresa responsável pela
+            operação da plataforma acessível em <strong>masterboard.com.br</strong>.
+          </p>
+
+          <h2>2. Dados que coletamos</h2>
+          <p>Coletamos dados pessoais nas seguintes situações:</p>
+          <ul>
+            <li>
+              <strong>Candidatura ao club:</strong> nome completo, e-mail profissional, WhatsApp,
+              empresa, cargo, faturamento anual, número de colaboradores, objetivo e momento da empresa.
+            </li>
+            <li>
+              <strong>Navegação no site:</strong> dados técnicos como endereço IP, navegador, sistema
+              operacional e páginas acessadas, coletados automaticamente via logs de servidor.
+            </li>
+            <li>
+              <strong>Comunicação direta:</strong> dados fornecidos voluntariamente quando você nos
+              contata por e-mail ou redes sociais.
+            </li>
+          </ul>
+
+          <h2>3. Como usamos seus dados</h2>
+          <p>Utilizamos seus dados pessoais para:</p>
+          <ul>
+            <li>Avaliar sua candidatura e verificar fit com a comunidade Masterboard;</li>
+            <li>Entrar em contato pelo WhatsApp informado, caso haja compatibilidade;</li>
+            <li>Enviar comunicações sobre eventos, conteúdos e oportunidades relacionadas ao Masterboard, mediante consentimento;</li>
+            <li>Melhorar nossos produtos, serviços e comunicações;</li>
+            <li>Cumprir obrigações legais e regulatórias.</li>
+          </ul>
+
+          <h2>4. Base legal (LGPD)</h2>
+          <p>
+            Tratamos seus dados com base nas seguintes hipóteses previstas na Lei nº 13.709/2018 (LGPD):
+          </p>
+          <ul>
+            <li><strong>Consentimento</strong> (art. 7º, I): quando você preenche o formulário de candidatura e aceita esta política;</li>
+            <li><strong>Legítimo interesse</strong> (art. 7º, IX): para análise de candidatura e manutenção da qualidade da comunidade;</li>
+            <li><strong>Cumprimento de obrigação legal</strong> (art. 7º, II): quando exigido por lei ou autoridade competente.</li>
+          </ul>
+
+          <h2>5. Compartilhamento de dados</h2>
+          <p>
+            Não vendemos seus dados pessoais a terceiros. Podemos compartilhá-los com:
+          </p>
+          <ul>
+            <li>Fornecedores de tecnologia que suportam a operação do site (ex: Supabase para banco de dados, Vercel para hospedagem);</li>
+            <li>Autoridades públicas, quando exigido por lei.</li>
+          </ul>
+          <p>Todos os fornecedores são contratados com cláusulas de confidencialidade e proteção de dados.</p>
+
+          <h2>6. Retenção dos dados</h2>
+          <p>
+            Mantemos seus dados pelo prazo necessário para as finalidades descritas nesta política ou
+            pelo prazo mínimo exigido por lei. Candidaturas não aprovadas são retidas por até 24 meses
+            para fins de análise histórica de perfil.
+          </p>
+
+          <h2>7. Seus direitos</h2>
+          <p>Você tem os seguintes direitos em relação aos seus dados pessoais:</p>
+          <ul>
+            <li>Confirmação de que tratamos seus dados;</li>
+            <li>Acesso aos dados que temos sobre você;</li>
+            <li>Correção de dados incompletos, inexatos ou desatualizados;</li>
+            <li>Anonimização, bloqueio ou eliminação de dados desnecessários;</li>
+            <li>Portabilidade dos dados a outro fornecedor;</li>
+            <li>Eliminação dos dados tratados com base no consentimento;</li>
+            <li>Revogação do consentimento a qualquer momento.</li>
+          </ul>
+          <p>
+            Para exercer qualquer desses direitos, envie um e-mail para
+            <a href="mailto:privacidade@masterboard.com.br">privacidade@masterboard.com.br</a>.
+            Responderemos em até 15 dias úteis.
+          </p>
+
+          <h2>8. Segurança</h2>
+          <p>
+            Adotamos medidas técnicas e administrativas para proteger seus dados contra acesso não
+            autorizado, perda, alteração ou divulgação indevida, incluindo criptografia em trânsito
+            (TLS/HTTPS) e controles de acesso baseados em função.
+          </p>
+
+          <h2>9. Cookies</h2>
+          <p>
+            Este site utiliza apenas cookies técnicos essenciais para funcionamento das sessões
+            administrativas. Não utilizamos cookies de rastreamento ou publicidade comportamental.
+          </p>
+
+          <h2>10. Alterações nesta política</h2>
+          <p>
+            Podemos atualizar esta política periodicamente. A data de última atualização estará sempre
+            indicada no topo desta página. Mudanças relevantes serão comunicadas aos membros ativos.
+          </p>
+
+          <h2>11. Contato</h2>
+          <p>
+            Para dúvidas sobre esta política ou o tratamento dos seus dados, entre em contato com nosso
+            Encarregado de Dados (DPO):
+          </p>
+          <p>
+            <strong>E-mail:</strong> <a href="mailto:privacidade@masterboard.com.br">privacidade@masterboard.com.br</a><br />
+            <strong>Site:</strong> masterboard.com.br
+          </p>
+
+        </div>
+
+        <div class="legal-back">
+          <a href="/" class="btn-secondary">← Voltar ao site</a>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .legal-page {
+    background: var(--mb-black);
+    padding-top: 7rem;
+    padding-bottom: 5rem;
+  }
+
+  .legal-shell {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .legal-header {
+    margin-bottom: 3rem;
+  }
+
+  .legal-header h1 {
+    color: var(--mb-white);
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 900;
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.6rem;
+  }
+
+  .legal-meta {
+    color: rgba(255, 255, 255, 0.38);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+
+  .legal-body h2 {
+    color: var(--mb-white);
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin-top: 2.2rem;
+    margin-bottom: 0.65rem;
+    letter-spacing: -0.01em;
+  }
+
+  .legal-body p,
+  .legal-body li {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+  }
+
+  .legal-body p {
+    margin-bottom: 0.85rem;
+  }
+
+  .legal-body ul {
+    margin-bottom: 0.85rem;
+    padding-left: 1.4rem;
+    list-style: disc;
+  }
+
+  .legal-body li {
+    margin-bottom: 0.45rem;
+  }
+
+  .legal-body strong {
+    color: rgba(255, 255, 255, 0.82);
+    font-weight: 700;
+  }
+
+  .legal-body a {
+    color: var(--mb-yellow);
+    text-underline-offset: 3px;
+  }
+
+  .legal-body a:hover {
+    opacity: 0.85;
+  }
+
+  .legal-back {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+</style>

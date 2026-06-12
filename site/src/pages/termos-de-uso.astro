@@ -1,0 +1,203 @@
+---
+export const prerender = true;
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout
+  title="Termos de Uso | Masterboard"
+  description="Termos e condições de uso do ecossistema Masterboard para líderes empresariais."
+  canonicalURL={new URL('/termos-de-uso/', Astro.url).href}
+  noindex={false}
+>
+  <Header />
+
+  <main class="legal-page">
+    <div class="container">
+      <div class="legal-shell">
+
+        <header class="legal-header">
+          <p class="eyebrow mb-3">Masterboard</p>
+          <h1>Termos de Uso</h1>
+          <p class="legal-meta">Última atualização: junho de 2025</p>
+        </header>
+
+        <div class="legal-body">
+
+          <h2>1. Aceitação dos termos</h2>
+          <p>
+            Ao acessar o site masterboard.com.br ou submeter uma candidatura ao Masterboard, você
+            concorda com estes Termos de Uso. Se não concordar com alguma disposição, não utilize
+            nossos serviços.
+          </p>
+
+          <h2>2. Sobre o Masterboard</h2>
+          <p>
+            O Masterboard é um ecossistema empresarial fechado que reúne fundadores, CEOs e executivos
+            por meio de experiências presenciais, matchmaking e conteúdos de alto contexto. O acesso é
+            concedido exclusivamente por curadoria e aprovação da equipe Masterboard.
+          </p>
+
+          <h2>3. Processo de candidatura</h2>
+          <p>
+            A submissão de uma candidatura não garante acesso ao Masterboard. A aprovação é
+            discricionária e baseia-se em critérios como perfil profissional, porte da empresa e
+            compatibilidade com a comunidade. A Masterboard reserva-se o direito de recusar qualquer
+            candidatura sem obrigação de justificativa.
+          </p>
+
+          <h2>4. Uso do site</h2>
+          <p>Ao utilizar o site masterboard.com.br, você concorda em:</p>
+          <ul>
+            <li>Fornecer informações verdadeiras, precisas e completas no formulário de candidatura;</li>
+            <li>Não utilizar o site para fins ilegais ou não autorizados;</li>
+            <li>Não tentar acessar áreas restritas sem autorização;</li>
+            <li>Não reproduzir, distribuir ou modificar o conteúdo do site sem autorização prévia e escrita.</li>
+          </ul>
+
+          <h2>5. Propriedade intelectual</h2>
+          <p>
+            Todo o conteúdo disponível no site — textos, imagens, marcas, logotipos, design e código
+            — é de propriedade exclusiva do Masterboard ou licenciado por terceiros. É vedada qualquer
+            reprodução, total ou parcial, sem autorização prévia por escrito.
+          </p>
+
+          <h2>6. Limitação de responsabilidade</h2>
+          <p>
+            O site é fornecido "no estado em que se encontra". O Masterboard não garante que o site
+            estará disponível de forma ininterrupta, livre de erros ou vírus. Em nenhum caso o
+            Masterboard será responsável por danos diretos, indiretos, incidentais ou consequenciais
+            decorrentes do uso ou incapacidade de uso do site.
+          </p>
+
+          <h2>7. Links externos</h2>
+          <p>
+            O site pode conter links para sites de terceiros. Esses links são fornecidos apenas para
+            conveniência. O Masterboard não controla nem endossa o conteúdo de sites externos e não
+            é responsável por quaisquer danos ou perdas relacionados a eles.
+          </p>
+
+          <h2>8. Privacidade</h2>
+          <p>
+            O uso dos seus dados pessoais é regido pela nossa
+            <a href="/politica-de-privacidade/">Política de Privacidade</a>, que integra estes Termos
+            de Uso.
+          </p>
+
+          <h2>9. Modificações</h2>
+          <p>
+            O Masterboard pode modificar estes Termos a qualquer momento. A versão vigente estará
+            sempre disponível nesta página, com a data de última atualização indicada no topo.
+            O uso continuado do site após alterações implica aceitação dos novos termos.
+          </p>
+
+          <h2>10. Lei aplicável e foro</h2>
+          <p>
+            Estes Termos são regidos pelas leis da República Federativa do Brasil. Eventuais
+            controvérsias serão dirimidas no foro da Comarca de São Paulo/SP, com exclusão de
+            qualquer outro, por mais privilegiado que seja.
+          </p>
+
+          <h2>11. Contato</h2>
+          <p>
+            Para dúvidas sobre estes Termos, entre em contato:<br />
+            <a href="mailto:contato@masterboard.com.br">contato@masterboard.com.br</a>
+          </p>
+
+        </div>
+
+        <div class="legal-back">
+          <a href="/" class="btn-secondary">← Voltar ao site</a>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .legal-page {
+    background: var(--mb-black);
+    padding-top: 7rem;
+    padding-bottom: 5rem;
+  }
+
+  .legal-shell {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .legal-header {
+    margin-bottom: 3rem;
+  }
+
+  .legal-header h1 {
+    color: var(--mb-white);
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 900;
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.6rem;
+  }
+
+  .legal-meta {
+    color: rgba(255, 255, 255, 0.38);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+
+  .legal-body h2 {
+    color: var(--mb-white);
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin-top: 2.2rem;
+    margin-bottom: 0.65rem;
+    letter-spacing: -0.01em;
+  }
+
+  .legal-body p,
+  .legal-body li {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+  }
+
+  .legal-body p {
+    margin-bottom: 0.85rem;
+  }
+
+  .legal-body ul {
+    margin-bottom: 0.85rem;
+    padding-left: 1.4rem;
+    list-style: disc;
+  }
+
+  .legal-body li {
+    margin-bottom: 0.45rem;
+  }
+
+  .legal-body strong {
+    color: rgba(255, 255, 255, 0.82);
+    font-weight: 700;
+  }
+
+  .legal-body a {
+    color: var(--mb-yellow);
+    text-underline-offset: 3px;
+  }
+
+  .legal-body a:hover {
+    opacity: 0.85;
+  }
+
+  .legal-back {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+</style>
