@@ -1,0 +1,126 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getAdminSession, getServiceSupabaseClient } from '../../../lib/admin/auth';
+
+interface PostRow {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  date: string;
+  author: string;
+  category: string | null;
+  is_published: boolean;
+  updated_at: string | null;
+}
+
+const session = await getAdminSession(Astro);
+if (!session) return Astro.redirect(`/admin/login/?next=${encodeURIComponent('/admin/blog/')}`);
+
+const { data, error } = await getServiceSupabaseClient()
+  .from('content_posts')
+  .select('id, slug, title, excerpt, date, author, category, is_published, updated_at')
+  .order('date', { ascending: false });
+
+const posts = (data ?? []) as PostRow[];
+---
+
+<AdminLayout title="Blog" active="blog" session={session}>
+  <header class="admin-page-header">
+    <div>
+      <p class="admin-muted">Conteúdo editorial</p>
+      <h1>Blog</h1>
+    </div>
+    <a href="/admin/blog/new/" class="admin-button">Novo post</a>
+  </header>
+
+  {error ? (
+    <section class="admin-card">
+      <p class="admin-muted">Não foi possível carregar posts: {error.message}</p>
+    </section>
+  ) : posts.length === 0 ? (
+    <section class="admin-card">
+      <p class="admin-muted">Nenhum post cadastrado ainda.</p>
+    </section>
+  ) : (
+    <section class="post-list" aria-label="Posts do blog">
+      {posts.map((post) => (
+        <article class="admin-card post-card">
+          <div>
+            <span class="post-card__status" data-published={post.is_published}>
+              {post.is_published ? 'Publicado' : 'Rascunho'}
+            </span>
+            <h2>{post.title}</h2>
+            <p>{post.excerpt}</p>
+            <small>{post.category ?? 'Conteúdo'} · {post.author} · {post.date}</small>
+          </div>
+          <div class="admin-actions">
+            <a class="admin-button-secondary" href={`/admin/blog/${post.id}/`}>Editar</a>
+            <a class="admin-button-secondary" href={`/admin/blog/preview/?id=${post.id}`} target="_blank" rel="noopener noreferrer">Preview</a>
+            {post.is_published && <a class="admin-button-secondary" href={`/blog/${post.slug}/`} target="_blank" rel="noopener noreferrer">Ver público</a>}
+            <form method="post" action="/api/admin/posts">
+              <input type="hidden" name="_action" value="delete" />
+              <input type="hidden" name="id" value={post.id} />
+              <button class="admin-danger" type="submit">Excluir</button>
+            </form>
+          </div>
+        </article>
+      ))}
+    </section>
+  )}
+</AdminLayout>
+
+<style>
+  .post-list {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .post-card {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .post-card h2 {
+    color: var(--mb-white);
+    font-size: 1.2rem;
+    font-weight: 900;
+    margin: 0.35rem 0;
+  }
+
+  .post-card p {
+    color: rgba(255, 255, 255, 0.55);
+    line-height: 1.5;
+  }
+
+  .post-card small {
+    display: block;
+    color: rgba(255, 255, 255, 0.38);
+    margin-top: 0.6rem;
+  }
+
+  .post-card__status {
+    display: inline-flex;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    color: rgba(255, 255, 255, 0.55);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.68rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .post-card__status[data-published='true'] {
+    border-color: rgba(251, 190, 10, 0.35);
+    color: var(--mb-yellow);
+  }
+
+  @media (max-width: 860px) {
+    .post-card {
+      flex-direction: column;
+    }
+  }
+</style>

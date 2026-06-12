@@ -1,0 +1,453 @@
+---
+export const prerender = false;
+
+import { createClient } from '@supabase/supabase-js';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { canManageLeads, getAdminSession } from '../../lib/admin/auth';
+
+type LeadRow = Record<string, unknown>;
+
+const supabaseUrl = import.meta.env.SUPABASE_URL;
+const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+const session = await getAdminSession(Astro);
+if (!session) return Astro.redirect(`/admin/login/?next=${encodeURIComponent('/admin/leads/')}`);
+
+const isAuthorized = canManageLeads(session);
+const selectedStatus = Astro.url.searchParams.get('status') ?? 'all';
+
+const parseNotes = (value: unknown) => {
+  if (typeof value !== 'string' || !value.trim()) return {};
+
+  try {
+    return JSON.parse(value) as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+};
+
+const text = (value: unknown, fallback = '-') => {
+  if (typeof value === 'string' && value.trim()) return value;
+  if (typeof value === 'number') return String(value);
+  return fallback;
+};
+
+const formatDate = (value: unknown) => {
+  if (typeof value !== 'string') return '-';
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'America/Sao_Paulo',
+  }).format(new Date(value));
+};
+
+const getQualification = (lead: LeadRow) => {
+  const notes = parseNotes(lead.notes);
+
+  return {
+    revenue: text(lead.annual_revenue ?? notes.faturamento),
+    employees: text(lead.employee_count ?? notes.colaboradores),
+    moment: text(lead.company_moment ?? notes.momento),
+    objective: text(lead.objective ?? notes.objetivo),
+    score: text(lead.score ?? notes.score, '0'),
+    priority: text(lead.priority ?? notes.priority, 'normal'),
+    whatsapp: text(lead.whatsapp ?? notes.whatsapp),
+  };
+};
+
+const statusOptions = ['all', 'new', 'contacted', 'approved', 'rejected'];
+const statusLabels: Record<string, string> = {
+  all: 'Todos',
+  new: 'Novos',
+  contacted: 'Contatados',
+  approved: 'Aprovados',
+  rejected: 'Rejeitados',
+};
+
+const statusHref = (status: string) => `/admin/leads/?status=${status}`;
+
+let leads: LeadRow[] = [];
+let errorMessage = '';
+
+if (isAuthorized && supabaseUrl && serviceRoleKey) {
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+
+  let query = supabase
+    .from('leads')
+    .select('*')
+    .order('submitted_at', { ascending: false })
+    .limit(100);
+
+  if (selectedStatus !== 'all') {
+    query = query.eq('status', selectedStatus);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    errorMessage = error.message;
+  } else {
+    leads = (data ?? []) as LeadRow[];
+  }
+} else if (!supabaseUrl || !serviceRoleKey) {
+  errorMessage = 'SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY precisam estar configurados.';
+}
+
+const counts: { total: number; byStatus: Record<string, number> } = {
+  total: leads.length,
+  byStatus: {},
+};
+
+for (const lead of leads) {
+  const status = text(lead.status, 'new');
+  counts.byStatus[status] = (counts.byStatus[status] ?? 0) + 1;
+}
+---
+
+<AdminLayout
+  title="Leads | Masterboard"
+  description="Painel operacional de candidaturas Masterboard."
+  active="leads"
+  session={session}
+>
+  <section class="lead-admin">
+    <section class="lead-admin__shell">
+      <header class="lead-admin__header">
+        <div>
+          <p class="lead-admin__eyebrow">Operação Masterboard</p>
+          <h1>Leads de candidatura</h1>
+          <p>Primeira visão para priorizar contato, entender porte e acompanhar status.</p>
+        </div>
+        <a href="/candidatura/" class="lead-admin__link">Ver formulário</a>
+      </header>
+
+      {!isAuthorized ? (
+        <section class="lead-admin__empty">
+          <h2>Acesso restrito</h2>
+          <p>Somente usuários com papel `admin` podem visualizar leads.</p>
+        </section>
+      ) : errorMessage ? (
+        <section class="lead-admin__empty">
+          <h2>Não foi possível carregar os leads</h2>
+          <p>{errorMessage}</p>
+        </section>
+      ) : (
+        <>
+          <section class="lead-admin__stats" aria-label="Resumo de leads">
+            <article>
+              <span>Total filtrado</span>
+              <strong>{counts.total}</strong>
+            </article>
+            {['new', 'contacted', 'approved', 'rejected'].map((status) => (
+              <article>
+                <span>{statusLabels[status]}</span>
+                <strong>{counts.byStatus[status] ?? 0}</strong>
+              </article>
+            ))}
+          </section>
+
+          <nav class="lead-admin__filters" aria-label="Filtrar por status">
+            {statusOptions.map((status) => (
+              <a href={statusHref(status)} aria-current={selectedStatus === status ? 'page' : undefined}>
+                {statusLabels[status]}
+              </a>
+            ))}
+          </nav>
+
+          <section class="lead-admin__list" aria-label="Lista de leads">
+            {leads.length === 0 ? (
+              <div class="lead-admin__empty">
+                <h2>Nenhum lead neste filtro</h2>
+                <p>Quando novas candidaturas chegarem, elas aparecem aqui.</p>
+              </div>
+            ) : (
+              leads.map((lead) => {
+                const q = getQualification(lead);
+                const whatsapp = text(lead.phone);
+                const whatsappUrl = whatsapp !== '-'
+                  ? `https://wa.me/${whatsapp.replace(/\D/g, '')}`
+                  : '';
+
+                return (
+                  <article class="lead-card">
+                    <div class="lead-card__top">
+                      <div>
+                        <p class="lead-card__name">{text(lead.name)}</p>
+                        <p class="lead-card__company">{text(lead.company)} · {text(lead.role)}</p>
+                      </div>
+                      <div class="lead-card__badges">
+                        <span data-priority={q.priority}>{q.priority}</span>
+                        <span>{text(lead.status, 'new')}</span>
+                        <span>Score {q.score}</span>
+                      </div>
+                    </div>
+
+                    <dl class="lead-card__grid">
+                      <div>
+                        <dt>E-mail</dt>
+                        <dd>{text(lead.email)}</dd>
+                      </div>
+                      <div>
+                        <dt>WhatsApp</dt>
+                        <dd>
+                          {whatsappUrl ? <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">{whatsapp}</a> : whatsapp}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Faturamento</dt>
+                        <dd>{q.revenue}</dd>
+                      </div>
+                      <div>
+                        <dt>Colaboradores</dt>
+                        <dd>{q.employees}</dd>
+                      </div>
+                      <div>
+                        <dt>Momento</dt>
+                        <dd>{q.moment}</dd>
+                      </div>
+                      <div>
+                        <dt>Origem</dt>
+                        <dd>{text(lead.source)}</dd>
+                      </div>
+                    </dl>
+
+                    {q.objective !== '-' && (
+                      <p class="lead-card__objective">{q.objective}</p>
+                    )}
+
+                    <footer class="lead-card__footer">
+                      <span>Recebido em {formatDate(lead.submitted_at)}</span>
+                      <span>{text(lead.referrer, 'Sem referência')}</span>
+                    </footer>
+                  </article>
+                );
+              })
+            )}
+          </section>
+        </>
+      )}
+    </section>
+  </section>
+</AdminLayout>
+
+<style>
+  .lead-admin {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 12% 8%, rgba(251,190,10,0.12), transparent 28rem),
+      var(--mb-black);
+    padding: 5.5rem 0 4rem;
+  }
+
+  .lead-admin__shell {
+    width: min(1180px, calc(100% - 2rem));
+    margin: 0 auto;
+  }
+
+  .lead-admin__header {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    align-items: end;
+    margin-bottom: 1.5rem;
+  }
+
+  .lead-admin__eyebrow {
+    color: var(--mb-yellow);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 0.7rem;
+  }
+
+  .lead-admin__header h1 {
+    color: var(--mb-white);
+    font-size: clamp(2rem, 5vw, 4.2rem);
+    font-weight: 900;
+    letter-spacing: -0.055em;
+    line-height: 0.95;
+  }
+
+  .lead-admin__header p {
+    color: rgba(255,255,255,0.55);
+    margin-top: 0.8rem;
+    max-width: 38rem;
+  }
+
+  .lead-admin__link,
+  .lead-admin__filters a {
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    color: rgba(255,255,255,0.72);
+    padding: 0.65rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 800;
+  }
+
+  .lead-admin__stats {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .lead-admin__stats article,
+  .lead-card,
+  .lead-admin__empty {
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 1.2rem;
+    background: rgba(255,255,255,0.04);
+  }
+
+  .lead-admin__stats article {
+    padding: 1rem;
+  }
+
+  .lead-admin__stats span {
+    display: block;
+    color: rgba(255,255,255,0.45);
+    font-size: 0.78rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .lead-admin__stats strong {
+    color: var(--mb-white);
+    font-size: 1.7rem;
+    line-height: 1;
+  }
+
+  .lead-admin__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .lead-admin__filters a[aria-current='page'] {
+    background: rgba(251,190,10,0.12);
+    border-color: rgba(251,190,10,0.45);
+    color: var(--mb-yellow);
+  }
+
+  .lead-admin__list {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .lead-card {
+    padding: 1rem;
+  }
+
+  .lead-card__top,
+  .lead-card__footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .lead-card__name {
+    color: var(--mb-white);
+    font-size: 1.1rem;
+    font-weight: 900;
+  }
+
+  .lead-card__company,
+  .lead-card__footer {
+    color: rgba(255,255,255,0.48);
+    font-size: 0.82rem;
+  }
+
+  .lead-card__badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.45rem;
+  }
+
+  .lead-card__badges span {
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 999px;
+    padding: 0.35rem 0.55rem;
+    color: rgba(255,255,255,0.62);
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+
+  .lead-card__badges [data-priority='high'] {
+    border-color: rgba(251,190,10,0.45);
+    color: var(--mb-yellow);
+  }
+
+  .lead-card__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.7rem;
+    margin: 1rem 0;
+  }
+
+  .lead-card__grid dt {
+    color: rgba(255,255,255,0.35);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.25rem;
+  }
+
+  .lead-card__grid dd,
+  .lead-card__grid a {
+    color: rgba(255,255,255,0.76);
+    font-size: 0.86rem;
+    overflow-wrap: anywhere;
+  }
+
+  .lead-card__objective {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 0.85rem;
+    color: rgba(255,255,255,0.62);
+    line-height: 1.55;
+  }
+
+  .lead-card__footer {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 0.75rem;
+    margin-top: 0.85rem;
+  }
+
+  .lead-admin__empty {
+    padding: 1.25rem;
+    color: rgba(255,255,255,0.6);
+  }
+
+  .lead-admin__empty h2 {
+    color: var(--mb-white);
+    font-size: 1.25rem;
+    font-weight: 900;
+    margin-bottom: 0.4rem;
+  }
+
+  @media (max-width: 860px) {
+    .lead-admin__header,
+    .lead-card__top,
+    .lead-card__footer {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .lead-admin__stats,
+    .lead-card__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .lead-card__badges {
+      justify-content: flex-start;
+    }
+  }
+</style>

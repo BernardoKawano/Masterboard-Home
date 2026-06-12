@@ -1,0 +1,286 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import type { AdminSession } from '../lib/admin/auth';
+
+export interface Props {
+  title: string;
+  description?: string;
+  active?: 'dashboard' | 'blog' | 'leads' | 'settings';
+  session: AdminSession;
+}
+
+const {
+  title,
+  description = 'Painel interno Masterboard.',
+  active = 'dashboard',
+  session,
+} = Astro.props;
+
+const nav = [
+  { id: 'dashboard', href: '/admin/', label: 'Painel' },
+  { id: 'blog', href: '/admin/blog/', label: 'Blog' },
+  { id: 'leads', href: '/admin/leads/', label: 'Leads' },
+  { id: 'settings', href: '/admin/settings/', label: 'Site' },
+];
+---
+
+<BaseLayout title={`${title} | Admin Masterboard`} description={description} noindex={true}>
+  <main class="admin-shell">
+    <aside class="admin-sidebar">
+      <a href="/admin/" class="admin-brand">
+        <span>Masterboard</span>
+        <strong>Admin</strong>
+      </a>
+
+      <nav class="admin-nav" aria-label="Admin">
+        {nav.map((item) => (
+          <a href={item.href} aria-current={active === item.id ? 'page' : undefined}>
+            {item.label}
+          </a>
+        ))}
+      </nav>
+
+      <form method="post" action="/api/admin/logout" class="admin-logout">
+        <p>{session.name ?? session.email}</p>
+        <span>{session.role}</span>
+        <button type="submit">Sair</button>
+      </form>
+    </aside>
+
+    <section class="admin-content">
+      <slot />
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .admin-shell {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 17rem minmax(0, 1fr);
+    background:
+      radial-gradient(circle at 10% 0%, rgba(251, 190, 10, 0.12), transparent 30rem),
+      var(--mb-black);
+    color: var(--mb-white);
+  }
+
+  .admin-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    border-right: 1px solid var(--mb-border);
+    background: rgba(255, 255, 255, 0.035);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .admin-brand {
+    color: var(--mb-white);
+    text-decoration: none;
+    line-height: 1;
+  }
+
+  .admin-brand span {
+    display: block;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .admin-brand strong {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 1.55rem;
+    font-weight: 900;
+  }
+
+  .admin-nav {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .admin-nav a,
+  .admin-logout button {
+    border-radius: 0.9rem;
+    color: rgba(255, 255, 255, 0.68);
+    font-weight: 800;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .admin-nav a {
+    padding: 0.8rem 0.9rem;
+  }
+
+  .admin-nav a:hover,
+  .admin-nav a[aria-current='page'] {
+    background: rgba(251, 190, 10, 0.12);
+    color: var(--mb-yellow);
+  }
+
+  .admin-logout {
+    margin-top: auto;
+    border-top: 1px solid var(--mb-border);
+    padding-top: 1rem;
+  }
+
+  .admin-logout p {
+    color: var(--mb-white);
+    font-size: 0.88rem;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-logout span {
+    display: block;
+    margin: 0.25rem 0 0.8rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .admin-logout button {
+    width: 100%;
+    border: 1px solid var(--mb-border);
+    background: transparent;
+    padding: 0.75rem;
+    cursor: pointer;
+  }
+
+  .admin-logout button:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--mb-white);
+  }
+
+  .admin-content {
+    width: min(1120px, calc(100% - 2rem));
+    margin: 0 auto;
+    padding: 2rem 0 4rem;
+  }
+
+  :global(.admin-page-header) {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-end;
+    margin-bottom: 1.5rem;
+  }
+
+  :global(.admin-page-header h1) {
+    color: var(--mb-white);
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 900;
+    letter-spacing: -0.055em;
+    line-height: 0.95;
+  }
+
+  :global(.admin-page-header p),
+  :global(.admin-muted) {
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  :global(.admin-card) {
+    border: 1px solid var(--mb-border);
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.045);
+    padding: 1rem;
+  }
+
+  :global(.admin-grid) {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  :global(.admin-button),
+  :global(.admin-button-secondary),
+  :global(.admin-danger) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0.75rem 1rem;
+    font-weight: 900;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  :global(.admin-button) {
+    border: 0;
+    background: var(--mb-yellow);
+    color: var(--mb-black);
+  }
+
+  :global(.admin-button-secondary),
+  :global(.admin-danger) {
+    border: 1px solid var(--mb-border);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  :global(.admin-danger) {
+    border-color: rgba(255, 120, 120, 0.35);
+    color: #ffb4b4;
+  }
+
+  :global(.admin-form) {
+    display: grid;
+    gap: 1rem;
+  }
+
+  :global(.admin-field) {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  :global(.admin-field label) {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.82rem;
+    font-weight: 900;
+  }
+
+  :global(.admin-field input),
+  :global(.admin-field textarea),
+  :global(.admin-field select) {
+    width: 100%;
+    border: 1px solid var(--mb-border);
+    border-radius: 0.9rem;
+    background: rgba(0, 0, 0, 0.32);
+    color: var(--mb-white);
+    padding: 0.85rem 0.9rem;
+  }
+
+  :global(.admin-field textarea) {
+    min-height: 8rem;
+    resize: vertical;
+  }
+
+  :global(.admin-actions) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    align-items: center;
+  }
+
+  @media (max-width: 860px) {
+    .admin-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .admin-sidebar {
+      position: static;
+      height: auto;
+    }
+
+    :global(.admin-page-header),
+    :global(.admin-grid) {
+      grid-template-columns: 1fr;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

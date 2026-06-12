@@ -4,8 +4,8 @@ export const prerender = false;
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
-import LeadModal from '../../components/LeadModal.astro';
 import { dataSource } from '../../lib/data-source';
+import { getResponsiveImageAttrs } from '../../lib/responsive-image';
 import { getEventUrl } from '../../types/domain';
 import type { Event } from '../../types/domain';
 
@@ -22,6 +22,18 @@ const formatShort = (iso: string) =>
     month: 'short',
     timeZone: 'America/Sao_Paulo',
   });
+
+const getEventGridImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
+  widths: [320, 640, 960],
+  sizes: '(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw',
+  quality: 74,
+});
+
+const getEventThumbImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
+  widths: [96, 160, 240],
+  sizes: '48px',
+  quality: 70,
+});
 
 const eventListSchema = {
   '@context': 'https://schema.org',
@@ -88,10 +100,13 @@ const eventListSchema = {
                 <div class="w-full aspect-video rounded-xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-mb-border overflow-hidden">
                   {event.coverImage ? (
                     <img
-                      src={event.coverImage}
+                      {...getEventGridImageAttrs(event.coverImage)}
                       alt={event.title}
                       loading="lazy"
+                      fetchpriority="low"
                       decoding="async"
+                      width="640"
+                      height="360"
                       class="w-full h-full object-cover"
                       onerror="this.style.display='none'"
                     />
@@ -151,10 +166,13 @@ const eventListSchema = {
                   {event.coverImage && (
                     <div class="w-12 h-12 rounded-lg overflow-hidden bg-white/5 shrink-0 hidden sm:block">
                       <img
-                        src={event.coverImage}
+                        {...getEventThumbImageAttrs(event.coverImage)}
                         alt=""
                         loading="lazy"
+                        fetchpriority="low"
                         decoding="async"
+                        width="96"
+                        height="96"
                         class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
                         onerror="this.style.display='none'"
                       />
@@ -183,12 +201,11 @@ const eventListSchema = {
     <section class="py-16 bg-mb-black">
       <div class="container text-center max-w-xl mx-auto">
         <p class="text-white/50 text-sm mb-3">Membros têm acesso antecipado e reservas prioritárias.</p>
-        <button type="button" class="btn-primary" data-open-modal>Faça parte para participar</button>
+        <a href="/candidatura/" class="btn-primary">Faça parte para participar</a>
       </div>
     </section>
 
   </main>
 
   <Footer />
-  <LeadModal />
 </BaseLayout>

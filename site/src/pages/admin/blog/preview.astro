@@ -1,0 +1,135 @@
+---
+export const prerender = false;
+
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getAdminSession, getServiceSupabaseClient } from '../../../lib/admin/auth';
+import { sanitizeHtml } from '../../../lib/admin/content-utils.mjs';
+
+interface PreviewPost {
+  id: string;
+  title: string;
+  excerpt: string | null;
+  content_html: string | null;
+  date: string;
+  author: string;
+  category: string | null;
+  is_published: boolean;
+}
+
+const session = await getAdminSession(Astro);
+if (!session) return Astro.redirect(`/admin/login/?next=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`);
+
+const id = Astro.url.searchParams.get('id');
+if (!id) return Astro.redirect('/admin/blog/');
+
+const result = await getServiceSupabaseClient()
+  .from('content_posts')
+  .select('*')
+  .eq('id', id)
+  .maybeSingle();
+const post = result.data as PreviewPost | null;
+const error = result.error;
+
+if (!post && !error) return Astro.redirect('/admin/blog/');
+
+const previewPost = post as PreviewPost;
+---
+
+<BaseLayout
+  title={`Preview | ${previewPost?.title ?? 'Post'}`}
+  description={previewPost?.excerpt ?? 'Preview protegido do blog Masterboard.'}
+  noindex={true}
+>
+  <main class="preview">
+    <nav class="preview-bar">
+      <a href={`/admin/blog/${id}/`}>Voltar para edição</a>
+      <span>{previewPost?.is_published ? 'Publicado' : 'Rascunho'}</span>
+    </nav>
+
+    {error ? (
+      <section class="preview-article">
+        <p>Não foi possível carregar o post: {error.message}</p>
+      </section>
+    ) : (
+      <article class="preview-article">
+        <p class="preview-category">{previewPost.category ?? 'Conteúdo'}</p>
+        <h1>{previewPost.title}</h1>
+        <p class="preview-excerpt">{previewPost.excerpt}</p>
+        <div class="preview-meta">{previewPost.author} · {previewPost.date}</div>
+        <div class="preview-content" set:html={sanitizeHtml(previewPost.content_html ?? '')} />
+      </article>
+    )}
+  </main>
+</BaseLayout>
+
+<style>
+  .preview {
+    min-height: 100vh;
+    background: var(--mb-black);
+    color: var(--mb-white);
+    padding: 1rem;
+  }
+
+  .preview-bar {
+    width: min(920px, 100%);
+    margin: 0 auto 1rem;
+    border: 1px solid var(--mb-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    padding: 0.7rem 1rem;
+  }
+
+  .preview-bar a,
+  .preview-bar span {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    font-weight: 900;
+  }
+
+  .preview-article {
+    width: min(760px, 100%);
+    margin: 0 auto;
+    padding: clamp(2rem, 6vw, 4rem) 0;
+  }
+
+  .preview-category {
+    color: var(--mb-yellow);
+    font-size: 0.75rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+  }
+
+  .preview-article h1 {
+    margin: 1rem 0;
+    color: var(--mb-white);
+    font-size: clamp(2.2rem, 7vw, 4rem);
+    font-weight: 900;
+    letter-spacing: -0.055em;
+    line-height: 0.95;
+  }
+
+  .preview-excerpt {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 1.2rem;
+    line-height: 1.55;
+  }
+
+  .preview-meta {
+    border-bottom: 1px solid var(--mb-border);
+    color: rgba(255, 255, 255, 0.45);
+    margin: 1.5rem 0;
+    padding-bottom: 1.5rem;
+  }
+
+  .preview-content {
+    color: rgba(255, 255, 255, 0.68);
+    line-height: 1.75;
+  }
+
+  .preview-content :global(a) {
+    color: var(--mb-yellow);
+  }
+</style>

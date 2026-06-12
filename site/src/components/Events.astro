@@ -1,6 +1,7 @@
 ---
 import type { Event } from '../types/domain';
 import { getEventUrl } from '../types/domain';
+import { getResponsiveImageAttrs } from '../lib/responsive-image';
 
 interface Props {
   events: Event[];
@@ -31,6 +32,12 @@ const fmtFull  = (iso: string) =>
   new Date(iso).toLocaleDateString('pt-BR', {
     day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo',
   });
+
+const getEventCardImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
+  widths: [320, 640, 960],
+  sizes: '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw',
+  quality: 74,
+});
 ---
 
 <section
@@ -76,10 +83,13 @@ const fmtFull  = (iso: string) =>
                 <div class="event-image-card__cover">
                   {event.coverImage ? (
                     <img
-                      src={event.coverImage}
+                      {...getEventCardImageAttrs(event.coverImage)}
                       alt={event.title}
                       loading="lazy"
+                      fetchpriority="low"
                       decoding="async"
+                      width="640"
+                      height="360"
                       class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       onerror="this.parentElement.classList.add('event-image-card__cover--fallback')"
                     />
@@ -209,7 +219,7 @@ const fmtFull  = (iso: string) =>
     ) : (
       <p class="text-white/40 text-center py-12">
         Novos eventos em breve.{' '}
-        <button type="button" class="text-mb-yellow underline" data-open-modal>Seja membro</button>
+        <a href="/candidatura/" class="text-mb-yellow underline">Seja membro</a>
         {' '}para receber em primeira mão.
       </p>
     )}
@@ -219,9 +229,9 @@ const fmtFull  = (iso: string) =>
       <p class="text-white/50 text-sm mb-4">
         Membros recebem acesso antecipado, reservas prioritárias e contexto antes da sala abrir.
       </p>
-      <button type="button" class="btn-primary" data-open-modal>
+      <a href="/candidatura/" class="btn-primary">
         Quero estar na próxima mesa
-      </button>
+      </a>
     </div>
 
   </div>

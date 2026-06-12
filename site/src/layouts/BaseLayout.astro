@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { getPublicSiteSettings, siteSettingsCss } from '../lib/admin/settings';
 
 export interface Props {
   title: string;
@@ -23,6 +24,8 @@ const {
 
 const SITE_URL = 'https://masterboard.com.br';
 const SITE_NAME = 'Masterboard';
+const siteSettings = await getPublicSiteSettings();
+const siteSettingsStyle = siteSettingsCss(siteSettings);
 
 const resolvedOgImage = ogImage.startsWith('http') ? ogImage : `${SITE_URL}${ogImage}`;
 
@@ -45,7 +48,7 @@ const organizationSchema = {
   contactPoint: {
     '@type': 'ContactPoint',
     contactType: 'customer service',
-    url: `${SITE_URL}/#candidatura`,
+    url: `${SITE_URL}/candidatura/`,
     availableLanguage: 'Portuguese',
   },
 };
@@ -61,12 +64,36 @@ const allSchemas = [organizationSchema, websiteSchema, ...jsonLd];
 ---
 
 <!doctype html>
-<html lang="pt-BR" class="scroll-smooth">
+<html lang="pt-BR" class="scroll-smooth" style={siteSettingsStyle}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#000000" />
     <link rel="canonical" href={canonicalURL} />
+    <link
+      rel="preload"
+      as="image"
+      href="/images/bg-banner-768.avif"
+      type="image/avif"
+      media="(max-width: 767px)"
+      fetchpriority="high"
+    />
+    <link
+      rel="preload"
+      as="image"
+      href="/images/bg-banner-1280.avif"
+      type="image/avif"
+      media="(min-width: 768px) and (max-width: 1279px)"
+      fetchpriority="high"
+    />
+    <link
+      rel="preload"
+      as="image"
+      href="/images/bg-banner.avif"
+      type="image/avif"
+      media="(min-width: 1280px)"
+      fetchpriority="high"
+    />
 
     <!-- SEO primário -->
     <title>{title}</title>
@@ -98,7 +125,7 @@ const allSchemas = [organizationSchema, websiteSchema, ...jsonLd];
     <meta name="twitter:image:alt" content={title} />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/png" href="/favicon.png?v=3" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
     <!-- Fontes: preconnect primeiro, depois link assíncrono com display=swap -->
@@ -115,7 +142,7 @@ const allSchemas = [organizationSchema, websiteSchema, ...jsonLd];
 
     <!-- JSON-LD Structured Data -->
     {allSchemas.map((schema) => (
-      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+      <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
     ))}
 
     <!-- Slot para meta tags extras por página -->
@@ -191,33 +218,5 @@ const allSchemas = [organizationSchema, websiteSchema, ...jsonLd];
       }
     </script>
 
-    <!-- Modal -->
-    <script>
-      const backdrop = document.querySelector('[data-modal-backdrop]');
-      const openBtns = document.querySelectorAll('[data-open-modal]');
-      const closeBtn = document.querySelector('[data-modal-close]');
-
-      const openModal = () => {
-        backdrop?.classList.add('is-open');
-        document.body.style.overflow = 'hidden';
-        (backdrop?.querySelector('input') as HTMLInputElement)?.focus();
-      };
-
-      const closeModal = () => {
-        backdrop?.classList.remove('is-open');
-        document.body.style.overflow = '';
-      };
-
-      openBtns.forEach((btn) => btn.addEventListener('click', openModal));
-      closeBtn?.addEventListener('click', closeModal);
-
-      backdrop?.addEventListener('click', (e) => {
-        if (e.target === backdrop) closeModal();
-      });
-
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeModal();
-      });
-    </script>
   </body>
 </html>

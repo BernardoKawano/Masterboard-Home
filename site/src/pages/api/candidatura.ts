@@ -1,66 +1,63 @@
-// Rota server-rendered: não pré-renderizar
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
+import { createClient } from '@supabase/supabase-js';
+import {
+  buildCandidaturaPayload,
+  toLeadRow,
+  validateCandidaturaPayload,
+} from '../../lib/candidatura-payload.mjs';
 
-/**
- * Endpoint de recebimento de candidaturas.
- *
- * Para produção, integre aqui com:
- * - HubSpot / RD Station via API
- * - n8n / Make webhook
- * - Resend para e-mail transacional
- * - Supabase para persistência
- *
- * Nunca exponha chaves de API diretamente neste arquivo.
- * Use variáveis de ambiente: import.meta.env.MY_SECRET_KEY
- */
 export const POST: APIRoute = async ({ request }) => {
   try {
     const data = await request.formData();
 
-    // Honeypot anti-spam
     if (data.get('_gotcha')) {
       return new Response(null, { status: 200 });
     }
 
-    const payload = {
-      nome: data.get('nome'),
-      email: data.get('email'),
-      telefone: data.get('telefone'),
-      empresa: data.get('empresa'),
-      cargo: data.get('cargo'),
-      cidade: data.get('cidade'),
-      intencao: data.get('intencao'),
-      momento: data.get('momento'),
-      lgpd: data.get('lgpd') === 'on',
+    const payload = buildCandidaturaPayload(data, {
+      referrer: request.headers.get('referer') ?? '',
       timestamp: new Date().toISOString(),
-    };
+    });
 
-    // Validação básica
-    const required = ['nome', 'email', 'telefone', 'empresa', 'cargo'] as const;
-    for (const field of required) {
-      if (!payload[field]) {
-        return new Response(
-          JSON.stringify({ error: `Campo obrigatório ausente: ${field}` }),
-          { status: 400, headers: { 'Content-Type': 'application/json' } },
-        );
-      }
+    const missing = validateCandidaturaPayload(payload);
+    if (missing.length > 0) {
+      return new Response(
+        JSON.stringify({ error: `Campos obrigatórios ausentes: ${missing.join(', ')}` }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      );
     }
 
-    // TODO: integrar com CRM/webhook aqui
-    // Exemplo com webhook:
-    // const webhookUrl = import.meta.env.LEAD_WEBHOOK_URL;
-    // await fetch(webhookUrl, {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(payload),
-    // });
+    const supabase = createClient(
+      import.meta.env.SUPABASE_URL,
+      import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+      { auth: { persistSession: false, autoRefreshToken: false } },
+    );
 
-    console.log('[Candidatura recebida]', payload);
+    const row = toLeadRow(payload);
+
+    const { data: insertedLead, error } = await supabase
+      .from('leads')
+      .insert(row)
+      .select('id')
+      .single();
+
+    if (error) {
+      throw new Error(`[Supabase] ${error.message}`);
+    }
+
+    if (insertedLead?.id) {
+      await supabase.from('lead_activities').insert({
+        lead_id: insertedLead.id,
+        type: 'created',
+        description: 'Candidatura recebida pelo site',
+        metadata: { source: payload.source, score: row.score, priority: row.priority },
+      });
+    }
 
     return new Response(JSON.stringify({ success: true }), {
-      status: 200,
+      status: 201,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err) {

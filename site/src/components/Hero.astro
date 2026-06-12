@@ -1,5 +1,8 @@
 ---
-// Sem props: conteúdo fixo da hero da Home
+import { getPublicSiteSettings } from '../lib/admin/settings';
+
+const settings = await getPublicSiteSettings();
+const hero = settings.home.hero;
 ---
 
 <section
@@ -21,8 +24,8 @@
 
         <!-- Eyebrow -->
         <div class="flex flex-wrap items-center gap-3 mb-4 md:mb-5" data-animate>
-          <p class="eyebrow">Acesso por curadoria</p>
-          <span class="hero-pill">Candidaturas abertas</span>
+          <p class="eyebrow">{hero.eyebrow}</p>
+          <span class="hero-pill">{hero.pill}</span>
         </div>
 
         <!-- H1 principal -->
@@ -31,10 +34,10 @@
           data-animate
           data-animate-delay="100"
         >
-          <span class="block">Dizem que</span>
-          <span class="block">o topo é</span>
-          <span class="block text-gradient-yellow">solitário.</span>
-          <span class="block">Nós discordamos.</span>
+          <span class="block">{hero.line1}</span>
+          <span class="block">{hero.line2}</span>
+          <span class="block text-gradient-yellow">{hero.highlight}</span>
+          <span class="block">{hero.line3}</span>
         </h1>
 
         <!-- Descrição -->
@@ -44,9 +47,7 @@
           data-animate
           data-animate-delay="200"
         >
-          Um club empresarial fechado para fundadores, CEOs e executivos que
-          querem crescer com pares certos, experiências de alto contexto e
-          conversas que viram decisão.
+          {hero.description}
         </p>
 
         <!-- CTAs -->
@@ -55,20 +56,19 @@
           data-animate
           data-animate-delay="300"
         >
-          <button
-            type="button"
+          <a
+            href={hero.primaryCtaHref}
             class="btn-primary btn-primary--magnetic"
-            data-open-modal
-            aria-label="Abrir formulário de candidatura ao Masterboard"
+            aria-label="Abrir candidatura ao Masterboard"
           >
-            Candidatar-se ao club
+            {hero.primaryCtaLabel}
             <svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
             </svg>
-          </button>
+          </a>
 
-          <a href="#experiencias" class="btn-secondary">
-            Ver experiências
+          <a href={hero.secondaryCtaHref} class="btn-secondary">
+            {hero.secondaryCtaLabel}
           </a>
         </div>
 

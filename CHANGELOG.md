@@ -1,5 +1,46 @@
 # Changelog
 
+## 2026-06-11
+
+### Performance / Images
+- Adicionadas variantes menores do hero (`768` e `1280`) em AVIF/WebP e preload por breakpoint para reduzir o peso do primeiro carregamento.
+- Reduzida a prioridade de imagens abaixo da dobra em logos, membros, speakers, eventos, blog e mentores com `loading="lazy"`, `fetchpriority="low"` e dimensões explícitas onde faltavam.
+- Mantida prioridade alta apenas para imagens realmente críticas: hero visual e capa principal de detalhe de evento.
+- Localizados os grafismos de `ValueProps` em AVIF/WebP dentro de `public/images/value-props`, removendo dependência das imagens WordPress externas nessa seção.
+- Criado helper testado para gerar `srcset`/`sizes` em imagens vindas do Supabase Storage, aplicado em eventos, blog, speakers e membros com fallback seguro para URLs externas sem transformação.
+- Removido fallback de chave sensível do script de migração de fotos para exigir `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` por ambiente.
+- Criado `npm run migrate:media`, migrador com `dry-run` por padrão para copiar imagens externas de eventos, posts, speakers, membros e empresas para o Supabase Storage somente com `--execute`.
+- Dry-run limitado confirmou candidatos externos em capas de eventos, capas de posts e fotos/logos de speakers, sem migrar ou alterar dados.
+
+### Admin Self-Service
+- Criado painel `/admin/` com login via Supabase Auth, cookie HTTP-only, papéis `admin`/`editor` e fallback inicial por `ADMIN_EMAILS`.
+- Adicionado CRUD de blog sobre `content_posts`, com rascunho/publicado, preview protegido, sanitização de HTML e auditoria de criação/edição/exclusão.
+- Substituída a proteção por `?token=` em `/admin/leads/` pelo guard de sessão do admin.
+- Adicionada edição de `site_settings` para tokens visuais e textos da hero, aplicados no site com fallback para os valores atuais.
+- Atualizado `schema.sql` com `admin_users`, `site_settings` e `admin_audit_log`.
+- Adicionada migração incremental `site/scripts/admin-self-service-migration.sql`, idempotente para bancos Supabase existentes e com seeds iniciais de `site_settings`.
+- Adicionado `npm run test:admin` para cobrir slug, tags, sanitização de HTML, payload de post e settings.
+
+## 2026-06-10
+
+### Blog / SEO
+- Integrado o blog ao adapter Supabase: `/blog/` e `/blog/[slug]/` passam a carregar posts publicados de `content_posts`.
+- Artigos agora renderizam `content_html` real quando disponível, mantendo fallback editorial quando o post ainda não tiver corpo.
+- Reforçada a página de eventos para SEO: menu principal aponta para `/eventos/` e `sitemap.xml` passou a ser dinâmico, listando eventos e posts publicados vindos do Supabase.
+- Adicionada migração `site/scripts/content-posts-public-read-migration.sql` com RLS pública para posts publicados e índices de listagem.
+- Importados os 3 posts locais existentes para `content_posts` via upsert por slug; validação runtime: `/blog/`, `/eventos/`, `/sitemap.xml` e `/blog/networking-de-alto-nivel/` retornaram 200, com sitemap em 71 URLs e 3 posts.
+- Validação final: `npm run test:blog-import`, `npm run test:member-import`, `npm run test:candidatura`, `npm run check` e `npm run build` passaram.
+
+### Speakers
+- Corrigida a faixa amarela dos cards de speakers para exibir somente empresa, sem usar cargo como fallback visual.
+- Criado parser compartilhado de cargo/empresa e aplicado no adapter Supabase ativo e no fluxo Bubble/export, cobrindo formatos reais como `CEO Driva`, `CEO RP Trader`, `Founder +1 Café` e `Sócia IVS Franquias`.
+- Adicionado teste `npm run test:speakers` cobrindo os formatos que devem e não devem gerar empresa.
+
+### Performance / Logos
+- Investigado carregamento desigual no carrossel de logos: `driva.svg` aparecia primeiro por ser SVG leve (~4,6 KB), enquanto logos em WebP tinham ate 3200x3200 px e 271 KB apesar de exibidas pequenas.
+- Otimizadas as logos WebP em `site/public/logos/` para no maximo 512x512 px, mantendo WebP lossless e transparencia.
+- Metrica da rodada: conjunto WebP do carrossel reduzido de ~982 KB para ~62,5 KB, aproximando o tempo de carregamento das logos raster ao das SVGs.
+
 ## 2026-06-09
 
 ### Supabase / Home
@@ -9,6 +50,18 @@
 - Adicionado fallback temporario no adapter Supabase para enriquecer membros via Bubble quando o banco ainda nao tiver `members.photo_url`, mantendo Supabase como fonte primaria.
 - Removida a allowlist da roleta de speakers; todos os speakers publicados no Supabase entram no carrossel.
 - Validacao local: `/`, `/eventos/` e `/blog/` retornaram 200; home confirmou `memberProfiles=true` e `companyFallback=false`. `npm run test:member-import`, `npm run check` e `npm run build` passaram.
+
+### Candidatura
+- Substituido o formulario em modal por uma pagina dedicada em `/candidatura/`, com fluxo em etapas inspirado na mecanica da G4 e narrativa propria da Masterboard.
+- Atualizados CTAs do site para apontar diretamente para `/candidatura/`, removendo dependencias do modal antigo nas paginas.
+- Adicionados campos de qualificacao: cargo padronizado, faturamento anual, numero de colaboradores, momento e objetivo.
+- Melhorada a etapa de WhatsApp com seletor de codigo do pais predefinido em `+55`, mantendo possibilidade de alteracao.
+- Ajustado o fluxo para exibir apenas `Continuar` antes da ultima etapa, com mensagem textual indicando campos pendentes quando houver informacao faltante.
+- Substituida a mensagem pequena pos-envio por uma tela dedicada de agradecimento e espera pela curadoria.
+- Atualizada a API `/api/candidatura` para validar os novos campos, salvar em `leads` no Supabase e encaminhar opcionalmente para `LEAD_WEBHOOK_URL`.
+- Estruturada a operacao de leads com score, prioridade, campos normalizados, migracao `lead-operations-migration.sql` e historico `lead_activities`.
+- Criada a primeira visualizacao operacional em `/admin/leads`, protegida por token em producao, com filtros por status, score, prioridade, WhatsApp e dados de qualificacao.
+- Validacao: `npm run test:candidatura`, `npm run test:member-import`, `npm run check` e `npm run build` passaram.
 
 ## 2026-06-01
 

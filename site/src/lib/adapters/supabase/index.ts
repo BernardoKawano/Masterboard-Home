@@ -7,9 +7,10 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { fetchMemberPreview } from '../../bubble';
+import { parseRoleLabel } from '../../speaker-role';
 import { mapBubbleUserToMember } from '../bubble/members';
 import type { ContentDataSource, ListEventsOptions, ListMemberCompaniesOptions } from '../../data-source';
-import type { Event, Member, MemberCompany, Speaker } from '../../../types/domain';
+import type { ContentPost, Event, Member, MemberCompany, Speaker } from '../../../types/domain';
 
 type SupabaseClient = ReturnType<typeof createClient>;
 
@@ -93,6 +94,22 @@ interface CompanyLookupRow {
   source_id: string | null;
 }
 
+interface ContentPostRow {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  content_html: string | null;
+  date: string;
+  author: string;
+  category: string | null;
+  cover_image_url: string | null;
+  tags: string[] | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  source_id: string | null;
+}
+
 interface EventSpeakerRow {
   event_id: string;
   speakers:
@@ -170,14 +187,18 @@ function mapEventRow(row: EventRow, speakerSourceIds: string[] = []): Event {
 }
 
 function mapSpeakerRow(row: SpeakerRow): Speaker {
+  const parsedRole = parseRoleLabel(row.role_label ?? '');
+  const company = row.company ?? parsedRole.company;
+  const role = row.company ? row.role ?? parsedRole.role : parsedRole.role ?? row.role ?? undefined;
+
   return {
     id: row.slug,
     sourceId: sourceId(row),
     source: 'supabase',
     name: row.name,
     roleLabel: row.role_label ?? [row.role, row.company].filter(Boolean).join(' / '),
-    role: row.role ?? undefined,
-    company: row.company ?? undefined,
+    role,
+    company,
     bio: row.bio ?? undefined,
     photo: row.photo_url ?? undefined,
     companyLogo: row.company_logo_url ?? undefined,
@@ -225,6 +246,24 @@ function mapCompanyRow(row: CompanyRow): MemberCompany {
     size: row.employee_count ?? undefined,
     revenue: row.annual_revenue ?? undefined,
     sector: row.sector ?? undefined,
+  };
+}
+
+function mapPostRow(row: ContentPostRow): ContentPost {
+  return {
+    id: row.slug,
+    sourceId: sourceId(row),
+    source: 'supabase',
+    title: row.title,
+    excerpt: row.excerpt ?? '',
+    content: row.content_html ?? '',
+    date: toIsoDate(row.date),
+    author: row.author,
+    category: row.category ?? 'Conteúdo',
+    coverImage: row.cover_image_url ?? undefined,
+    tags: row.tags ?? [],
+    seoTitle: row.seo_title ?? undefined,
+    seoDescription: row.seo_description ?? undefined,
   };
 }
 
@@ -409,6 +448,31 @@ export const supabaseDataSource: ContentDataSource = {
 
   async getMemberCompanyCount(): Promise<number> {
     return countRows('companies');
+  },
+
+  async listPosts(): Promise<ContentPost[]> {
+    const { data, error } = await getSupabaseClient()
+      .from('content_posts')
+      .select('*')
+      .eq('is_published', true)
+      .order('date', { ascending: false });
+
+    throwIfError(error, 'listar posts do blog');
+
+    return ((data ?? []) as ContentPostRow[]).map(mapPostRow);
+  },
+
+  async getPostById(id: string): Promise<ContentPost | null> {
+    const { data, error } = await getSupabaseClient()
+      .from('content_posts')
+      .select('*')
+      .eq('slug', id)
+      .eq('is_published', true)
+      .maybeSingle();
+
+    throwIfError(error, 'buscar post do blog por slug');
+
+    return data ? mapPostRow(data as ContentPostRow) : null;
   },
 };
 

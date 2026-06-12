@@ -1,0 +1,95 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { canManageSettings, getAdminSession } from '../../lib/admin/auth';
+import { listAdminSettings } from '../../lib/admin/settings';
+
+const session = await getAdminSession(Astro);
+if (!session) return Astro.redirect(`/admin/login/?next=${encodeURIComponent('/admin/settings/')}`);
+
+const settings = await listAdminSettings();
+const saved = Astro.url.searchParams.get('saved') === '1';
+---
+
+<AdminLayout title="Configurações do Site" active="settings" session={session}>
+  <header class="admin-page-header">
+    <div>
+      <p class="admin-muted">Textos, CTAs e tokens visuais</p>
+      <h1>Site</h1>
+    </div>
+  </header>
+
+  {!canManageSettings(session) ? (
+    <section class="admin-card">
+      <h2>Acesso restrito</h2>
+      <p class="admin-muted">Somente usuários com papel `admin` podem alterar configurações globais do site.</p>
+    </section>
+  ) : (
+    <section class="admin-card">
+      {saved && <p class="settings-success">Configurações salvas.</p>}
+
+      <form method="post" action="/api/admin/settings" class="admin-form settings-form">
+        {settings.map((setting) => (
+          <label class="admin-field">
+            {setting.label}
+            {setting.description && <span>{setting.description}</span>}
+            {setting.type === 'textarea' ? (
+              <textarea name={setting.key}>{setting.value}</textarea>
+            ) : (
+              <input
+                type={setting.type === 'color' ? 'color' : 'text'}
+                name={setting.key}
+                value={setting.value}
+              />
+            )}
+          </label>
+        ))}
+
+        <div class="admin-actions">
+          <button type="submit" class="admin-button">Salvar configurações</button>
+          <a href="/" class="admin-button-secondary" target="_blank" rel="noopener noreferrer">Ver site</a>
+        </div>
+      </form>
+    </section>
+  )}
+</AdminLayout>
+
+<style>
+  .settings-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .settings-form .admin-actions,
+  .settings-form .admin-field:has(textarea) {
+    grid-column: 1 / -1;
+  }
+
+  .settings-form span {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .settings-success {
+    border: 1px solid rgba(251, 190, 10, 0.3);
+    border-radius: 0.9rem;
+    background: rgba(251, 190, 10, 0.08);
+    color: var(--mb-yellow);
+    padding: 0.75rem 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    color: var(--mb-white);
+    font-size: 1.3rem;
+    font-weight: 900;
+    margin-bottom: 0.5rem;
+  }
+
+  @media (max-width: 860px) {
+    .settings-form {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

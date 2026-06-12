@@ -1,7 +1,7 @@
 ---
 const navLinks = [
   { href: '/#sobre', label: 'Sobre' },
-  { href: '/#eventos', label: 'Eventos' },
+  { href: '/eventos/', label: 'Eventos' },
   { href: '/blog/', label: 'Blog' },
   { href: 'https://app.masterboard.com.br', label: 'App', external: true },
 ];
@@ -42,14 +42,13 @@ const navLinks = [
 
       <!-- CTA desktop + toggle mobile -->
       <div class="flex items-center gap-3">
-        <button
-          type="button"
+        <a
+          href="/candidatura/"
           class="btn-primary hidden sm:inline-flex text-sm py-2.5 px-5"
-          data-open-modal
-          aria-label="Abrir formulário de candidatura ao Masterboard"
+          aria-label="Abrir candidatura ao Masterboard"
         >
           Pedir acesso
-        </button>
+        </a>
 
         <button
           type="button"
@@ -87,9 +86,9 @@ const navLinks = [
       </a>
     ))}
     <div class="mt-2 pt-2 border-t border-mb-border">
-      <button type="button" class="btn-primary w-full justify-center" data-open-modal>
+      <a href="/candidatura/" class="btn-primary w-full justify-center">
         Pedir acesso
-      </button>
+      </a>
     </div>
   </nav>
 </header>

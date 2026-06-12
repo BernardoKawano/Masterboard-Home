@@ -70,7 +70,7 @@ const marqueeLogos = Array.from({ length: repetitions }, () => logos).flat();
   <!-- Carrossel -->
   <div class="logo-marquee-wrapper" aria-hidden="true">
     <div class="logo-marquee-track">
-      {marqueeLogos.map((logo, i) => (
+      {marqueeLogos.map((logo) => (
         <div
           class="logo-marquee-item"
           data-logo={logo.name.toLowerCase().replace(/\s+/g, '-')}
@@ -80,7 +80,8 @@ const marqueeLogos = Array.from({ length: repetitions }, () => logos).flat();
             <img
               src={logo.src}
               alt={logo.name}
-              loading={i < logos.length ? 'eager' : 'lazy'}
+              loading="lazy"
+              fetchpriority="low"
               decoding="async"
               width="160"
               height="48"

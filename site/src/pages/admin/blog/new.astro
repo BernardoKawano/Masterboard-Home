@@ -1,0 +1,23 @@
+---
+export const prerender = false;
+
+import PostForm from '../../../components/admin/PostForm.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getAdminSession } from '../../../lib/admin/auth';
+
+const session = await getAdminSession(Astro);
+if (!session) return Astro.redirect(`/admin/login/?next=${encodeURIComponent('/admin/blog/new/')}`);
+---
+
+<AdminLayout title="Novo Post" active="blog" session={session}>
+  <header class="admin-page-header">
+    <div>
+      <p class="admin-muted">Blog</p>
+      <h1>Novo post</h1>
+    </div>
+  </header>
+
+  <section class="admin-card">
+    <PostForm />
+  </section>
+</AdminLayout>

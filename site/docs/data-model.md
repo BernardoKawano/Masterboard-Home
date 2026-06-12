@@ -172,8 +172,80 @@ PRIMARY KEY (event_id, speaker_id)
 | `source` | `text` | YES | Canal de origem |
 | `referrer` | `text` | YES | URL de referência |
 | `status` | `lead_status` | NO | Default: 'new'. Enum: new, contacted, approved, rejected |
+| `intent` | `text` | YES | Intenção declarada, ex: 'membro' |
+| `company_moment` | `text` | YES | Momento da empresa |
+| `annual_revenue` | `text` | YES | Faixa de faturamento anual |
+| `employee_count` | `text` | YES | Faixa de colaboradores |
+| `country_code` | `text` | YES | Código do país do WhatsApp |
+| `whatsapp` | `text` | YES | Número local informado |
+| `objective` | `text` | YES | Objetivo principal |
+| `score` | `integer` | NO | Pontuação inicial de qualificação |
+| `priority` | `text` | NO | Prioridade operacional: low, normal, high |
+| `assigned_to` | `text` | YES | Responsável interno |
+| `last_contacted_at` | `timestamptz` | YES | Último contato |
+| `next_follow_up_at` | `timestamptz` | YES | Próximo follow-up |
 | `notes` | `text` | YES | Notas internas |
 | `submitted_at` | `timestamptz` | NO | Default: now() |
+
+---
+
+### LeadActivity (Histórico de Lead)
+
+| Campo | Tipo | Nullable | Notas |
+|---|---|---|---|
+| `id` | `uuid` | NO | PK. Default: gen_random_uuid() |
+| `lead_id` | `uuid` | NO | FK → leads.id |
+| `type` | `text` | NO | Tipo de atividade: created, status_change, note, contact |
+| `description` | `text` | YES | Descrição legível |
+| `metadata` | `jsonb` | NO | Dados auxiliares |
+| `created_by` | `text` | YES | Responsável/usuário |
+| `created_at` | `timestamptz` | NO | Default: now() |
+
+---
+
+### AdminUser
+
+| Campo | Tipo | Nullable | Notas |
+|---|---|---|---|
+| `id` | `uuid` | NO | PK |
+| `auth_user_id` | `uuid` | NO | ID do usuário no Supabase Auth |
+| `email` | `text` | NO | Único |
+| `name` | `text` | YES | Nome exibido no painel |
+| `role` | `text` | NO | `admin` ou `editor` |
+| `is_active` | `boolean` | NO | Permite suspender acesso sem apagar histórico |
+| `created_at` | `timestamptz` | NO | Default: now() |
+| `updated_at` | `timestamptz` | NO | Default: now() |
+
+---
+
+### SiteSetting
+
+| Campo | Tipo | Nullable | Notas |
+|---|---|---|---|
+| `key` | `text` | NO | PK, ex: `home.hero.eyebrow` |
+| `label` | `text` | NO | Rótulo exibido no admin |
+| `description` | `text` | YES | Ajuda editorial |
+| `type` | `text` | NO | `text`, `textarea`, `color`, `url` |
+| `value` | `text` | NO | Valor normalizado pelo admin |
+| `is_public` | `boolean` | NO | Se pode ser lido pelo site público |
+| `updated_by` | `text` | YES | E-mail do editor |
+| `updated_at` | `timestamptz` | NO | Última alteração |
+
+---
+
+### AdminAuditLog
+
+| Campo | Tipo | Nullable | Notas |
+|---|---|---|---|
+| `id` | `uuid` | NO | PK |
+| `actor_user_id` | `uuid` | YES | ID do usuário no Supabase Auth |
+| `actor_email` | `text` | NO | E-mail do editor |
+| `action` | `text` | NO | Ex: `post.updated`, `settings.updated` |
+| `resource` | `text` | NO | Nome da tabela/recurso |
+| `resource_id` | `text` | YES | ID do registro alterado |
+| `before_value` | `jsonb` | YES | Snapshot antes da mudança |
+| `after_value` | `jsonb` | YES | Snapshot depois da mudança |
+| `created_at` | `timestamptz` | NO | Default: now() |
 
 ---
 
@@ -184,6 +256,9 @@ Member → Company (N:1)
 Event → Speaker via EventSpeaker (N:M)
 Event → ContentPost (1:N — conteúdos gerados pelo evento)
 Lead → Member (1:0..1 — quando aprovado)
+Lead → LeadActivity (1:N — histórico operacional)
+Supabase Auth User → AdminUser (1:0..1 — permissão de painel)
+AdminUser → AdminAuditLog (1:N — ações administrativas)
 ```
 
 ---
@@ -196,6 +271,11 @@ ALTER TABLE events ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_read_events" ON events
   FOR SELECT USING (is_published = true);
 
+-- Blog público: qualquer um pode ler posts publicados
+ALTER TABLE content_posts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public_read_content_posts" ON content_posts
+  FOR SELECT USING (is_published = true);
+
 -- Membros: só acesso autenticado com role correto
 ALTER TABLE members ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "admin_read_members" ON members
@@ -205,6 +285,11 @@ CREATE POLICY "admin_read_members" ON members
 ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_insert_leads" ON leads FOR INSERT WITH CHECK (true);
 CREATE POLICY "admin_read_leads" ON leads FOR SELECT USING (auth.role() = 'service_role');
+
+-- Admin: leitura/escrita via service role após validação de sessão no servidor
+ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_audit_log ENABLE ROW LEVEL SECURITY;
 ```
 
 ---

@@ -5,8 +5,8 @@ export const prerender = false;
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
-import LeadModal from '../../components/LeadModal.astro';
 import { dataSource } from '../../lib/data-source';
+import { getResponsiveImageAttrs } from '../../lib/responsive-image';
 import { bbcodeToHtml } from '../../lib/bubble';
 import { formatEventDate, formatEventTime } from '../../lib/adapters/bubble/index';
 import { getEventUrl } from '../../types/domain';
@@ -57,6 +57,18 @@ const calendarParams = new URLSearchParams({
   location: event.venue,
 });
 const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&${calendarParams.toString()}`;
+
+const getEventHeroImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
+  widths: [640, 960, 1280, 1600],
+  sizes: '(min-width: 1024px) 56vw, 100vw',
+  quality: 76,
+});
+
+const getGuestImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
+  widths: [96, 160, 240],
+  sizes: '48px',
+  quality: 70,
+});
 
 // Schema.org — sem acoplamento ao Bubble
 const eventSchema = {
@@ -125,10 +137,13 @@ const eventSchema = {
             <div class="event-app-cover">
               {event.coverImage ? (
                 <img
-                  src={event.coverImage}
+                  {...getEventHeroImageAttrs(event.coverImage)}
                   alt={event.title}
                   loading="eager"
+                  fetchpriority="high"
                   decoding="async"
+                  width="1280"
+                  height="720"
                   onerror="this.style.display='none'"
                 />
               ) : (
@@ -154,9 +169,9 @@ const eventSchema = {
               </h1>
 
               <div class="event-app-actions" data-animate data-animate-delay="200">
-                <button type="button" class="btn-primary" data-open-modal>
+                <a href="/candidatura/" class="btn-primary">
                   Cadastre-se
-                </button>
+                </a>
                 <a class="event-app-action" href={calendarUrl} target="_blank" rel="noopener noreferrer">
                   Adicionar ao meu calendário
                 </a>
@@ -186,7 +201,7 @@ const eventSchema = {
                       <article class="event-app-guest">
                         <div class="event-app-guest__photo">
                           {speaker.photo ? (
-                            <img src={speaker.photo} alt={speaker.name} loading="lazy" decoding="async" onerror="this.style.display='none'" />
+                            <img {...getGuestImageAttrs(speaker.photo)} alt={speaker.name} loading="lazy" fetchpriority="low" decoding="async" width="96" height="96" onerror="this.style.display='none'" />
                           ) : (
                             <span>{speaker.name.charAt(0).toUpperCase()}</span>
                           )}
@@ -242,9 +257,9 @@ const eventSchema = {
                   )}
                 </dl>
 
-                <button type="button" class="btn-primary w-full justify-center mt-6" data-open-modal>
+                <a href="/candidatura/" class="btn-primary w-full justify-center mt-6">
                   Cadastre-se
-                </button>
+                </a>
               </section>
 
               {event.driveLink && event.status === 'past' && (
@@ -271,7 +286,6 @@ const eventSchema = {
   </main>
 
   <Footer />
-  <LeadModal />
   <script>
     document.querySelectorAll('[data-share-event]').forEach((button) => {
       button.addEventListener('click', async () => {

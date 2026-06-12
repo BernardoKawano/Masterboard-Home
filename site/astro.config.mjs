@@ -1,17 +1,15 @@
 import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
-import node from '@astrojs/node';
+import vercel from '@astrojs/vercel/serverless';
 
 // @astrojs/sitemap tem bug conhecido com output:'hybrid' (astro:routes:resolved não dispara).
-// O sitemap.xml é servido diretamente de public/sitemap.xml.
-// Atualize public/sitemap.xml ao adicionar novos eventos/posts.
+// O sitemap.xml é servido por src/pages/sitemap.xml.ts para refletir eventos/posts do Supabase.
 
 export default defineConfig({
   site: 'https://masterboard.com.br',
 
-  // Hybrid: páginas estáticas + rota /api/candidatura server-rendered
   output: 'hybrid',
-  adapter: node({ mode: 'standalone' }),
+  adapter: vercel(),
 
   integrations: [
     tailwind({ applyBaseStyles: false }),

@@ -7,6 +7,7 @@
  */
 
 import type { Member, MemberCompany } from '../types/domain';
+import { getResponsiveImageAttrs } from '../lib/responsive-image';
 
 interface Props {
   members?: Member[];
@@ -70,6 +71,12 @@ const compactRevenue = (revenue?: string) =>
     .replace(/De\s+/gi, '')
     .replace(/\s+/g, ' ')
     .trim();
+
+const getMemberImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
+  widths: [160, 320, 480],
+  sizes: '(min-width: 1024px) 16vw, (min-width: 640px) 33vw, 50vw',
+  quality: 72,
+});
 ---
 
 <section
@@ -116,9 +123,10 @@ const compactRevenue = (revenue?: string) =>
               aria-label={`${getMemberDisplayName(member.name)}, ${getMemberRole(member)}, ${member.company}`}
             >
               <img
-                src={member.photo}
+                {...getMemberImageAttrs(member.photo!)}
                 alt={member.name}
-                loading={i < 6 ? 'eager' : 'lazy'}
+                loading="lazy"
+                fetchpriority="low"
                 decoding="async"
                 width="320"
                 height="320"

@@ -1,0 +1,123 @@
+---
+export const prerender = false;
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getAdminSession } from '../../lib/admin/auth';
+
+const session = await getAdminSession(Astro);
+if (session) return Astro.redirect('/admin/');
+
+const error = Astro.url.searchParams.get('error');
+const next = Astro.url.searchParams.get('next') ?? '/admin/';
+---
+
+<BaseLayout
+  title="Entrar no Admin | Masterboard"
+  description="Acesso restrito ao painel Masterboard."
+  noindex={true}
+>
+  <main class="admin-login">
+    <section class="admin-login__card">
+      <p class="admin-login__eyebrow">Masterboard Admin</p>
+      <h1>Entrar no painel</h1>
+      <p class="admin-login__copy">Use seu login autorizado para editar conteúdo e acompanhar operação.</p>
+
+      {error && <p class="admin-login__error">{error}</p>}
+
+      <form method="post" action="/api/admin/login" class="admin-login__form">
+        <input type="hidden" name="next" value={next} />
+        <label>
+          E-mail
+          <input type="email" name="email" autocomplete="email" required />
+        </label>
+        <label>
+          Senha
+          <input type="password" name="password" autocomplete="current-password" required />
+        </label>
+        <button type="submit">Entrar</button>
+      </form>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .admin-login {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 2rem;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(251, 190, 10, 0.14), transparent 34rem),
+      var(--mb-black);
+  }
+
+  .admin-login__card {
+    width: min(100%, 28rem);
+    border: 1px solid var(--mb-border);
+    border-radius: 1.5rem;
+    background: rgba(255, 255, 255, 0.045);
+    padding: 1.5rem;
+  }
+
+  .admin-login__eyebrow {
+    color: var(--mb-yellow);
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .admin-login h1 {
+    margin: 0.5rem 0;
+    color: var(--mb-white);
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    font-weight: 900;
+    letter-spacing: -0.055em;
+    line-height: 0.95;
+  }
+
+  .admin-login__copy {
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: 1.25rem;
+  }
+
+  .admin-login__error {
+    border: 1px solid rgba(255, 120, 120, 0.28);
+    border-radius: 0.9rem;
+    background: rgba(255, 120, 120, 0.1);
+    color: #ffb4b4;
+    padding: 0.75rem 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .admin-login__form {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .admin-login__form label {
+    display: grid;
+    gap: 0.4rem;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.84rem;
+    font-weight: 900;
+  }
+
+  .admin-login__form input {
+    border: 1px solid var(--mb-border);
+    border-radius: 0.9rem;
+    background: rgba(0, 0, 0, 0.32);
+    color: var(--mb-white);
+    padding: 0.85rem 0.9rem;
+  }
+
+  .admin-login__form button {
+    border: 0;
+    border-radius: 999px;
+    background: var(--mb-yellow);
+    color: var(--mb-black);
+    padding: 0.85rem 1rem;
+    font-weight: 900;
+    cursor: pointer;
+  }
+</style>

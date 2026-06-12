@@ -1,5 +1,6 @@
 ---
 import type { Speaker } from '../types/domain';
+import { getResponsiveImageAttrs } from '../lib/responsive-image';
 
 interface Props {
   speakers: Speaker[];
@@ -39,12 +40,18 @@ const getPhotoPosition = (speaker: Speaker): string | undefined =>
 const visibleSpeakers = [...speakers]
   .sort((a, b) => getSpeakerScore(b) - getSpeakerScore(a));
 
+const getSpeakerImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
+  widths: [240, 360, 540, 720],
+  sizes: '(min-width: 1024px) 30vw, 82vw',
+  quality: 74,
+});
+
 const total = visibleSpeakers.length;
 
 const describeSpeaker = (speaker: Speaker) => {
   if (speaker.bio) return speaker.bio;
 
-  const role = speaker.roleLabel || speaker.role || 'líder convidado';
+  const role = speaker.role || speaker.roleLabel || 'líder convidado';
   const companySuffix = speaker.company ? ` à frente da ${speaker.company}` : '';
 
   return `${speaker.name} chega à mesa como ${role}${companySuffix}, compartilhando bastidores reais de decisão, crescimento e construção de negócios.`;
@@ -144,10 +151,10 @@ const describeSpeaker = (speaker: Speaker) => {
             >
               {speaker.photo ? (
                 <img
-                  src={speaker.photo}
+                  {...getSpeakerImageAttrs(speaker.photo)}
                   alt={speaker.name}
-                  loading={i < 5 ? 'eager' : 'lazy'}
-                  fetchpriority={i === 0 ? 'high' : 'auto'}
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  fetchpriority={i === 0 ? 'high' : 'low'}
                   decoding="async"
                   width="360"
                   height="480"
@@ -163,8 +170,8 @@ const describeSpeaker = (speaker: Speaker) => {
                 {speaker.name.charAt(0).toUpperCase()}
               </div>
               <!-- Faixa superior: empresa -->
-              <div class="spk-card-top" aria-hidden="true">
-                <span class="spk-card-company">{speaker.company ?? speaker.roleLabel}</span>
+              <div class="spk-card-top" data-has-company={speaker.company ? 'true' : 'false'} aria-hidden="true">
+                <span class="spk-card-company">{speaker.company ?? ''}</span>
               </div>
               <!-- Faixa inferior: nome + cargo -->
               <div class="spk-card-bottom" aria-hidden="true">

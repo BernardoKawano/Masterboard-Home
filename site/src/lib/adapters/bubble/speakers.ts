@@ -4,35 +4,9 @@
 
 import type { BubbleSpeaker } from '../../bubble';
 import { normalizeImageUrl } from '../../bubble';
+import { parseRoleLabel } from '../../speaker-role';
 import type { Speaker } from '../../../types/domain';
 import { slugify } from './events';
-
-// ─── Role parsing ─────────────────────────────────────────────────────────────
-
-/**
- * Tenta separar cargo e empresa de um campo como "CEO da VIASOFT" ou "CEO RP Trader".
- * Retorna { role, company } ou valores undefined se não for possível.
- */
-function parseRoleLabel(label: string): { role?: string; company?: string } {
-  if (!label) return {};
-
-  // Padrões comuns: "Cargo da/do Empresa", "Cargo - Empresa", "Cargo | Empresa"
-  const patterns = [
-    /^(.+?)\s+d[ao]\s+(.+)$/i,  // "CEO da VIASOFT"
-    /^(.+?)\s+-\s+(.+)$/,        // "CEO - VIASOFT"
-    /^(.+?)\s+\|\s+(.+)$/,       // "CEO | VIASOFT"
-  ];
-
-  for (const pattern of patterns) {
-    const match = label.match(pattern);
-    if (match) {
-      return { role: match[1].trim(), company: match[2].trim() };
-    }
-  }
-
-  // Sem separador claro — usa o label inteiro como role
-  return { role: label.trim() };
-}
 
 // ─── Main mapper ──────────────────────────────────────────────────────────────
 

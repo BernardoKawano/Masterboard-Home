@@ -443,14 +443,34 @@
 .hero-static-bg {
   z-index: 0;
   background-image: image-set(
-    url('/images/bg-banner.avif') type('image/avif'),
-    url('/images/bg-banner.webp') type('image/webp'),
+    url('/images/bg-banner-768.avif') type('image/avif'),
+    url('/images/bg-banner-768.webp') type('image/webp'),
     url('/images/bg-banner.png') type('image/png')
   );
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
   opacity: 0.64;
+}
+
+@media (min-width: 768px) {
+  .hero-static-bg {
+    background-image: image-set(
+      url('/images/bg-banner-1280.avif') type('image/avif'),
+      url('/images/bg-banner-1280.webp') type('image/webp'),
+      url('/images/bg-banner.png') type('image/png')
+    );
+  }
+}
+
+@media (min-width: 1280px) {
+  .hero-static-bg {
+    background-image: image-set(
+      url('/images/bg-banner.avif') type('image/avif'),
+      url('/images/bg-banner.webp') type('image/webp'),
+      url('/images/bg-banner.png') type('image/png')
+    );
+  }
 }
 
 .hero-image-overlay {
@@ -1094,6 +1114,10 @@
   background: var(--mb-yellow);
   padding: clamp(0.35rem, 1vw, 0.55rem) clamp(0.6rem, 1.5vw, 0.875rem);
   border-radius: 1.25rem 1.25rem 0 0;
+}
+
+.spk-card-top[data-has-company="false"] {
+  display: none;
 }
 
 /* Base: gradiente preto com nome em branco */
@@ -2042,44 +2066,6 @@
   max-width: 760px;
 }
 
-/* ─── Modal ──────────────────────────────────────────────── */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  background: rgba(5, 5, 5, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-}
-
-.modal-backdrop.is-open {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.modal-panel {
-  background: #0d0d0d;
-  border: 1px solid var(--mb-border);
-  border-radius: 1.5rem;
-  padding: clamp(1.75rem, 4vw, 2.5rem);
-  width: 100%;
-  max-width: 480px;
-  max-height: 90vh;
-  overflow-y: auto;
-  transform: translateY(16px) scale(0.97);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.modal-backdrop.is-open .modal-panel {
-  transform: translateY(0) scale(1);
-}
 
 /* ─── Form ───────────────────────────────────────────────── */
 .form-field {

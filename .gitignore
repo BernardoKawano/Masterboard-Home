@@ -3,6 +3,8 @@ site-working-copy/
 local-export/
 *.sql
 *.sql.gz
+!site/scripts/schema.sql
+!site/scripts/*migration.sql
 *.zip
 *.tar
 *.tar.gz

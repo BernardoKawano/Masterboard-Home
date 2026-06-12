@@ -58,7 +58,9 @@ As variáveis abaixo são esperadas no ambiente de produção quando os recursos
 
 ```bash
 SUPABASE_URL=
+SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+ADMIN_EMAILS=admin@masterboard.com.br
 BUBBLE_BASE_URL=https://app.masterboard.com.br/api/1.1
 BUBBLE_API_TOKEN=
 LEAD_WEBHOOK_URL=
@@ -82,15 +84,31 @@ cd site
 npm run test:candidatura
 npm run test:speakers
 npm run test:blog-import
+npm run test:admin
 npm run check
 npm run build
 ```
 
+## Painel Admin
+
+O painel em `/admin/` usa Supabase Auth para login e `admin_users` para permissões (`admin` ou `editor`). Durante bootstrap, `ADMIN_EMAILS` funciona como allowlist de administradores até a tabela `admin_users` estar populada.
+
+Antes de liberar o painel, aplique `site/scripts/admin-self-service-migration.sql` no Supabase. Depois crie o usuário no Supabase Auth e vincule seu `auth_user_id` em `admin_users`.
+
+O fluxo inicial permite:
+
+- Gerenciar posts em `content_posts` com rascunho/publicado e preview protegido.
+- Ver leads em `/admin/leads/` sem token na URL.
+- Editar tokens visuais e textos da hero via `site_settings`.
+- Registrar ações em `admin_audit_log` para reversão e rastreabilidade.
+
 ## Próximos Passos
 
-- Confirmar no Supabase as políticas de RLS para `events`, `speakers`, `members`, `companies`, `content_posts`, `leads` e `lead_activities`.
+- Aplicar no Supabase `site/scripts/admin-self-service-migration.sql`.
+- Criar usuários no Supabase Auth e vincular seus `auth_user_id` em `admin_users`.
+- Confirmar no Supabase as políticas de RLS para `events`, `speakers`, `members`, `companies`, `content_posts`, `leads`, `lead_activities` e tabelas de admin.
 - Fechar a migração Bubble -> Supabase para eventos, speakers, membros e empresas, mantendo rastreabilidade por `source` e `source_id`.
-- Evoluir `/admin/leads` para um painel protegido com autenticação real, filtros salvos e histórico de contato.
+- Evoluir `/admin/leads` com alteração de status, filtros salvos e histórico de contato.
 - Automatizar importações e revisões de dados com jobs ou scripts agendados.
 - Validar preview/produção na Vercel com variáveis completas, domínio `masterboard.com.br`, HTTPS e sitemap publicado.
 - Definir a fronteira entre site institucional, futuro app de membros e painel operacional.

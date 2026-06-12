@@ -1,0 +1,86 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getAdminSession, getServiceSupabaseClient } from '../../lib/admin/auth';
+import { listAdminSettings } from '../../lib/admin/settings';
+
+const session = await getAdminSession(Astro);
+if (!session) return Astro.redirect(`/admin/login/?next=${encodeURIComponent('/admin/')}`);
+
+const supabase = getServiceSupabaseClient();
+const [postsResult, leadsResult, settings] = await Promise.all([
+  supabase.from('content_posts').select('id', { count: 'exact', head: true }),
+  supabase.from('leads').select('id', { count: 'exact', head: true }),
+  listAdminSettings(),
+]);
+
+const stats = [
+  { label: 'Posts no blog', value: postsResult.count ?? 0, href: '/admin/blog/' },
+  { label: 'Leads recebidos', value: leadsResult.count ?? 0, href: '/admin/leads/' },
+  { label: 'Settings editáveis', value: settings.length, href: '/admin/settings/' },
+];
+---
+
+<AdminLayout title="Painel" active="dashboard" session={session}>
+  <header class="admin-page-header">
+    <div>
+      <p class="admin-muted">Operação Masterboard</p>
+      <h1>Painel self-service</h1>
+    </div>
+  </header>
+
+  <section class="admin-grid" aria-label="Resumo do admin">
+    {stats.map((stat) => (
+      <a href={stat.href} class="admin-card dashboard-card">
+        <span>{stat.label}</span>
+        <strong>{stat.value}</strong>
+      </a>
+    ))}
+  </section>
+
+  <section class="admin-card dashboard-help">
+    <h2>Fluxo recomendado</h2>
+    <p>
+      Edite em rascunho, revise no preview e publique só quando o conteúdo estiver pronto.
+      Mudanças salvas pelo admin entram no banco e aparecem no site sem mexer no GitHub.
+    </p>
+  </section>
+</AdminLayout>
+
+<style>
+  .dashboard-card {
+    color: var(--mb-white);
+    text-decoration: none;
+  }
+
+  .dashboard-card span {
+    display: block;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.82rem;
+    font-weight: 900;
+    margin-bottom: 0.7rem;
+  }
+
+  .dashboard-card strong {
+    color: var(--mb-yellow);
+    font-size: 2rem;
+    font-weight: 900;
+  }
+
+  .dashboard-help {
+    margin-top: 1rem;
+  }
+
+  .dashboard-help h2 {
+    color: var(--mb-white);
+    font-size: 1.25rem;
+    font-weight: 900;
+    margin-bottom: 0.5rem;
+  }
+
+  .dashboard-help p {
+    color: rgba(255, 255, 255, 0.58);
+    line-height: 1.6;
+  }
+</style>

@@ -1,12 +1,19 @@
 ---
+export const prerender = false;
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
-import LeadModal from '../../components/LeadModal.astro';
-import type { BlogPost } from '../../types';
-import postsData from '../../data/blog-posts.json';
+import { dataSource } from '../../lib/data-source';
+import { getResponsiveImageAttrs } from '../../lib/responsive-image';
+import { getPostUrl } from '../../types/domain';
 
-const posts = postsData as BlogPost[];
+const posts = await dataSource.listPosts?.() ?? [];
+const SITE_URL = 'https://masterboard.com.br';
+
+const getPostImage = (image?: string) => image
+  ? image.startsWith('http') ? image : `${SITE_URL}${image}`
+  : null;
 
 const formatDate = (dateStr: string) =>
   new Date(dateStr).toLocaleDateString('pt-BR', {
@@ -14,6 +21,12 @@ const formatDate = (dateStr: string) =>
     month: 'long',
     year: 'numeric',
   });
+
+const getPostCardImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
+  widths: [320, 640, 960],
+  sizes: '(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw',
+  quality: 74,
+});
 
 const blogListSchema = {
   '@context': 'https://schema.org',
@@ -30,8 +43,9 @@ const blogListSchema = {
     '@type': 'BlogPosting',
     headline: p.title,
     description: p.excerpt,
-    url: `https://masterboard.com.br/blog/${p.slug}/`,
+    url: `${SITE_URL}${getPostUrl(p)}`,
     datePublished: p.date,
+    ...(getPostImage(p.coverImage) && { image: getPostImage(p.coverImage) }),
     author: { '@type': 'Organization', name: p.author },
   })),
 };
@@ -81,9 +95,22 @@ const blogListSchema = {
                 data-animate
                 data-animate-delay={String(i * 80)}
               >
-                <!-- Imagem placeholder -->
                 <div class="w-full aspect-video rounded-xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-mb-border overflow-hidden flex items-center justify-center">
-                  <span class="text-4xl text-white/10">✦</span>
+                  {post.coverImage ? (
+                    <img
+                      {...getPostCardImageAttrs(post.coverImage)}
+                      alt={post.title}
+                      loading="lazy"
+                      fetchpriority="low"
+                      decoding="async"
+                      width="640"
+                      height="360"
+                      class="w-full h-full object-cover"
+                      onerror="this.style.display='none'"
+                    />
+                  ) : (
+                    <span class="text-4xl text-white/10">✦</span>
+                  )}
                 </div>
 
                 <div>
@@ -92,7 +119,7 @@ const blogListSchema = {
                   </span>
 
                   <h2 class="font-800 text-white text-lg leading-tight mb-2 group-hover:text-mb-yellow transition-colors">
-                    <a href={`/blog/${post.slug}/`} class="after:absolute after:inset-0 relative">
+                    <a href={getPostUrl(post)} class="after:absolute after:inset-0 relative">
                       {post.title}
                     </a>
                   </h2>
@@ -110,7 +137,7 @@ const blogListSchema = {
           <div class="text-center py-20">
             <p class="text-white/40 text-lg mb-2">Em breve.</p>
             <p class="text-white/30 text-sm">Novos conteúdos chegando. Seja membro para receber primeiro.</p>
-            <button type="button" class="btn-primary mt-6" data-open-modal>Fazer parte</button>
+            <a href="/candidatura/" class="btn-primary mt-6">Fazer parte</a>
           </div>
         )}
       </div>
@@ -119,5 +146,4 @@ const blogListSchema = {
   </main>
 
   <Footer />
-  <LeadModal />
 </BaseLayout>

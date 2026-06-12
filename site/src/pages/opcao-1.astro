@@ -4,7 +4,6 @@ export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import LeadModal from '../components/LeadModal.astro';
 
 const stats = [
   { value: '800+', label: 'membros ativos' },
@@ -166,20 +165,21 @@ const faqSchema = {
           <p>
             Acelere sua trajetória com um MBA orientado à prática. Aprenda com especialistas do mercado e desenvolva competências para liderar em cenários reais.
           </p>
-          <button type="button" class="mba-button mba-button--yellow" data-open-modal>
+          <a href="/candidatura/" class="mba-button mba-button--yellow">
             Faça parte do club
             <span class="material-symbols-rounded" aria-hidden="true">arrow_outward</span>
-          </button>
+          </a>
         </div>
 
         <div class="mba-hero__visual" data-animate-scale aria-hidden="true">
           <div class="mba-hero__photo">
             <img
-              src="/images/bg-banner.webp"
+              src="/images/bg-banner-1280.webp"
               alt=""
               width="1200"
               height="900"
               loading="eager"
+              fetchpriority="high"
               decoding="async"
             />
           </div>
@@ -244,7 +244,7 @@ const faqSchema = {
           </div>
 
           <div class="mba-phone" aria-hidden="true">
-            <img src="/images/bg-banner.webp" alt="" width="420" height="680" loading="lazy" decoding="async" />
+            <img src="/images/bg-banner-768.webp" alt="" width="420" height="680" loading="lazy" fetchpriority="low" decoding="async" />
           </div>
 
           {reasons.map((reason, index) => (
@@ -321,7 +321,7 @@ const faqSchema = {
     <section class="mba-program" aria-labelledby="mba-program-title">
       <div class="container">
         <div class="mba-program__image" data-animate-scale>
-          <img src="/images/bg-banner.webp" alt="Encontro executivo Masterboard" width="900" height="1000" loading="lazy" decoding="async" />
+          <img src="/images/bg-banner-1280.webp" alt="Encontro executivo Masterboard" width="900" height="1000" loading="lazy" fetchpriority="low" decoding="async" />
           <div class="mba-program__badge">
             <span class="material-symbols-rounded" aria-hidden="true">call_split</span>
             <div>
@@ -346,7 +346,7 @@ const faqSchema = {
             ))}
           </ul>
           <div class="mba-actions">
-            <button type="button" class="mba-button mba-button--dark" data-open-modal>Faça parte do club</button>
+            <a href="/candidatura/" class="mba-button mba-button--dark">Faça parte do club</a>
             <a class="mba-button mba-button--outline" href="#mba-faq">Ver FAQs</a>
           </div>
         </div>
@@ -374,7 +374,7 @@ const faqSchema = {
     <section class="mba-faq-preview" aria-labelledby="mba-preview-title">
       <div class="container">
         <div class="mba-faq-preview__image" data-animate-scale>
-          <img src="/images/bg-banner.webp" alt="Executivos em discussão estratégica" width="880" height="1000" loading="lazy" decoding="async" />
+          <img src="/images/bg-banner-1280.webp" alt="Executivos em discussão estratégica" width="880" height="1000" loading="lazy" fetchpriority="low" decoding="async" />
         </div>
 
         <div class="mba-faq-preview__content" data-animate>
@@ -391,9 +391,9 @@ const faqSchema = {
               </details>
             ))}
           </div>
-          <button type="button" class="mba-button mba-button--dark" data-open-modal>
+          <a href="/candidatura/" class="mba-button mba-button--dark">
             Solicitar conversa
-          </button>
+          </a>
         </div>
       </div>
     </section>
@@ -421,7 +421,7 @@ const faqSchema = {
             </div>
           </div>
           <div class="mba-testimonial__video" aria-hidden="true">
-            <img src="/images/bg-banner.webp" alt="" width="700" height="700" loading="lazy" decoding="async" />
+            <img src="/images/bg-banner-768.webp" alt="" width="700" height="700" loading="lazy" fetchpriority="low" decoding="async" />
           </div>
         </div>
       </div>
@@ -448,16 +448,15 @@ const faqSchema = {
     <section class="mba-final-cta" aria-labelledby="mba-final-title">
       <div class="mba-final-cta__inner">
         <h2 id="mba-final-title">Pronto para fazer parte do MBA Masterboard?</h2>
-        <button type="button" class="mba-button mba-button--light" data-open-modal>
+        <a href="/candidatura/" class="mba-button mba-button--light">
           Faça parte do club
           <span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span>
-        </button>
+        </a>
       </div>
     </section>
   </main>
 
   <Footer />
-  <LeadModal />
 </BaseLayout>
 
 <style>

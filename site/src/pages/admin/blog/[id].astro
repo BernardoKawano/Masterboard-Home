@@ -1,0 +1,58 @@
+---
+export const prerender = false;
+
+import PostForm from '../../../components/admin/PostForm.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getAdminSession, getServiceSupabaseClient } from '../../../lib/admin/auth';
+
+interface AdminPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  content_html: string | null;
+  date: string;
+  author: string;
+  category: string | null;
+  cover_image_url: string | null;
+  tags: string[] | null;
+  is_published: boolean;
+  seo_title: string | null;
+  seo_description: string | null;
+}
+
+const session = await getAdminSession(Astro);
+if (!session) return Astro.redirect(`/admin/login/?next=${encodeURIComponent(Astro.url.pathname)}`);
+
+const { id } = Astro.params;
+if (!id) return Astro.redirect('/admin/blog/');
+
+const result = await getServiceSupabaseClient()
+  .from('content_posts')
+  .select('*')
+  .eq('id', id)
+  .maybeSingle();
+const post = result.data as AdminPost | null;
+const error = result.error;
+
+if (!post && !error) return Astro.redirect('/admin/blog/');
+---
+
+<AdminLayout title="Editar Post" active="blog" session={session}>
+  <header class="admin-page-header">
+    <div>
+      <p class="admin-muted">Blog</p>
+      <h1>Editar post</h1>
+    </div>
+  </header>
+
+  {error ? (
+    <section class="admin-card">
+      <p class="admin-muted">Não foi possível carregar o post: {error.message}</p>
+    </section>
+  ) : (
+    <section class="admin-card">
+      <PostForm post={post as AdminPost} />
+    </section>
+  )}
+</AdminLayout>

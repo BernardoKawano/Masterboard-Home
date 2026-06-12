@@ -1,0 +1,128 @@
+---
+interface Post {
+  id?: string;
+  slug?: string;
+  title?: string;
+  excerpt?: string | null;
+  content_html?: string | null;
+  date?: string;
+  author?: string;
+  category?: string | null;
+  cover_image_url?: string | null;
+  tags?: string[] | null;
+  is_published?: boolean;
+  seo_title?: string | null;
+  seo_description?: string | null;
+}
+
+export interface Props {
+  post?: Post;
+}
+
+const { post = {} } = Astro.props;
+const today = new Date().toISOString().slice(0, 10);
+---
+
+<form method="post" action="/api/admin/posts" class="admin-form post-form">
+  <input type="hidden" name="_action" value={post.id ? 'update' : 'create'} />
+  {post.id && <input type="hidden" name="id" value={post.id} />}
+
+  <div class="admin-grid post-form__grid">
+    <label class="admin-field">
+      Título
+      <input name="title" value={post.title ?? ''} required />
+    </label>
+
+    <label class="admin-field">
+      Slug
+      <input name="slug" value={post.slug ?? ''} placeholder="gerado automaticamente se vazio" />
+    </label>
+
+    <label class="admin-field">
+      Data
+      <input type="date" name="date" value={post.date ?? today} required />
+    </label>
+  </div>
+
+  <label class="admin-field">
+    Resumo
+    <textarea name="excerpt" required>{post.excerpt ?? ''}</textarea>
+  </label>
+
+  <label class="admin-field">
+    Conteúdo HTML
+    <textarea name="content_html" class="post-form__content">{post.content_html ?? ''}</textarea>
+  </label>
+
+  <div class="admin-grid post-form__grid">
+    <label class="admin-field">
+      Autor
+      <input name="author" value={post.author ?? 'Equipe Masterboard'} required />
+    </label>
+
+    <label class="admin-field">
+      Categoria
+      <input name="category" value={post.category ?? 'Conteúdo'} />
+    </label>
+
+    <label class="admin-field">
+      Tags
+      <input name="tags" value={(post.tags ?? []).join(', ')} placeholder="liderança, networking" />
+    </label>
+  </div>
+
+  <label class="admin-field">
+    Imagem de capa
+    <input name="cover_image_url" value={post.cover_image_url ?? ''} placeholder="https://..." />
+  </label>
+
+  <div class="admin-grid post-form__grid">
+    <label class="admin-field">
+      SEO title
+      <input name="seo_title" value={post.seo_title ?? ''} />
+    </label>
+
+    <label class="admin-field">
+      SEO description
+      <input name="seo_description" value={post.seo_description ?? ''} />
+    </label>
+
+    <label class="admin-field post-form__checkbox">
+      <input type="checkbox" name="is_published" checked={post.is_published ?? false} />
+      Publicar no site
+    </label>
+  </div>
+
+  <div class="admin-actions">
+    <button type="submit" class="admin-button">Salvar</button>
+    <a href="/admin/blog/" class="admin-button-secondary">Cancelar</a>
+    {post.id && <a href={`/admin/blog/preview/?id=${post.id}`} class="admin-button-secondary" target="_blank" rel="noopener noreferrer">Preview</a>}
+  </div>
+</form>
+
+<style>
+  .post-form__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .post-form__content {
+    min-height: 24rem;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  }
+
+  .post-form__checkbox {
+    align-content: end;
+    grid-template-columns: auto 1fr;
+    display: grid;
+  }
+
+  .post-form__checkbox input {
+    width: auto;
+  }
+
+  @media (max-width: 860px) {
+    .post-form__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
