@@ -4,6 +4,12 @@ export const prerender = false;
 import { createClient } from '@supabase/supabase-js';
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { canManageLeads, getAdminSession } from '../../lib/admin/auth';
+import {
+  formatLeadSourceLabel,
+  getLeadBrandLabel,
+  leadSourceFilterValues,
+  parseLeadSource,
+} from '../../lib/lead-source.mjs';
 
 type LeadRow = Record<string, unknown>;
 
@@ -14,6 +20,7 @@ if (!session) return Astro.redirect(`/admin/login/?next=${encodeURIComponent('/a
 
 const isAuthorized = canManageLeads(session);
 const selectedStatus = Astro.url.searchParams.get('status') ?? 'all';
+const selectedBrand = Astro.url.searchParams.get('brand') ?? 'all';
 
 const parseNotes = (value: unknown) => {
   if (typeof value !== 'string' || !value.trim()) return {};
@@ -58,6 +65,7 @@ const getQualification = (lead: LeadRow) => {
 };
 
 const statusOptions = ['all', 'new', 'contacted', 'approved', 'rejected'];
+const brandOptions = ['all', 'masterboard', 'scale'] as const;
 const statusLabels: Record<string, string> = {
   all: 'Todos',
   new: 'Novos',
@@ -65,8 +73,21 @@ const statusLabels: Record<string, string> = {
   approved: 'Aprovados',
   rejected: 'Rejeitados',
 };
+const brandLabels: Record<string, string> = {
+  all: 'Todas as marcas',
+  masterboard: 'Masterboard',
+  scale: 'Scale',
+};
 
-const statusHref = (status: string) => `/admin/leads/?status=${status}`;
+const buildLeadsHref = (params: { status?: string; brand?: string }) => {
+  const search = new URLSearchParams();
+  const status = params.status ?? selectedStatus;
+  const brand = params.brand ?? selectedBrand;
+  if (status !== 'all') search.set('status', status);
+  if (brand !== 'all') search.set('brand', brand);
+  const query = search.toString();
+  return query ? `/admin/leads/?${query}` : '/admin/leads/';
+};
 
 let leads: LeadRow[] = [];
 let errorMessage = '';
@@ -87,6 +108,13 @@ if (isAuthorized && supabaseUrl && serviceRoleKey) {
 
   if (selectedStatus !== 'all') {
     query = query.eq('status', selectedStatus);
+  }
+
+  const brandFilter = leadSourceFilterValues(
+    selectedBrand === 'masterboard' || selectedBrand === 'scale' ? selectedBrand : 'all',
+  );
+  if (selectedBrand !== 'all' && brandFilter?.supabaseOr) {
+    query = query.or(brandFilter.supabaseOr);
   }
 
   const { data, error } = await query;
@@ -153,9 +181,17 @@ for (const lead of leads) {
             ))}
           </section>
 
+          <nav class="lead-admin__filters" aria-label="Filtrar por marca">
+            {brandOptions.map((brand) => (
+              <a href={buildLeadsHref({ brand })} aria-current={selectedBrand === brand ? 'page' : undefined}>
+                {brandLabels[brand]}
+              </a>
+            ))}
+          </nav>
+
           <nav class="lead-admin__filters" aria-label="Filtrar por status">
             {statusOptions.map((status) => (
-              <a href={statusHref(status)} aria-current={selectedStatus === status ? 'page' : undefined}>
+              <a href={buildLeadsHref({ status })} aria-current={selectedStatus === status ? 'page' : undefined}>
                 {statusLabels[status]}
               </a>
             ))}
@@ -170,6 +206,7 @@ for (const lead of leads) {
             ) : (
               leads.map((lead) => {
                 const q = getQualification(lead);
+                const source = parseLeadSource(typeof lead.source === 'string' ? lead.source : '');
                 const whatsapp = text(lead.phone);
                 const whatsappUrl = whatsapp !== '-'
                   ? `https://wa.me/${whatsapp.replace(/\D/g, '')}`
@@ -183,6 +220,7 @@ for (const lead of leads) {
                         <p class="lead-card__company">{text(lead.company)} · {text(lead.role)}</p>
                       </div>
                       <div class="lead-card__badges">
+                        <span data-brand={source.brand}>{getLeadBrandLabel(source.brand)}</span>
                         <span data-priority={q.priority}>{q.priority}</span>
                         <span>{text(lead.status, 'new')}</span>
                         <span>Score {q.score}</span>
@@ -214,6 +252,10 @@ for (const lead of leads) {
                       </div>
                       <div>
                         <dt>Origem</dt>
+                        <dd>{formatLeadSourceLabel(source)}</dd>
+                      </div>
+                      <div>
+                        <dt>Source técnico</dt>
                         <dd>{text(lead.source)}</dd>
                       </div>
                     </dl>
@@ -379,6 +421,16 @@ for (const lead of leads) {
     color: rgba(255,255,255,0.62);
     font-size: 0.72rem;
     font-weight: 800;
+  }
+
+  .lead-card__badges [data-brand='masterboard'] {
+    border-color: rgba(251,190,10,0.45);
+    color: var(--mb-yellow);
+  }
+
+  .lead-card__badges [data-brand='scale'] {
+    border-color: rgba(96,165,250,0.45);
+    color: #93c5fd;
   }
 
   .lead-card__badges [data-priority='high'] {

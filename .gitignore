@@ -5,6 +5,7 @@ local-export/
 *.sql.gz
 !site/scripts/schema.sql
 !site/scripts/*migration.sql
+!site/supabase/migrations/*.sql
 *.zip
 *.tar
 *.tar.gz
@@ -14,6 +15,9 @@ wp-config.php
 **/wp-config.php
 .env
 .env.*
+tools/wordpress-wp-config.snippet.php
+tools/wp-cli/wp-cli.phar
+site/data/
 
 node_modules/
 node_modules.failed-install-*/

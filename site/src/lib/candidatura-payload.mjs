@@ -1,3 +1,5 @@
+import { LEAD_SOURCE } from './lead-source.mjs';
+
 const requiredFields = [
   'email',
   'nome',
@@ -34,7 +36,7 @@ export function buildCandidaturaPayload(data, meta = {}) {
     intencao: getFormString(data, 'intencao') || 'membro',
     momento: getFormString(data, 'momento'),
     lgpd: data.get('lgpd') === 'on' || data.get('lgpd') === 'true',
-    source: getFormString(data, 'source') || meta.source || 'site-candidatura',
+    source: getFormString(data, 'source') || meta.source || LEAD_SOURCE.MASTERBOARD_SITE_CANDIDATURA,
     referrer: getFormString(data, 'referrer') || meta.referrer || '',
     timestamp: meta.timestamp || new Date().toISOString(),
   };

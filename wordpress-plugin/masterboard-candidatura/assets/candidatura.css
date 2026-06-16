@@ -1,0 +1,306 @@
+.mb-candidatura-page {
+  --mb-yellow: #fbbe0a;
+  --mb-yellow-dark: #c99703;
+  --mb-black: #0a0a0a;
+  --mb-white: #ffffff;
+  --mb-border: rgba(255, 255, 255, 0.12);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(251, 190, 10, 0.14), transparent 28rem),
+    radial-gradient(circle at 88% 30%, rgba(255, 255, 255, 0.08), transparent 26rem),
+    var(--mb-black);
+  color: var(--mb-white);
+}
+
+.mb-candidatura-container {
+  width: min(100%, 72rem);
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+.application-hero {
+  min-height: calc(100vh - 5rem);
+  display: flex;
+  align-items: center;
+  padding: clamp(4.8rem, 8vh, 6.2rem) 0 clamp(1.8rem, 4vh, 3rem);
+}
+
+.application-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(24rem, 0.9fr);
+  gap: clamp(1.6rem, 4vw, 3.5rem);
+  align-items: center;
+}
+
+.application-context {
+  position: sticky;
+  top: 7rem;
+}
+
+.application-context h1 {
+  color: var(--mb-white);
+  font-size: clamp(2.4rem, 5.4vw, 5.1rem);
+  font-weight: 900;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  max-width: 13.5ch;
+  margin: 0;
+}
+
+.application-context p {
+  margin-top: 1rem;
+  max-width: 35rem;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: clamp(1rem, 1.4vw, 1.16rem);
+  line-height: 1.65;
+}
+
+.mb-eyebrow {
+  color: var(--mb-yellow);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin: 0 0 1rem;
+}
+
+.application-proof {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.35rem;
+}
+
+.application-proof span {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 0.45rem 0.68rem;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.application-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.6rem;
+  background: rgba(8, 8, 8, 0.86);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  padding: clamp(1.25rem, 2.4vw, 1.85rem);
+}
+
+.application-progress {
+  height: 0.28rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  margin-bottom: clamp(1.2rem, 2.2vw, 1.75rem);
+}
+
+.application-progress__bar {
+  width: 16.66%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--mb-yellow);
+  transition: width 0.25s ease;
+}
+
+.application-step h2 {
+  color: var(--mb-white);
+  font-size: clamp(1.35rem, 2.35vw, 1.95rem);
+  font-weight: 900;
+  line-height: 1.1;
+  margin: 0 0 0.8rem;
+}
+
+.application-kicker {
+  color: var(--mb-yellow);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin: 0 0 0.72rem;
+}
+
+.application-copy {
+  color: rgba(255, 255, 255, 0.54);
+  line-height: 1.55;
+  margin: 0 0 1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.35rem;
+}
+
+.form-label-optional {
+  color: rgba(255, 255, 255, 0.34);
+  font-weight: 400;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--mb-border);
+  border-radius: 0.625rem;
+  color: var(--mb-white);
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: rgba(251, 190, 10, 0.4);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.application-input {
+  min-height: 2.85rem;
+}
+
+textarea.application-input {
+  min-height: 5.6rem;
+  resize: vertical;
+}
+
+.application-field-stack,
+.application-field {
+  display: grid;
+  gap: 0.82rem;
+}
+
+.application-field {
+  gap: 0.35rem;
+}
+
+.application-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.application-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.95rem;
+  padding: 0.62rem 0.75rem;
+  color: rgba(255, 255, 255, 0.74);
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+}
+
+.application-option:has(input:checked) {
+  border-color: rgba(251, 190, 10, 0.55);
+  background: rgba(251, 190, 10, 0.1);
+  color: var(--mb-white);
+}
+
+.application-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 0.95rem;
+  color: rgba(255, 255, 255, 0.54);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.application-consent a {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.application-message {
+  margin-top: 0.85rem;
+  border-radius: 0.9rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+}
+
+.application-message--error {
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+}
+
+.application-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: clamp(1.05rem, 2vw, 1.55rem);
+}
+
+.mb-btn-primary,
+.mb-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  border-radius: 9999px;
+  font-weight: 800;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+}
+
+.mb-btn-primary {
+  background: var(--mb-yellow);
+  color: var(--mb-black);
+}
+
+.mb-btn-primary:hover {
+  background: var(--mb-yellow-dark);
+}
+
+.mb-btn-secondary {
+  background: transparent;
+  color: var(--mb-white);
+  border: 1.5px solid var(--mb-border);
+}
+
+.application-thanks h2 {
+  color: var(--mb-white);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 900;
+  margin: 0 0 1.25rem;
+}
+
+.application-thanks p {
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+  margin: 0 0 1.15rem;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  .application-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .application-context {
+    position: static;
+  }
+}
+
+@media (max-width: 520px) {
+  .application-options {
+    grid-template-columns: 1fr;
+  }
+}

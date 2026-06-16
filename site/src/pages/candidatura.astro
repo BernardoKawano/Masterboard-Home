@@ -2,6 +2,7 @@
 export const prerender = false;
 
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { LEAD_SOURCE } from '../lib/lead-source.mjs';
 import Header from '../components/Header.astro';
 
 const roleOptions = [
@@ -86,7 +87,7 @@ const countryCodeOptions = [
               aria-label="Formulário de candidatura ao Masterboard"
             >
               <input type="hidden" name="intencao" value="membro" />
-              <input type="hidden" name="source" value="candidatura-page" />
+              <input type="hidden" name="source" value={LEAD_SOURCE.MASTERBOARD_SITE_CANDIDATURA} />
               <input type="hidden" name="telefone" data-phone-full />
 
               <div class="application-step" data-step="0">

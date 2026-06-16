@@ -13,6 +13,7 @@
     "check": "astro check",
     "test:member-import": "node scripts/member-import-utils.test.mjs",
     "test:candidatura": "node scripts/candidatura-payload.test.mjs",
+    "test:lead-source": "node scripts/lead-source.test.mjs",
     "test:speakers": "node scripts/speaker-parser.test.mjs",
     "test:blog-import": "node scripts/import-blog-posts-to-supabase.test.mjs",
     "test:admin": "node scripts/admin-utils.test.mjs",

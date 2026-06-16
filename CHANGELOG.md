@@ -1,5 +1,31 @@
 # Changelog
 
+## 2026-06-16
+
+### Leads / Origem
+- Padronizado `source` no formato `marca:canal:detalhe` com constantes em `site/src/lib/lead-source.mjs`.
+- Masterboard site passa a gravar `masterboard:site:candidatura`; valores Scale reservados como `scale:site:*`.
+- Painel `/admin/leads/` ganhou filtro por marca (Masterboard / Scale) e badge de marca por card.
+- Plugin WordPress atualizado para `masterboard:site:candidatura` (v1.0.3) com endpoint `/wp-json/masterboard/v1/health` e mensagens de erro mais claras.
+
+### Supabase / WordPress
+- Validado via Supabase CLI o projeto remoto **Masterboard** (`bnpogxplejvmpwfygvks`, `sa-east-1`): migrações sincronizadas, tabelas `leads` e `lead_activities` prontas com todos os campos do formulário.
+- Teste de insert no `leads` remoto concluído com sucesso (registro de QA removido em seguida).
+- Adicionado `tools/generate-wp-supabase-config.ps1` para gerar `site/.env.wordpress.local` e `tools/wordpress-wp-config.snippet.php` (gitignored) com URL e `service_role` para colar no `wp-config.php` do WordPress.
+
+### WordPress / Candidatura
+- Baixado WP-CLI 2.12.0 em `tools/wp-cli/wp-cli.phar` com wrapper `tools/wp-cli/wp.bat` (usa PHP do LocalWP).
+- Criado plugin `wordpress-plugin/masterboard-candidatura/` com o formulário multi-etapas de `/candidatura/`, endpoint REST `masterboard/v1/candidatura` e gravação em Supabase.
+- Adicionado script `tools/deploy-candidatura-plugin.ps1` para copiar o plugin ao WordPress local ou publicar via SSH no DreamHost.
+- CTAs `.modal-club` no site WordPress passam a redirecionar para `/candidatura/` quando o plugin estiver ativo.
+
+## 2026-06-15
+
+### Supabase CLI
+- Inicializada a estrutura local `site/supabase/` via Supabase CLI para versionar migrações e preparar fluxo de sandbox/staging antes de produção.
+- Convertidas as migrações incrementais existentes para `site/supabase/migrations/`, mantendo scripts idempotentes para membros, leads, admin e leitura pública de posts.
+- Validação de ambiente: CLI disponível via `npx supabase`; Docker, Scoop e autenticação Supabase CLI ainda não configurados localmente.
+
 ## 2026-06-11
 
 ### Performance / Images

@@ -169,7 +169,7 @@ PRIMARY KEY (event_id, speaker_id)
 | `role` | `text` | NO | Cargo |
 | `city` | `text` | YES | — |
 | `lgpd_consent` | `boolean` | NO | Deve ser true |
-| `source` | `text` | YES | Canal de origem |
+| `source` | `text` | YES | Canal padronizado `marca:canal:detalhe` (ex.: `masterboard:site:candidatura`, `scale:site:candidatura`) |
 | `referrer` | `text` | YES | URL de referência |
 | `status` | `lead_status` | NO | Default: 'new'. Enum: new, contacted, approved, rejected |
 | `intent` | `text` | YES | Intenção declarada, ex: 'membro' |
