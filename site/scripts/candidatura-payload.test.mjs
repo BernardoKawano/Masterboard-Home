@@ -3,9 +3,12 @@ import {
   buildCandidaturaPayload,
   priorityFromScore,
   scoreLead,
+  toDraftLeadRow,
   toLegacyLeadRow,
   toLeadRow,
   validateCandidaturaPayload,
+  validateDraftEmail,
+  validateStep,
 } from '../src/lib/candidatura-payload.mjs';
 
 const data = new FormData();
@@ -66,5 +69,38 @@ const incomplete = new FormData();
 incomplete.set('email', 'lead@empresa.com');
 const missing = validateCandidaturaPayload(buildCandidaturaPayload(incomplete));
 assert.deepEqual(missing, ['nome', 'telefone', 'empresa', 'cargo', 'faturamento', 'colaboradores', 'lgpd']);
+
+assert.deepEqual(validateDraftEmail({ email: '' }), ['email']);
+assert.deepEqual(validateDraftEmail({ email: 'invalid' }), ['email válido']);
+assert.deepEqual(validateDraftEmail({ email: 'ok@empresa.com' }), []);
+
+const draftPayload = buildCandidaturaPayload(
+  (() => {
+    const form = new FormData();
+    form.set('email', 'draft@empresa.com');
+    form.set('evento_interesse', 'Masterboard Club — Londrina');
+    return form;
+  })(),
+);
+const draftRow = toDraftLeadRow(draftPayload, 1);
+assert.equal(draftRow.status, 'new');
+assert.equal(draftRow.email, 'draft@empresa.com');
+assert.equal(draftRow.evento_interesse, 'Masterboard Club — Londrina');
+assert.equal(draftRow.lgpd_consent, false);
+assert.equal(JSON.parse(draftRow.notes).draft, true);
+assert.equal(JSON.parse(draftRow.notes).form_step, 1);
+assert.equal(draftRow.name, '(em preenchimento)');
+
+assert.deepEqual(validateStep(1, { eventoInteresse: '' }), ['evento_interesse']);
+assert.deepEqual(validateStep(2, { nome: 'Ana', whatsapp: '11', empresa: 'Co' }), []);
+
+data.set('cnpj', '12.345.678/0001-95');
+data.set('cidade', 'Curitiba — PR');
+const withCnpj = buildCandidaturaPayload(data);
+assert.equal(withCnpj.cnpj, '12345678000195');
+const completeRow = toLeadRow(withCnpj);
+assert.equal(JSON.parse(completeRow.notes).cnpj, '12345678000195');
+assert.equal(completeRow.status, 'new');
+assert.equal(completeRow.city, 'Curitiba — PR');
 
 console.log('candidatura-payload: ok');

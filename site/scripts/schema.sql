@@ -8,7 +8,7 @@ CREATE TYPE event_status AS ENUM ('upcoming', 'past', 'cancelled');
 CREATE TYPE event_access_type AS ENUM ('public', 'members-only', 'invite-only');
 CREATE TYPE member_tier AS ENUM ('member', 'vip', 'founding');
 CREATE TYPE member_status AS ENUM ('active', 'inactive', 'prospect');
-CREATE TYPE lead_status AS ENUM ('new', 'contacted', 'approved', 'rejected');
+CREATE TYPE lead_status AS ENUM ('draft', 'new', 'contacted', 'approved', 'rejected');
 
 -- Tables
 CREATE TABLE companies (
@@ -120,13 +120,14 @@ CREATE TABLE content_posts (
 
 CREATE TABLE leads (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name text NOT NULL,
+  name text,
   email text NOT NULL,
-  phone text NOT NULL,
-  company text NOT NULL,
-  role text NOT NULL,
+  phone text,
+  company text,
+  role text,
   city text,
-  lgpd_consent boolean NOT NULL,
+  cnpj text,
+  lgpd_consent boolean NOT NULL DEFAULT false,
   source text,
   referrer text,
   status lead_status NOT NULL DEFAULT 'new',
@@ -137,6 +138,7 @@ CREATE TABLE leads (
   country_code text,
   whatsapp text,
   objective text,
+  form_step smallint NOT NULL DEFAULT 0,
   score integer NOT NULL DEFAULT 0,
   priority text NOT NULL DEFAULT 'normal',
   assigned_to text,
@@ -212,6 +214,7 @@ CREATE INDEX ON leads(score DESC);
 CREATE INDEX ON leads(priority);
 CREATE INDEX ON leads(email);
 CREATE INDEX ON leads(phone);
+CREATE UNIQUE INDEX leads_email_draft_unique ON leads (lower(email)) WHERE status = 'draft';
 CREATE INDEX ON lead_activities(lead_id, created_at DESC);
 CREATE INDEX ON admin_users(email);
 CREATE INDEX ON admin_users(auth_user_id);

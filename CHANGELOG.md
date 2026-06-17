@@ -1,6 +1,24 @@
 # Changelog
 
-## 2026-06-16
+## 2026-06-17 (aplicacao Astro)
+
+- Formulário movido de `/candidatura/` para `/aplicacao/` (redirects de `/candidatura/` e `/aplicação/`).
+- Fluxo G4: club obrigatório, CNPJ opcional (BrasilAPI), salvamento progressivo de leads e botão único de ação.
+- API `/api/aplicacao` grava em `leads` no Supabase com schema atual (rascunhos em `notes.draft`).
+- Campo de observações com texto branco legível no tema escuro.
+
+## 2026-06-17 (candidatura v1.1.2)
+
+- Removida faixa branca superior na `/candidatura/` (padding do Impreza com header fixo + `.l-section.height_medium`).
+
+## 2026-06-17 (candidatura v1.1.1)
+
+- Corrigido layout da página `/candidatura/` no Impreza: fundo preto full-width, remoção de margens brancas do tema, sidebar oculta.
+
+## 2026-06-17 (candidatura v1.1.0)
+
+- Sincronizado plugin WordPress com formulário local Astro: etapa de seleção de Club, CNPJ com preenchimento automático, cidade, salvamento progressivo (draft) e 7 etapas.
+- Novas rotas REST: `POST/PATCH /masterboard/v1/candidatura/draft`, `GET /masterboard/v1/cnpj/{cnpj}`.
 
 ### Leads / Origem
 - Padronizado `source` no formato `marca:canal:detalhe` com constantes em `site/src/lib/lead-source.mjs`.

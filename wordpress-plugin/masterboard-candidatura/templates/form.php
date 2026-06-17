@@ -46,6 +46,12 @@ $country_code_options = [
     ['value' => '+595', 'label' => 'Paraguai', 'hint' => '+595'],
 ];
 
+$club_options = [
+    'Masterboard Club — Londrina',
+    'Masterboard Club — Maringá',
+    'Masterboard Club — Curitiba',
+];
+
 $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
 ?>
 <div class="mb-candidatura-page">
@@ -78,14 +84,19 @@ $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
             aria-label="Formulário de candidatura ao Masterboard"
           >
             <input type="hidden" name="intencao" value="membro" />
-              <input type="hidden" name="source" value="<?php echo esc_attr(MB_LEAD_SOURCE_MASTERBOARD_SITE_CANDIDATURA); ?>" />
+            <input type="hidden" name="source" value="<?php echo esc_attr(MB_LEAD_SOURCE_MASTERBOARD_SITE_CANDIDATURA); ?>" />
             <input type="hidden" name="telefone" data-phone-full />
+            <input type="hidden" name="lead_id" data-lead-id />
+            <input type="hidden" name="cidade" data-city-field />
+            <input type="hidden" name="form_step" data-form-step />
 
             <div class="application-step" data-step="0">
               <p class="application-kicker">Começamos simples.</p>
               <h2 id="application-title">Olá, qual é o seu e-mail profissional?</h2>
               <p class="application-copy">
                 Ele identifica sua aplicação e evita que você precise repetir informações depois.
+                Guardamos seu e-mail para continuidade da candidatura, conforme a
+                <a href="<?php echo $privacy_url; ?>" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>.
               </p>
               <label class="form-label" for="field-email">E-mail</label>
               <input
@@ -101,6 +112,20 @@ $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
             </div>
 
             <div class="application-step" data-step="1" hidden>
+              <p class="application-kicker">Próximo passo.</p>
+              <h2>Qual Masterboard Club te interessa?</h2>
+              <p class="application-copy">Isso ajuda a curadoria a direcionar sua aplicação para a sala certa.</p>
+              <div class="application-options application-options--single">
+                <?php foreach ($club_options as $option) : ?>
+                  <label class="application-option">
+                    <input type="radio" name="evento_interesse" value="<?php echo esc_attr($option); ?>" required data-required-label="club de interesse" />
+                    <span><?php echo esc_html($option); ?></span>
+                  </label>
+                <?php endforeach; ?>
+              </div>
+            </div>
+
+            <div class="application-step" data-step="2" hidden>
               <p class="application-kicker">Obrigado pelo interesse.</p>
               <h2>Para priorizar sua aplicação, conte quem é você.</h2>
               <div class="application-field-stack">
@@ -127,18 +152,27 @@ $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
                   </div>
                 </div>
                 <div class="application-field">
-                  <label class="form-label" for="field-empresa">3. Qual o nome da sua empresa?</label>
-                  <input id="field-empresa" name="empresa" type="text" class="form-input application-input" placeholder="Ex: Masterboard" required data-required-label="nome da empresa" autocomplete="organization" />
+                  <label class="form-label" for="field-cnpj">3. CNPJ da empresa <span class="form-label-optional">(opcional)</span></label>
+                  <input id="field-cnpj" name="cnpj" type="text" class="form-input application-input" placeholder="00.000.000/0000-00" inputmode="numeric" data-cnpj-input autocomplete="off" />
+                  <p class="application-hint" data-cnpj-status hidden></p>
                 </div>
                 <div class="application-field">
-                  <label class="form-label" for="field-website">4. Site da empresa <span class="form-label-optional">(opcional)</span></label>
+                  <label class="form-label" for="field-empresa">4. Qual o nome da sua empresa?</label>
+                  <input id="field-empresa" name="empresa" type="text" class="form-input application-input" placeholder="Ex: Masterboard" required data-required-label="nome da empresa" autocomplete="organization" data-company-field />
+                </div>
+                <div class="application-field">
+                  <label class="form-label" for="field-city-display">Cidade da empresa</label>
+                  <input id="field-city-display" type="text" class="form-input application-input" placeholder="Preenchida automaticamente pelo CNPJ" readonly data-city-display />
+                </div>
+                <div class="application-field">
+                  <label class="form-label" for="field-website">5. Site da empresa <span class="form-label-optional">(opcional)</span></label>
                   <input id="field-website" name="website" type="url" class="form-input application-input" placeholder="https://suaempresa.com.br" autocomplete="url" />
                 </div>
               </div>
             </div>
 
-            <div class="application-step" data-step="2" hidden>
-              <h2>4. Qual o seu cargo na empresa?</h2>
+            <div class="application-step" data-step="3" hidden>
+              <h2>6. Qual o seu cargo na empresa?</h2>
               <p class="application-copy">Isso ajuda a entender se você está na cadeira certa para a sala.</p>
               <div class="application-options">
                 <?php foreach ($role_options as $index => $option) : ?>
@@ -150,8 +184,8 @@ $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
               </div>
             </div>
 
-            <div class="application-step" data-step="3" hidden>
-              <h2>5. Qual o faturamento anual da sua empresa?</h2>
+            <div class="application-step" data-step="4" hidden>
+              <h2>7. Qual o faturamento anual da sua empresa?</h2>
               <p class="application-copy">A resposta orienta a curadoria, não aparece publicamente.</p>
               <div class="application-options">
                 <?php foreach ($revenue_options as $option) : ?>
@@ -163,8 +197,8 @@ $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
               </div>
             </div>
 
-            <div class="application-step" data-step="4" hidden>
-              <h2>6. Quantos colaboradores sua empresa possui?</h2>
+            <div class="application-step" data-step="5" hidden>
+              <h2>8. Quantos colaboradores sua empresa possui?</h2>
               <p class="application-copy">Tamanho de operação muda o tipo de troca que faz sentido.</p>
               <div class="application-options">
                 <?php foreach ($employee_options as $option) : ?>
@@ -176,8 +210,8 @@ $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
               </div>
             </div>
 
-            <div class="application-step" data-step="5" hidden>
-              <h2>7. O que faria essa sala valer seu tempo agora?</h2>
+            <div class="application-step" data-step="6" hidden>
+              <h2>9. O que faria essa sala valer seu tempo agora?</h2>
               <p class="application-copy">Último contexto antes da curadoria.</p>
               <label class="form-label" for="field-momento">Momento da empresa</label>
               <select id="field-momento" name="momento" class="form-input application-input">
@@ -191,9 +225,6 @@ $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
 
               <label class="form-label mt-4" for="field-objetivo">Objetivo principal</label>
               <textarea id="field-objetivo" name="objetivo" class="form-input application-input min-h-28" placeholder="Ex: tomar decisões melhores com pares que vivem desafios parecidos."></textarea>
-
-              <label class="form-label mt-4" for="field-evento-interesse">Há algum evento de interesse específico? <span class="form-label-optional">(opcional)</span></label>
-              <input id="field-evento-interesse" name="evento_interesse" type="text" class="form-input application-input" placeholder="Ex: Master #102 — Governança" />
 
               <label class="application-consent">
                 <input id="field-lgpd" name="lgpd" type="checkbox" required data-required-label="aceite da Política de Privacidade" />
@@ -211,8 +242,7 @@ $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
             <div id="application-error" class="application-message application-message--error" hidden role="alert"></div>
 
             <div class="application-actions">
-              <button type="button" class="mb-btn-primary" data-next>Continuar</button>
-              <button type="submit" class="mb-btn-primary" data-submit hidden>Enviar para curadoria</button>
+              <button type="button" class="mb-btn-primary" data-action>Continuar</button>
             </div>
           </form>
 

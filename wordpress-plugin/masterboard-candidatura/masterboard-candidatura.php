@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Masterboard Candidatura
  * Description: Formulário multi-etapas de candidatura ao Club Masterboard, com gravação em Supabase.
- * Version: 1.0.3
+ * Version: 1.1.3
  * Author: Masterboard
  * Text Domain: masterboard-candidatura
  */
@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('MB_CANDIDATURA_VERSION', '1.0.3');
+define('MB_CANDIDATURA_VERSION', '1.1.3');
 define('MB_CANDIDATURA_PATH', plugin_dir_path(__FILE__));
 define('MB_CANDIDATURA_URL', plugin_dir_url(__FILE__));
 
@@ -22,6 +22,8 @@ require_once MB_CANDIDATURA_PATH . 'includes/rest-api.php';
 require_once MB_CANDIDATURA_PATH . 'includes/theme-compat.php';
 
 final class Masterboard_Candidatura_Plugin {
+    private static bool $script_config_added = false;
+
     public static function init(): void {
         add_action('init', [self::class, 'register_shortcode']);
         add_action('wp_enqueue_scripts', [self::class, 'enqueue_page_assets']);
@@ -79,15 +81,29 @@ final class Masterboard_Candidatura_Plugin {
 
         wp_enqueue_style('masterboard-candidatura');
         wp_enqueue_script('masterboard-candidatura');
+        self::localize_candidatura_script();
 
-        wp_localize_script('masterboard-candidatura', 'MasterboardCandidatura', [
+        mb_candidatura_titlebar_css();
+    }
+
+    private static function script_config(): array {
+        return [
             'restUrl' => rest_url('masterboard/v1/candidatura'),
+            'draftUrl' => rest_url('masterboard/v1/candidatura/draft'),
+            'cnpjUrl' => rest_url('masterboard/v1/cnpj/'),
             'nonce' => wp_create_nonce('wp_rest'),
             'privacyUrl' => home_url('/politica-de-privacidade/'),
             'homeUrl' => home_url('/'),
-        ]);
+        ];
+    }
 
-        mb_candidatura_titlebar_css();
+    private static function localize_candidatura_script(): void {
+        if (self::$script_config_added) {
+            return;
+        }
+
+        self::$script_config_added = true;
+        wp_localize_script('masterboard-candidatura', 'MasterboardCandidatura', self::script_config());
     }
 
     public static function register_assets(): void {
@@ -110,15 +126,7 @@ final class Masterboard_Candidatura_Plugin {
     public static function render_shortcode(): string {
         wp_enqueue_style('masterboard-candidatura');
         wp_enqueue_script('masterboard-candidatura');
-
-        if (!wp_script_is('masterboard-candidatura', 'done')) {
-            wp_localize_script('masterboard-candidatura', 'MasterboardCandidatura', [
-                'restUrl' => rest_url('masterboard/v1/candidatura'),
-                'nonce' => wp_create_nonce('wp_rest'),
-                'privacyUrl' => home_url('/politica-de-privacidade/'),
-                'homeUrl' => home_url('/'),
-            ]);
-        }
+        self::localize_candidatura_script();
 
         mb_candidatura_titlebar_css();
 

@@ -67,7 +67,7 @@ export const SETTING_DEFINITIONS = [
     key: 'home.hero.primaryCtaHref',
     label: 'Hero: link do botão principal',
     type: 'url',
-    defaultValue: '/candidatura/',
+    defaultValue: '/aplicacao/',
   },
   {
     key: 'home.hero.secondaryCtaLabel',

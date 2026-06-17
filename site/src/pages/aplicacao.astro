@@ -1,0 +1,962 @@
+---
+export const prerender = false;
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { LEAD_SOURCE } from '../lib/lead-source.mjs';
+import Header from '../components/Header.astro';
+
+const roleOptions = [
+  'Sócio ou Fundador',
+  'Presidente ou CEO',
+  'Vice-presidente ou C-Level',
+  'Diretor',
+  'Gerente',
+  'Coordenador',
+  'Supervisor',
+  'Analista',
+];
+
+const revenueOptions = [
+  'Ainda não faturamos',
+  'Até R$250 mil ao ano',
+  'De R$250 mil a R$500 mil ao ano',
+  'De R$500 mil a R$1 milhão ao ano',
+  'De R$1 milhão a R$5 milhões ao ano',
+  'De R$5 a R$10 milhões ao ano',
+  'De R$10 a R$50 milhões ao ano',
+  'De R$50 a R$500 milhões ao ano',
+  'Acima de R$500 milhões',
+];
+
+const employeeOptions = [
+  'Acima de 1.000 colaboradores',
+  'De 101 a 1.000 colaboradores',
+  'De 51 a 100 colaboradores',
+  'De 10 a 50 colaboradores',
+  'Até 10 colaboradores',
+];
+
+const countryCodeOptions = [
+  { value: '+55', label: 'Brasil', hint: '+55' },
+  { value: '+1', label: 'EUA / Canadá', hint: '+1' },
+  { value: '+351', label: 'Portugal', hint: '+351' },
+  { value: '+54', label: 'Argentina', hint: '+54' },
+  { value: '+56', label: 'Chile', hint: '+56' },
+  { value: '+57', label: 'Colômbia', hint: '+57' },
+  { value: '+52', label: 'México', hint: '+52' },
+  { value: '+598', label: 'Uruguai', hint: '+598' },
+  { value: '+595', label: 'Paraguai', hint: '+595' },
+];
+
+const clubOptions = [
+  'Masterboard Club — Londrina',
+  'Masterboard Club — Maringá',
+  'Masterboard Club — Curitiba',
+];
+---
+
+<BaseLayout
+  title="Aplicação Masterboard | Acesso por curadoria"
+  description="Conte seu momento, porte da empresa e objetivo para entendermos se a sala Masterboard faz sentido para você."
+  canonicalURL={new URL('/aplicacao/', Astro.url).href}
+>
+  <Header />
+
+  <main class="application-page">
+    <section class="application-hero">
+      <div class="container">
+        <div class="application-shell">
+          <aside class="application-context" aria-label="Contexto da aplicação">
+            <p class="eyebrow mb-4">Aplicação Masterboard</p>
+            <h1>A sala certa começa pelo filtro certo.</h1>
+            <p>
+              Precisamos entender seu momento, sua empresa e o tipo de conversa que pode gerar valor
+              real para você e para quem já está dentro.
+            </p>
+            <div class="application-proof">
+              <span>Curadoria antes do acesso</span>
+              <span>Experiências presenciais</span>
+              <span>Pares com contexto real</span>
+            </div>
+          </aside>
+
+          <section class="application-card" aria-labelledby="application-title">
+            <div class="application-progress" aria-hidden="true">
+              <div class="application-progress__bar" data-progress-bar></div>
+            </div>
+
+            <form
+              id="application-form"
+              method="POST"
+              action="/api/aplicacao"
+              novalidate
+              aria-label="Formulário de aplicação ao Masterboard"
+            >
+              <input type="hidden" name="intencao" value="membro" />
+              <input type="hidden" name="source" value={LEAD_SOURCE.MASTERBOARD_SITE_CANDIDATURA} />
+              <input type="hidden" name="telefone" data-phone-full />
+              <input type="hidden" name="lead_id" data-lead-id />
+              <input type="hidden" name="cidade" data-city-field />
+              <input type="hidden" name="form_step" data-form-step />
+
+              <div class="application-step" data-step="0">
+                <p class="application-kicker">Começamos simples.</p>
+                <h2 id="application-title">Olá, qual é o seu e-mail profissional?</h2>
+                <p class="application-copy">
+                  Ele identifica sua aplicação e evita que você precise repetir informações depois.
+                  Guardamos seu e-mail para continuidade da aplicação, conforme a
+                  <a href="/politica-de-privacidade/" target="_blank">Política de Privacidade</a>.
+                </p>
+                <label class="form-label" for="field-email">E-mail</label>
+                <input
+                  id="field-email"
+                  name="email"
+                  type="email"
+                  class="form-input application-input"
+                  placeholder="voce@empresa.com"
+                  required
+                  data-required-label="e-mail profissional"
+                  autocomplete="email"
+                />
+              </div>
+
+              <div class="application-step" data-step="1" hidden>
+                <p class="application-kicker">Próximo passo.</p>
+                <h2>Qual Masterboard Club te interessa?</h2>
+                <p class="application-copy">Isso ajuda a curadoria a direcionar sua aplicação para a sala certa.</p>
+                <div class="application-options application-options--single">
+                  {clubOptions.map((option) => (
+                    <label class="application-option">
+                      <input type="radio" name="evento_interesse" value={option} required data-required-label="club de interesse" />
+                      <span>{option}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div class="application-step" data-step="2" hidden>
+                <p class="application-kicker">Obrigado pelo interesse.</p>
+                <h2>Para priorizar sua aplicação, conte quem é você.</h2>
+                <div class="application-field-stack">
+                  <div class="application-field">
+                    <label class="form-label" for="field-nome">1. Qual o seu nome completo?</label>
+                    <input id="field-nome" name="nome" type="text" class="form-input application-input" placeholder="Seu nome completo" required data-required-label="nome completo" autocomplete="name" />
+                  </div>
+                  <div class="application-field">
+                    <label class="form-label" for="field-country-code">Região / código do país</label>
+                    <div class="application-field-control">
+                      <select
+                        id="field-country-code"
+                        name="codigo_pais"
+                        class="form-input application-input phone-code"
+                        aria-label="Código do país"
+                        data-phone-code
+                      >
+                        {countryCodeOptions.map((option) => (
+                          <option value={option.value} selected={option.value === '+55'}>
+                            {option.hint} · {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div class="application-field">
+                    <label class="form-label" for="field-whatsapp">2. E o seu WhatsApp?</label>
+                    <div class="application-field-control">
+                      <input
+                        id="field-whatsapp"
+                        name="whatsapp"
+                        type="tel"
+                        class="form-input application-input"
+                        placeholder="11 9 0000-0000"
+                        required
+                        data-required-label="WhatsApp"
+                        data-phone-local
+                        autocomplete="tel-national"
+                      />
+                    </div>
+                  </div>
+                  <div class="application-field">
+                    <label class="form-label" for="field-cnpj">3. CNPJ da empresa <span class="form-label-optional">(opcional)</span></label>
+                    <input
+                      id="field-cnpj"
+                      name="cnpj"
+                      type="text"
+                      class="form-input application-input"
+                      placeholder="00.000.000/0000-00"
+                      inputmode="numeric"
+                      data-cnpj-input
+                      autocomplete="off"
+                    />
+                    <p class="application-hint" data-cnpj-status hidden></p>
+                  </div>
+                  <div class="application-field">
+                    <label class="form-label" for="field-empresa">4. Qual o nome da sua empresa?</label>
+                    <input id="field-empresa" name="empresa" type="text" class="form-input application-input" placeholder="Ex: Masterboard" required data-required-label="nome da empresa" autocomplete="organization" data-company-field />
+                  </div>
+                  <div class="application-field">
+                    <label class="form-label" for="field-city-display">Cidade da empresa</label>
+                    <input id="field-city-display" type="text" class="form-input application-input" placeholder="Preenchida automaticamente pelo CNPJ" readonly data-city-display />
+                  </div>
+                  <div class="application-field">
+                    <label class="form-label" for="field-website">5. Site da empresa <span class="form-label-optional">(opcional)</span></label>
+                    <input id="field-website" name="website" type="url" class="form-input application-input" placeholder="https://suaempresa.com.br" autocomplete="url" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="application-step" data-step="3" hidden>
+                <h2>6. Qual o seu cargo na empresa?</h2>
+                <p class="application-copy">Isso ajuda a entender se você está na cadeira certa para a sala.</p>
+                <div class="application-options">
+                  {roleOptions.map((option, index) => (
+                    <label class="application-option">
+                      <input type="radio" name="cargo" value={option} required data-required-label="cargo" checked={index === 0} />
+                      <span>{option}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div class="application-step" data-step="4" hidden>
+                <h2>7. Qual o faturamento anual da sua empresa?</h2>
+                <p class="application-copy">A resposta orienta a curadoria, não aparece publicamente.</p>
+                <div class="application-options">
+                  {revenueOptions.map((option) => (
+                    <label class="application-option">
+                      <input type="radio" name="faturamento" value={option} required data-required-label="faturamento anual" />
+                      <span>{option}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div class="application-step" data-step="5" hidden>
+                <h2>8. Quantos colaboradores sua empresa possui?</h2>
+                <p class="application-copy">Tamanho de operação muda o tipo de troca que faz sentido.</p>
+                <div class="application-options">
+                  {employeeOptions.map((option) => (
+                    <label class="application-option">
+                      <input type="radio" name="colaboradores" value={option} required data-required-label="número de colaboradores" />
+                      <span>{option}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div class="application-step" data-step="6" hidden>
+                <h2>9. O que faria essa sala valer seu tempo agora?</h2>
+                <p class="application-copy">Último contexto antes da curadoria.</p>
+                <label class="form-label" for="field-momento">Momento da empresa</label>
+                <select id="field-momento" name="momento" class="form-input application-input">
+                  <option value="">Selecione se quiser</option>
+                  <option value="crescimento">Crescimento acelerado</option>
+                  <option value="expansao">Expansão para novos mercados</option>
+                  <option value="reposicionamento">Reposicionamento estratégico</option>
+                  <option value="capital">Busca de capital ou M&A</option>
+                  <option value="network">Rede certa para próximos passos</option>
+                </select>
+
+                <label class="form-label mt-4" for="field-objetivo">Observações</label>
+                <textarea
+                  id="field-objetivo"
+                  name="objetivo"
+                  class="form-input application-input application-textarea min-h-28"
+                  placeholder="Ex: tomar decisões melhores com pares que vivem desafios parecidos."
+                ></textarea>
+
+                <label class="application-consent">
+                  <input id="field-lgpd" name="lgpd" type="checkbox" required data-required-label="aceite da Política de Privacidade" />
+                  <span>
+                    Concordo com a <a href="/politica-de-privacidade/" target="_blank">Política de Privacidade</a>
+                    e autorizo o contato da equipe Masterboard.
+                  </span>
+                </label>
+              </div>
+
+              <div class="hidden" aria-hidden="true">
+                <input name="_gotcha" type="text" tabindex="-1" autocomplete="off" />
+              </div>
+
+              <div id="application-error" class="application-message application-message--error" hidden role="alert"></div>
+              <div id="application-success" class="application-message application-message--success" hidden role="status">
+                Candidatura recebida. Se houver fit, nossa equipe entra em contato.
+              </div>
+
+              <div class="application-actions">
+                <button type="button" class="btn-primary" data-action>Continuar</button>
+              </div>
+            </form>
+
+            <section class="application-thanks" data-thanks hidden aria-live="polite">
+              <p class="application-kicker">Candidatura recebida.</p>
+              <h2>Obrigado. Agora é com a curadoria.</h2>
+              <p>
+                Sua aplicação entrou na fila de análise da Masterboard. Vamos olhar seu momento,
+                porte de empresa e objetivo para entender se existe fit com a sala certa.
+              </p>
+              <p>
+                Se fizer sentido para os dois lados, nossa equipe entra em contato pelo WhatsApp informado.
+              </p>
+              <a href="/" class="btn-secondary">Voltar ao site</a>
+            </section>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+</BaseLayout>
+
+<script>
+  const LEAD_STORAGE_KEY = 'masterboard:aplicacao:leadId';
+  const DRAFT_API = '/api/aplicacao/draft';
+  const ACTION_LABELS = {
+    continue: 'Continuar',
+    submit: 'Enviar para curadoria',
+    sending: 'Enviando para curadoria...',
+  } as const;
+
+  const form = document.getElementById('application-form') as HTMLFormElement | null;
+  const steps = Array.from(document.querySelectorAll<HTMLElement>('[data-step]'));
+  const actionBtn = document.querySelector<HTMLButtonElement>('[data-action]');
+  const progressBar = document.querySelector<HTMLElement>('[data-progress-bar]');
+  const errorEl = document.getElementById('application-error');
+  const successEl = document.getElementById('application-success');
+  const thanksEl = document.querySelector<HTMLElement>('[data-thanks]');
+  const phoneCode = document.querySelector<HTMLSelectElement>('[data-phone-code]');
+  const phoneLocal = document.querySelector<HTMLInputElement>('[data-phone-local]');
+  const phoneFull = document.querySelector<HTMLInputElement>('[data-phone-full]');
+  const leadIdField = document.querySelector<HTMLInputElement>('[data-lead-id]');
+  const formStepField = document.querySelector<HTMLInputElement>('[data-form-step]');
+  const cnpjInput = document.querySelector<HTMLInputElement>('[data-cnpj-input]');
+  const cnpjStatus = document.querySelector<HTMLElement>('[data-cnpj-status]');
+  const companyField = document.querySelector<HTMLInputElement>('[data-company-field]');
+  const cityField = document.querySelector<HTMLInputElement>('[data-city-field]');
+  const cityDisplay = document.querySelector<HTMLInputElement>('[data-city-display]');
+  let currentStep = 0;
+  let cnpjLookupToken = 0;
+
+  const fieldLabel = (field: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement) =>
+    field.dataset.requiredLabel || field.labels?.[0]?.textContent?.replace(/\s+/g, ' ').trim() || field.name || 'campo obrigatório';
+
+  const showMessage = (message: string) => {
+    if (!errorEl) return;
+    errorEl.textContent = message;
+    errorEl.hidden = false;
+    successEl?.setAttribute('hidden', '');
+  };
+
+  const normalizeCnpjDigits = (value: string) => value.replace(/\D/g, '');
+
+  const formatCnpjDisplay = (digits: string) => {
+    if (digits.length !== 14) return digits;
+    return digits.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+  };
+
+  const setLeadId = (leadId: string) => {
+    if (leadIdField) leadIdField.value = leadId;
+    sessionStorage.setItem(LEAD_STORAGE_KEY, leadId);
+  };
+
+  const getLeadId = () => leadIdField?.value.trim() || sessionStorage.getItem(LEAD_STORAGE_KEY) || '';
+
+  const isLastStep = () => currentStep === steps.length - 1;
+
+  const updateStep = () => {
+    steps.forEach((step, index) => {
+      step.hidden = index !== currentStep;
+    });
+    if (actionBtn) {
+      actionBtn.textContent = isLastStep() ? ACTION_LABELS.submit : ACTION_LABELS.continue;
+    }
+    if (progressBar) progressBar.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
+    if (formStepField) formStepField.value = String(currentStep);
+    errorEl?.setAttribute('hidden', '');
+  };
+
+  const syncPhone = () => {
+    if (!phoneFull) return;
+
+    const code = phoneCode?.value.trim() || '+55';
+    const local = phoneLocal?.value.trim() || '';
+    phoneFull.value = local ? `${code} ${local}` : '';
+  };
+
+  const syncCity = (city: string) => {
+    if (cityField) cityField.value = city;
+    if (cityDisplay) cityDisplay.value = city;
+  };
+
+  const setCnpjStatus = (message: string, visible = true) => {
+    if (!cnpjStatus) return;
+    cnpjStatus.textContent = message;
+    cnpjStatus.hidden = !visible;
+  };
+
+  const validateCurrentStep = () => {
+    const current = steps[currentStep];
+    const fields = Array.from(current.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('input, select, textarea'));
+    const missing: string[] = [];
+    const seenRadioGroups = new Set<string>();
+
+    for (const field of fields) {
+      if (!field.required) continue;
+
+      if (field instanceof HTMLInputElement && field.type === 'radio') {
+        if (seenRadioGroups.has(field.name)) continue;
+        seenRadioGroups.add(field.name);
+        if (!current.querySelector<HTMLInputElement>(`input[type="radio"][name="${field.name}"]:checked`)) {
+          missing.push(fieldLabel(field));
+        }
+        continue;
+      }
+
+      if (field instanceof HTMLInputElement && field.type === 'checkbox') {
+        if (!field.checked) missing.push(fieldLabel(field));
+        continue;
+      }
+
+      if (!field.value.trim()) {
+        missing.push(fieldLabel(field));
+        continue;
+      }
+
+      if (!field.checkValidity()) {
+        missing.push(field.type === 'email' ? 'e-mail válido' : fieldLabel(field));
+      }
+    }
+
+    if (missing.length > 0) {
+      showMessage(`Falta preencher: ${missing.join(', ')}.`);
+      return false;
+    }
+
+    return true;
+  };
+
+  const saveProgress = async (completedStep: number) => {
+    if (!form) return;
+
+    syncPhone();
+    const data = new FormData(form);
+    if (data.get('_gotcha')) return;
+
+    const existingLeadId = getLeadId();
+    if (existingLeadId) data.set('lead_id', existingLeadId);
+
+    if (completedStep === 0) {
+      const response = await fetch(DRAFT_API, {
+        method: 'POST',
+        body: data,
+        headers: { Accept: 'application/json' },
+      });
+
+      if (!response.ok) return;
+
+      const result = (await response.json()) as { leadId?: string };
+      if (result.leadId) setLeadId(result.leadId);
+      return;
+    }
+
+    if (!getLeadId()) return;
+
+    data.set('form_step', String(completedStep));
+    await fetch(DRAFT_API, {
+      method: 'PATCH',
+      body: data,
+      headers: { Accept: 'application/json' },
+    });
+  };
+
+  const lookupCnpj = async () => {
+    if (!cnpjInput) return;
+
+    const digits = normalizeCnpjDigits(cnpjInput.value);
+    if (digits.length !== 14) {
+      setCnpjStatus('', false);
+      return;
+    }
+
+    cnpjInput.value = formatCnpjDisplay(digits);
+    const token = ++cnpjLookupToken;
+    setCnpjStatus('Consultando CNPJ...', true);
+
+    try {
+      const response = await fetch(`/api/cnpj/${digits}`, {
+        headers: { Accept: 'application/json' },
+      });
+
+      if (token !== cnpjLookupToken) return;
+
+      if (!response.ok) {
+        setCnpjStatus('Não encontramos esse CNPJ. Preencha os dados manualmente.');
+        return;
+      }
+
+      const result = (await response.json()) as {
+        empresa?: string;
+        city?: string;
+        situacaoCadastral?: string;
+      };
+
+      if (companyField && result.empresa) companyField.value = result.empresa;
+      if (result.city) syncCity(result.city);
+
+      const situacao = result.situacaoCadastral ? ` · ${result.situacaoCadastral}` : '';
+      setCnpjStatus(`Dados preenchidos automaticamente${situacao}.`);
+    } catch {
+      if (token === cnpjLookupToken) {
+        setCnpjStatus('Não foi possível consultar o CNPJ agora. Continue manualmente.');
+      }
+    }
+  };
+
+  const advanceStep = async () => {
+    if (!validateCurrentStep()) return;
+
+    try {
+      await saveProgress(currentStep);
+    } catch {
+      // Salvamento progressivo não bloqueia o fluxo.
+    }
+
+    currentStep = Math.min(currentStep + 1, steps.length - 1);
+    updateStep();
+  };
+
+  const submitCandidatura = async () => {
+    if (!validateCurrentStep() || !actionBtn || !form) return;
+
+    syncPhone();
+    actionBtn.disabled = true;
+    actionBtn.textContent = ACTION_LABELS.sending;
+
+    try {
+      const data = new FormData(form);
+      if (data.get('_gotcha')) return;
+
+      const leadId = getLeadId();
+      if (leadId) data.set('lead_id', leadId);
+      data.set('form_step', '6');
+
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: data,
+        headers: { Accept: 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha ao enviar candidatura');
+      }
+
+      sessionStorage.removeItem(LEAD_STORAGE_KEY);
+      form.hidden = true;
+      progressBar?.parentElement?.setAttribute('hidden', '');
+      thanksEl?.removeAttribute('hidden');
+      errorEl?.setAttribute('hidden', '');
+      thanksEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch {
+      showMessage('Não conseguimos enviar agora. Tente novamente em instantes.');
+    } finally {
+      actionBtn.disabled = false;
+      actionBtn.textContent = ACTION_LABELS.submit;
+    }
+  };
+
+  const handlePrimaryAction = () => {
+    if (isLastStep()) void submitCandidatura();
+    else void advanceStep();
+  };
+
+  actionBtn?.addEventListener('click', handlePrimaryAction);
+
+  form?.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter') return;
+
+    const target = event.target;
+    if (target instanceof HTMLTextAreaElement) return;
+
+    event.preventDefault();
+    handlePrimaryAction();
+  });
+
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    handlePrimaryAction();
+  });
+
+  cnpjInput?.addEventListener('input', () => {
+    const digits = normalizeCnpjDigits(cnpjInput.value);
+    if (digits.length <= 14) {
+      cnpjInput.value = formatCnpjDisplay(digits.slice(0, 14));
+    }
+    if (digits.length === 14) lookupCnpj();
+    else setCnpjStatus('', false);
+  });
+
+  cnpjInput?.addEventListener('blur', () => {
+    const digits = normalizeCnpjDigits(cnpjInput.value);
+    if (digits.length === 14) lookupCnpj();
+  });
+
+  phoneCode?.addEventListener('change', syncPhone);
+  phoneLocal?.addEventListener('input', syncPhone);
+
+  const storedLeadId = sessionStorage.getItem(LEAD_STORAGE_KEY);
+  if (storedLeadId && leadIdField) leadIdField.value = storedLeadId;
+
+  updateStep();
+</script>
+
+<style>
+  .application-page {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 12% 10%, rgba(251,190,10,0.14), transparent 28rem),
+      radial-gradient(circle at 88% 30%, rgba(255,255,255,0.08), transparent 26rem),
+      var(--mb-black);
+  }
+
+  .application-hero {
+    min-height: calc(100vh - 5rem);
+    display: flex;
+    align-items: center;
+    padding: clamp(4.8rem, 8vh, 6.2rem) 0 clamp(1.8rem, 4vh, 3rem);
+  }
+
+  .application-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 0.82fr) minmax(24rem, 0.9fr);
+    gap: clamp(1.6rem, 4vw, 3.5rem);
+    align-items: center;
+  }
+
+  .application-context {
+    position: sticky;
+    top: 7rem;
+  }
+
+  .application-context h1 {
+    color: var(--mb-white);
+    font-size: clamp(2.4rem, 5.4vw, 5.1rem);
+    font-weight: 900;
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    max-width: 13.5ch;
+  }
+
+  .application-context p {
+    margin-top: 1rem;
+    max-width: 35rem;
+    color: rgba(255,255,255,0.64);
+    font-size: clamp(1rem, 1.4vw, 1.16rem);
+    line-height: 1.65;
+    letter-spacing: 0.012em;
+  }
+
+  .application-proof {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 1.35rem;
+  }
+
+  .application-proof span {
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 999px;
+    padding: 0.45rem 0.68rem;
+    color: rgba(255,255,255,0.62);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.025em;
+  }
+
+  .application-card {
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 1.6rem;
+    background: rgba(8,8,8,0.86);
+    box-shadow: 0 30px 90px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
+    padding: clamp(1.25rem, 2.4vw, 1.85rem);
+  }
+
+  .application-progress {
+    height: 0.28rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    margin-bottom: clamp(1.2rem, 2.2vw, 1.75rem);
+  }
+
+  .application-progress__bar {
+    width: 16.66%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--mb-yellow);
+    transition: width 0.25s ease;
+  }
+
+  .application-step h2 {
+    color: var(--mb-white);
+    font-size: clamp(1.35rem, 2.35vw, 1.95rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.018em;
+    margin-bottom: 0.8rem;
+  }
+
+  .application-kicker {
+    color: var(--mb-yellow);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    margin-bottom: 0.72rem;
+  }
+
+  .application-copy {
+    color: rgba(255,255,255,0.54);
+    line-height: 1.55;
+    letter-spacing: 0.012em;
+    margin-bottom: 1rem;
+  }
+
+  .application-copy a {
+    color: rgba(255,255,255,0.78);
+    text-decoration: underline;
+  }
+
+  .application-hint {
+    margin-top: 0.35rem;
+    color: rgba(255,255,255,0.48);
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  .application-options--single {
+    grid-template-columns: 1fr;
+  }
+
+  .form-label-optional {
+    color: rgba(255,255,255,0.34);
+    font-weight: 400;
+    font-size: 0.82em;
+  }
+
+  .application-input,
+  .application-input::placeholder,
+  .application-textarea,
+  select.application-input {
+    color: var(--mb-white);
+    -webkit-text-fill-color: var(--mb-white);
+  }
+
+  .application-input::placeholder {
+    color: rgba(255, 255, 255, 0.38);
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.38);
+  }
+
+  select.application-input option {
+    color: var(--mb-white);
+    background: #0d0d0d;
+  }
+
+  .application-input {
+    min-height: 2.85rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    letter-spacing: 0.012em;
+  }
+
+  textarea.application-input,
+  textarea.application-textarea {
+    min-height: 5.6rem;
+  }
+
+  .application-field-stack {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.82rem;
+  }
+
+  .application-field {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .application-field-control {
+    width: 100%;
+  }
+
+  .phone-code {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
+
+  .application-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.2rem;
+  }
+
+  .application-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.95rem;
+    padding: 0.62rem 0.75rem;
+    color: rgba(255,255,255,0.74);
+    background: rgba(255,255,255,0.035);
+    cursor: pointer;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    transition: border-color 0.18s ease, background 0.18s ease;
+  }
+
+  .application-option:has(input:checked) {
+    border-color: rgba(251,190,10,0.55);
+    background: rgba(251,190,10,0.1);
+    color: var(--mb-white);
+  }
+
+  .application-option input,
+  .application-consent input {
+    accent-color: var(--mb-yellow);
+  }
+
+  .application-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-top: 0.95rem;
+    color: rgba(255,255,255,0.54);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    letter-spacing: 0.01em;
+  }
+
+  .application-consent a {
+    color: rgba(255,255,255,0.78);
+    text-decoration: underline;
+  }
+
+  .application-message {
+    margin-top: 0.85rem;
+    margin-bottom: 0.25rem;
+    border-radius: 0.9rem;
+    padding: 0.85rem 1rem;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    letter-spacing: 0.01em;
+  }
+
+  .application-message--error {
+    border: 1px solid rgba(239,68,68,0.35);
+    background: rgba(239,68,68,0.1);
+    color: #fca5a5;
+  }
+
+  .application-message--success {
+    border: 1px solid rgba(251,190,10,0.3);
+    background: rgba(251,190,10,0.1);
+    color: var(--mb-yellow);
+  }
+
+  .application-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: clamp(1.05rem, 2vw, 1.55rem);
+  }
+
+  .application-thanks {
+    text-align: left;
+  }
+
+  .application-thanks h2 {
+    color: var(--mb-white);
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 900;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+  }
+
+  .application-thanks p {
+    color: rgba(255,255,255,0.6);
+    line-height: 1.6;
+    letter-spacing: 0.012em;
+    margin-bottom: 1.15rem;
+  }
+
+  .application-thanks .btn-secondary {
+    margin-top: 1rem;
+  }
+
+  @media (max-width: 900px) {
+    .application-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .application-context {
+      position: static;
+      margin-bottom: 0.25rem;
+    }
+
+    .application-context h1 {
+      max-width: 15ch;
+    }
+  }
+
+  @media (max-height: 760px) and (min-width: 901px) {
+    .application-hero {
+      padding-top: 4.6rem;
+      padding-bottom: 1.25rem;
+    }
+
+    .application-context h1 {
+      font-size: clamp(2.25rem, 4.6vw, 4.35rem);
+    }
+
+    .application-context p {
+      font-size: 0.98rem;
+      line-height: 1.5;
+    }
+
+    .application-proof {
+      margin-top: 1rem;
+    }
+
+    .application-card {
+      padding: 1.2rem;
+    }
+
+    .application-step h2 {
+      font-size: clamp(1.25rem, 2vw, 1.7rem);
+    }
+
+    .application-copy {
+      margin-bottom: 0.85rem;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .application-hero {
+      padding-top: 5.5rem;
+      padding-bottom: 4rem;
+      align-items: flex-start;
+    }
+
+    .application-card {
+      padding: 1.25rem;
+      border-radius: 1.25rem;
+    }
+
+    .application-options {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

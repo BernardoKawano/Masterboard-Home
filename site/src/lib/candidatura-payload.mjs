@@ -1,4 +1,7 @@
 import { LEAD_SOURCE } from './lead-source.mjs';
+import { normalizeCnpj } from './cnpj-lookup.mjs';
+
+const DRAFT_PLACEHOLDER = '(em preenchimento)';
 
 const requiredFields = [
   'email',
@@ -10,6 +13,31 @@ const requiredFields = [
   'colaboradores',
 ];
 
+const stepValidators = {
+  0: (payload) => {
+    const missing = [];
+    if (!payload.email) missing.push('email');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) missing.push('email válido');
+    return missing;
+  },
+  1: (payload) => {
+    const missing = [];
+    if (!payload.eventoInteresse) missing.push('evento_interesse');
+    return missing;
+  },
+  2: (payload) => {
+    const missing = [];
+    if (!payload.nome) missing.push('nome');
+    if (!payload.whatsapp && !payload.telefone) missing.push('telefone');
+    if (!payload.empresa) missing.push('empresa');
+    return missing;
+  },
+  3: (payload) => (payload.cargo ? [] : ['cargo']),
+  4: (payload) => (payload.faturamento ? [] : ['faturamento']),
+  5: (payload) => (payload.colaboradores ? [] : ['colaboradores']),
+  6: (payload) => (payload.lgpd ? [] : ['lgpd']),
+};
+
 export function getFormString(data, key) {
   const value = data.get(key);
   return typeof value === 'string' ? value.trim() : '';
@@ -19,14 +47,19 @@ export function buildCandidaturaPayload(data, meta = {}) {
   const codigoPais = getFormString(data, 'codigo_pais') || '+55';
   const whatsapp = getFormString(data, 'whatsapp');
   const telefone = getFormString(data, 'telefone') || (whatsapp ? `${codigoPais} ${whatsapp}` : '');
+  const cnpjRaw = getFormString(data, 'cnpj');
+  const cnpj = normalizeCnpj(cnpjRaw) || cnpjRaw || '';
 
   const payload = {
+    leadId: getFormString(data, 'lead_id'),
     email: getFormString(data, 'email'),
     nome: getFormString(data, 'nome'),
     telefone,
     codigoPais,
     whatsapp,
     empresa: getFormString(data, 'empresa'),
+    cnpj,
+    cidade: getFormString(data, 'cidade'),
     cargo: getFormString(data, 'cargo'),
     faturamento: getFormString(data, 'faturamento'),
     colaboradores: getFormString(data, 'colaboradores'),
@@ -38,10 +71,21 @@ export function buildCandidaturaPayload(data, meta = {}) {
     lgpd: data.get('lgpd') === 'on' || data.get('lgpd') === 'true',
     source: getFormString(data, 'source') || meta.source || LEAD_SOURCE.MASTERBOARD_SITE_CANDIDATURA,
     referrer: getFormString(data, 'referrer') || meta.referrer || '',
+    formStep: Number.parseInt(getFormString(data, 'form_step') || String(meta.formStep ?? ''), 10) || meta.formStep || 0,
     timestamp: meta.timestamp || new Date().toISOString(),
   };
 
   return payload;
+}
+
+export function validateDraftEmail(payload) {
+  return stepValidators[0](payload);
+}
+
+export function validateStep(step, payload) {
+  const validator = stepValidators[step];
+  if (!validator) return [];
+  return validator(payload);
 }
 
 export function validateCandidaturaPayload(payload) {
@@ -57,29 +101,29 @@ export function validateCandidaturaPayload(payload) {
 export function scoreLead(payload) {
   let score = 0;
 
-  if (/sócio|fundador|presidente|ceo|c-level|vice-presidente/i.test(payload.cargo)) {
+  if (/sócio|fundador|presidente|ceo|c-level|vice-presidente/i.test(payload.cargo || '')) {
     score += 35;
-  } else if (/diretor/i.test(payload.cargo)) {
+  } else if (/diretor/i.test(payload.cargo || '')) {
     score += 24;
-  } else if (/gerente/i.test(payload.cargo)) {
+  } else if (/gerente/i.test(payload.cargo || '')) {
     score += 12;
   }
 
-  if (/Acima de R\$500 milhões|De R\$50 a R\$500 milhões/i.test(payload.faturamento)) {
+  if (/Acima de R\$500 milhões|De R\$50 a R\$500 milhões/i.test(payload.faturamento || '')) {
     score += 35;
-  } else if (/De R\$10 a R\$50 milhões/i.test(payload.faturamento)) {
+  } else if (/De R\$10 a R\$50 milhões/i.test(payload.faturamento || '')) {
     score += 28;
-  } else if (/De R\$5 a R\$10 milhões|De R\$1 milhão a R\$5 milhões/i.test(payload.faturamento)) {
+  } else if (/De R\$5 a R\$10 milhões|De R\$1 milhão a R\$5 milhões/i.test(payload.faturamento || '')) {
     score += 18;
-  } else if (/De R\$500 mil a R\$1 milhão/i.test(payload.faturamento)) {
+  } else if (/De R\$500 mil a R\$1 milhão/i.test(payload.faturamento || '')) {
     score += 8;
   }
 
-  if (/Acima de 1\.000|De 101 a 1\.000/i.test(payload.colaboradores)) {
+  if (/Acima de 1\.000|De 101 a 1\.000/i.test(payload.colaboradores || '')) {
     score += 25;
-  } else if (/De 51 a 100/i.test(payload.colaboradores)) {
+  } else if (/De 51 a 100/i.test(payload.colaboradores || '')) {
     score += 18;
-  } else if (/De 10 a 50/i.test(payload.colaboradores)) {
+  } else if (/De 10 a 50/i.test(payload.colaboradores || '')) {
     score += 10;
   }
 
@@ -95,7 +139,7 @@ export function priorityFromScore(score) {
   return 'normal';
 }
 
-function qualificationNotes(payload, score) {
+function qualificationNotes(payload, score, extra = {}) {
   const qualification = {
     intencao: payload.intencao,
     momento: payload.momento,
@@ -104,18 +148,77 @@ function qualificationNotes(payload, score) {
     codigo_pais: payload.codigoPais,
     whatsapp: payload.whatsapp,
     objetivo: payload.objetivo,
+    cnpj: payload.cnpj || null,
     score,
     priority: priorityFromScore(score),
     source: payload.source,
     referrer: payload.referrer,
+    ...extra,
   };
 
   return JSON.stringify(qualification);
 }
 
-export function toLegacyLeadRow(payload) {
-  const score = scoreLead(payload);
+export function parseLeadNotes(value) {
+  if (typeof value !== 'string' || !value.trim()) return {};
 
+  try {
+    return JSON.parse(value);
+  } catch {
+    return {};
+  }
+}
+
+export function isDraftLead(row) {
+  if (!row || typeof row !== 'object') return false;
+  if (row.status === 'draft') return true;
+
+  const notes = parseLeadNotes(row.notes);
+  if (notes.draft === true) return true;
+
+  return row.name === DRAFT_PLACEHOLDER;
+}
+
+function nullable(value) {
+  return value || null;
+}
+
+function draftField(value) {
+  return value || DRAFT_PLACEHOLDER;
+}
+
+export function toDraftLeadRow(payload, formStep) {
+  const score = scoreLead(payload);
+  const step = formStep ?? payload.formStep ?? 0;
+
+  return {
+    email: payload.email,
+    name: draftField(payload.nome),
+    phone: draftField(payload.telefone),
+    company: draftField(payload.empresa),
+    role: draftField(payload.cargo),
+    city: nullable(payload.cidade),
+    lgpd_consent: false,
+    source: payload.source,
+    referrer: payload.referrer || null,
+    status: 'new',
+    intent: payload.intencao || 'membro',
+    company_moment: nullable(payload.momento),
+    annual_revenue: nullable(payload.faturamento),
+    employee_count: nullable(payload.colaboradores),
+    country_code: nullable(payload.codigoPais),
+    whatsapp: nullable(payload.whatsapp),
+    objective: nullable(payload.objetivo),
+    website: nullable(payload.website),
+    evento_interesse: nullable(payload.eventoInteresse),
+    score,
+    priority: priorityFromScore(score),
+    notes: qualificationNotes(payload, score, { draft: true, form_step: step }),
+    submitted_at: payload.timestamp,
+  };
+}
+
+export function toLegacyLeadRow(payload) {
   return {
     name: payload.nome,
     email: payload.email,
@@ -125,7 +228,6 @@ export function toLegacyLeadRow(payload) {
     lgpd_consent: payload.lgpd,
     source: payload.source,
     referrer: payload.referrer || null,
-    notes: qualificationNotes(payload, score),
     submitted_at: payload.timestamp,
   };
 }
@@ -135,6 +237,8 @@ export function toLeadRow(payload) {
 
   return {
     ...toLegacyLeadRow(payload),
+    city: nullable(payload.cidade),
+    status: 'new',
     intent: payload.intencao,
     company_moment: payload.momento || null,
     annual_revenue: payload.faturamento,
@@ -146,5 +250,6 @@ export function toLeadRow(payload) {
     evento_interesse: payload.eventoInteresse || null,
     score,
     priority: priorityFromScore(score),
+    notes: qualificationNotes(payload, score, { draft: false, form_step: 6 }),
   };
 }

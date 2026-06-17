@@ -10,6 +10,7 @@ import {
   leadSourceFilterValues,
   parseLeadSource,
 } from '../../lib/lead-source.mjs';
+import { isDraftLead, parseLeadNotes } from '../../lib/candidatura-payload.mjs';
 
 type LeadRow = Record<string, unknown>;
 
@@ -64,11 +65,12 @@ const getQualification = (lead: LeadRow) => {
   };
 };
 
-const statusOptions = ['all', 'new', 'contacted', 'approved', 'rejected'];
+const statusOptions = ['all', 'new', 'draft', 'contacted', 'approved', 'rejected'];
 const brandOptions = ['all', 'masterboard', 'scale'] as const;
 const statusLabels: Record<string, string> = {
   all: 'Todos',
   new: 'Novos',
+  draft: 'Rascunhos',
   contacted: 'Contatados',
   approved: 'Aprovados',
   rejected: 'Rejeitados',
@@ -106,7 +108,13 @@ if (isAuthorized && supabaseUrl && serviceRoleKey) {
     .order('submitted_at', { ascending: false })
     .limit(100);
 
-  if (selectedStatus !== 'all') {
+  if (selectedStatus === 'draft') {
+    query = query.or('status.eq.draft,notes.ilike.%"draft":true%');
+  } else if (selectedStatus === 'all') {
+    query = query.neq('status', 'draft').not('notes', 'ilike', '%"draft":true%');
+  } else if (selectedStatus === 'new') {
+    query = query.eq('status', 'new').not('notes', 'ilike', '%"draft":true%');
+  } else {
     query = query.eq('status', selectedStatus);
   }
 
@@ -153,7 +161,7 @@ for (const lead of leads) {
           <h1>Leads de candidatura</h1>
           <p>Primeira visão para priorizar contato, entender porte e acompanhar status.</p>
         </div>
-        <a href="/candidatura/" class="lead-admin__link">Ver formulário</a>
+        <a href="/aplicacao/" class="lead-admin__link">Ver formulário</a>
       </header>
 
       {!isAuthorized ? (
@@ -173,7 +181,7 @@ for (const lead of leads) {
               <span>Total filtrado</span>
               <strong>{counts.total}</strong>
             </article>
-            {['new', 'contacted', 'approved', 'rejected'].map((status) => (
+            {['new', 'draft', 'contacted', 'approved', 'rejected'].map((status) => (
               <article>
                 <span>{statusLabels[status]}</span>
                 <strong>{counts.byStatus[status] ?? 0}</strong>
@@ -212,17 +220,26 @@ for (const lead of leads) {
                   ? `https://wa.me/${whatsapp.replace(/\D/g, '')}`
                   : '';
 
+                const notes = parseLeadNotes(lead.notes);
+                const isDraft = isDraftLead(lead);
+                const formStep = typeof lead.form_step === 'number' ? lead.form_step : Number(notes.form_step ?? 0);
+                const club = text(lead.evento_interesse);
+                const cnpj = text(lead.cnpj ?? notes.cnpj);
+
                 return (
-                  <article class="lead-card">
+                  <article class="lead-card" data-draft={isDraft ? 'true' : undefined}>
                     <div class="lead-card__top">
                       <div>
-                        <p class="lead-card__name">{text(lead.name)}</p>
-                        <p class="lead-card__company">{text(lead.company)} · {text(lead.role)}</p>
+                        <p class="lead-card__name">{text(lead.name, isDraft ? '(sem nome)' : '-')}</p>
+                        <p class="lead-card__company">
+                          {text(lead.company, isDraft ? 'Empresa não informada' : '-')} · {text(lead.role, isDraft ? 'Cargo pendente' : '-')}
+                        </p>
                       </div>
                       <div class="lead-card__badges">
                         <span data-brand={source.brand}>{getLeadBrandLabel(source.brand)}</span>
                         <span data-priority={q.priority}>{q.priority}</span>
-                        <span>{text(lead.status, 'new')}</span>
+                        <span data-status={text(lead.status, 'new')}>{text(lead.status, 'new')}</span>
+                        {isDraft && <span data-draft-badge>Passo {formStep}</span>}
                         <span>Score {q.score}</span>
                       </div>
                     </div>
@@ -231,6 +248,14 @@ for (const lead of leads) {
                       <div>
                         <dt>E-mail</dt>
                         <dd>{text(lead.email)}</dd>
+                      </div>
+                      <div>
+                        <dt>Club</dt>
+                        <dd>{club}</dd>
+                      </div>
+                      <div>
+                        <dt>CNPJ</dt>
+                        <dd>{cnpj}</dd>
                       </div>
                       <div>
                         <dt>WhatsApp</dt>
@@ -336,7 +361,7 @@ for (const lead of leads) {
 
   .lead-admin__stats {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 0.75rem;
     margin-bottom: 1rem;
   }
@@ -436,6 +461,16 @@ for (const lead of leads) {
   .lead-card__badges [data-priority='high'] {
     border-color: rgba(251,190,10,0.45);
     color: var(--mb-yellow);
+  }
+
+  .lead-card__badges [data-status='draft'],
+  .lead-card__badges [data-draft-badge] {
+    border-color: rgba(148,163,184,0.45);
+    color: #cbd5e1;
+  }
+
+  .lead-card[data-draft='true'] {
+    border-color: rgba(148,163,184,0.22);
   }
 
   .lead-card__grid {

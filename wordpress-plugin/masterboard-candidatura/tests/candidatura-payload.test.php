@@ -36,6 +36,7 @@ mb_candidatura_assert($payload['intencao'] === 'membro', 'intencao');
 
 $row = mb_candidatura_to_lead_row($payload);
 mb_candidatura_assert($row['name'] === 'Ana Lider', 'name');
+mb_candidatura_assert($row['status'] === 'new', 'status');
 mb_candidatura_assert($row['priority'] === 'high', 'priority');
 mb_candidatura_assert($row['score'] === mb_candidatura_score_lead($payload), 'score');
 
@@ -45,5 +46,11 @@ mb_candidatura_assert(
     $missing === ['nome', 'telefone', 'empresa', 'cargo', 'faturamento', 'colaboradores', 'lgpd'],
     'missing fields'
 );
+
+mb_candidatura_assert(
+    mb_candidatura_validate_step(1, ['eventoInteresse' => 'Masterboard Club — Curitiba']) === [],
+    'step 1 valid'
+);
+mb_candidatura_assert(mb_candidatura_normalize_cnpj('12.345.678/0001-99') === '12345678000199', 'cnpj normalize');
 
 echo "candidatura-payload-php: ok\n";

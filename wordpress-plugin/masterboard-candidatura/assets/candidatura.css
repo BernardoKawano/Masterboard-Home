@@ -22,7 +22,7 @@
   min-height: calc(100vh - 5rem);
   display: flex;
   align-items: center;
-  padding: clamp(4.8rem, 8vh, 6.2rem) 0 clamp(1.8rem, 4vh, 3rem);
+  padding: calc(clamp(5.5rem, 10vh, 6.5rem) + 5px) 0 clamp(1.8rem, 4vh, 3rem);
 }
 
 .application-shell {
@@ -124,7 +124,37 @@
 .application-copy {
   color: rgba(255, 255, 255, 0.54);
   line-height: 1.55;
+  letter-spacing: 0.012em;
   margin: 0 0 1rem;
+}
+
+.application-copy a {
+  color: rgba(255, 255, 255, 0.78);
+  text-decoration: underline;
+}
+
+.application-hint {
+  margin-top: 0.35rem;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.application-options--single {
+  grid-template-columns: 1fr;
+}
+
+.application-field-control {
+  width: 100%;
+}
+
+.phone-code {
+  padding-left: 0.85rem;
+  padding-right: 0.85rem;
+}
+
+.min-h-28 {
+  min-height: 7rem;
 }
 
 .form-label {
@@ -216,6 +246,7 @@ textarea.application-input {
 
 .application-consent a {
   color: rgba(255, 255, 255, 0.78);
+  text-decoration: underline;
 }
 
 .application-message {
@@ -296,10 +327,41 @@ textarea.application-input {
 
   .application-context {
     position: static;
+    margin-bottom: 0.25rem;
+  }
+
+  .application-context h1 {
+    max-width: 15ch;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 901px) {
+  .application-hero {
+    padding-top: 4.6rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .application-context h1 {
+    font-size: clamp(2.25rem, 4.6vw, 4.35rem);
+  }
+
+  .application-card {
+    padding: 1.2rem;
   }
 }
 
 @media (max-width: 520px) {
+  .application-hero {
+    padding-top: 5.5rem;
+    padding-bottom: 4rem;
+    align-items: flex-start;
+  }
+
+  .application-card {
+    padding: 1.25rem;
+    border-radius: 1.25rem;
+  }
+
   .application-options {
     grid-template-columns: 1fr;
   }

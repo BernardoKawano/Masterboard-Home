@@ -11,6 +11,15 @@ export default defineConfig({
   output: 'hybrid',
   adapter: vercel(),
 
+  redirects: {
+    '/candidatura': '/aplicacao',
+    '/candidatura/': '/aplicacao/',
+    '/aplicação': '/aplicacao',
+    '/aplicação/': '/aplicacao/',
+    '/api/candidatura': '/api/aplicacao',
+    '/api/candidatura/draft': '/api/aplicacao/draft',
+  },
+
   integrations: [
     tailwind({ applyBaseStyles: false }),
   ],
