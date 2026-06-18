@@ -90,6 +90,8 @@ $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
             <input type="hidden" name="cidade" data-city-field />
             <input type="hidden" name="form_step" data-form-step />
 
+            <p class="application-step-indicator" data-step-indicator aria-hidden="true"></p>
+
             <div class="application-step" data-step="0">
               <p class="application-kicker">Começamos simples.</p>
               <h2 id="application-title">Olá, qual é o seu e-mail profissional?</h2>
@@ -172,7 +174,7 @@ $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
             </div>
 
             <div class="application-step" data-step="3" hidden>
-              <h2>6. Qual o seu cargo na empresa?</h2>
+              <h2>Qual o seu cargo na empresa?</h2>
               <p class="application-copy">Isso ajuda a entender se você está na cadeira certa para a sala.</p>
               <div class="application-options">
                 <?php foreach ($role_options as $index => $option) : ?>
@@ -185,7 +187,7 @@ $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
             </div>
 
             <div class="application-step" data-step="4" hidden>
-              <h2>7. Qual o faturamento anual da sua empresa?</h2>
+              <h2>Qual o faturamento anual da sua empresa?</h2>
               <p class="application-copy">A resposta orienta a curadoria, não aparece publicamente.</p>
               <div class="application-options">
                 <?php foreach ($revenue_options as $option) : ?>
@@ -198,7 +200,7 @@ $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
             </div>
 
             <div class="application-step" data-step="5" hidden>
-              <h2>8. Quantos colaboradores sua empresa possui?</h2>
+              <h2>Quantos colaboradores sua empresa possui?</h2>
               <p class="application-copy">Tamanho de operação muda o tipo de troca que faz sentido.</p>
               <div class="application-options">
                 <?php foreach ($employee_options as $option) : ?>
@@ -211,7 +213,7 @@ $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
             </div>
 
             <div class="application-step" data-step="6" hidden>
-              <h2>9. O que faria essa sala valer seu tempo agora?</h2>
+              <h2>O que faria essa sala valer seu tempo agora?</h2>
               <p class="application-copy">Último contexto antes da curadoria.</p>
               <label class="form-label" for="field-momento">Momento da empresa</label>
               <select id="field-momento" name="momento" class="form-input application-input">
@@ -223,8 +225,8 @@ $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
                 <option value="network">Rede certa para próximos passos</option>
               </select>
 
-              <label class="form-label mt-4" for="field-objetivo">Objetivo principal</label>
-              <textarea id="field-objetivo" name="objetivo" class="form-input application-input min-h-28" placeholder="Ex: tomar decisões melhores com pares que vivem desafios parecidos."></textarea>
+              <label class="form-label mt-4" for="field-objetivo">Observações</label>
+              <textarea id="field-objetivo" name="objetivo" class="form-input application-input application-textarea min-h-28" placeholder="Ex: tomar decisões melhores com pares que vivem desafios parecidos."></textarea>
 
               <label class="application-consent">
                 <input id="field-lgpd" name="lgpd" type="checkbox" required data-required-label="aceite da Política de Privacidade" />
@@ -242,6 +244,7 @@ $privacy_url = esc_url(home_url('/politica-de-privacidade/'));
             <div id="application-error" class="application-message application-message--error" hidden role="alert"></div>
 
             <div class="application-actions">
+              <button type="button" class="mb-btn-secondary" data-back hidden>Voltar</button>
               <button type="button" class="mb-btn-primary" data-action>Continuar</button>
             </div>
           </form>

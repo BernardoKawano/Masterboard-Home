@@ -191,6 +191,40 @@
   background: rgba(255, 255, 255, 0.07);
 }
 
+.application-input,
+.application-input::placeholder,
+.application-textarea,
+select.application-input {
+  color: var(--mb-white);
+  -webkit-text-fill-color: var(--mb-white);
+}
+
+.application-input::placeholder {
+  color: rgba(255, 255, 255, 0.38);
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.38);
+}
+
+.application-input:-webkit-autofill,
+.application-input:-webkit-autofill:hover,
+.application-input:-webkit-autofill:focus,
+.application-textarea:-webkit-autofill,
+.application-textarea:-webkit-autofill:hover,
+.application-textarea:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--mb-white) !important;
+  caret-color: var(--mb-white);
+  box-shadow: 0 0 0 1000px #0d0d0d inset;
+  transition: background-color 99999s ease-out;
+}
+
+.application-step-indicator {
+  margin-bottom: 0.35rem;
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 .application-input {
   min-height: 2.85rem;
 }
@@ -264,9 +298,18 @@ textarea.application-input {
 
 .application-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 0.75rem;
   margin-top: clamp(1.05rem, 2vw, 1.55rem);
+}
+
+.application-actions [hidden] {
+  display: none !important;
+}
+
+.application-actions .mb-btn-primary {
+  margin-left: auto;
 }
 
 .mb-btn-primary,

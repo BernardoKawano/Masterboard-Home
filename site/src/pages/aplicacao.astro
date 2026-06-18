@@ -99,6 +99,8 @@ const clubOptions = [
               <input type="hidden" name="cidade" data-city-field />
               <input type="hidden" name="form_step" data-form-step />
 
+              <p class="application-step-indicator" data-step-indicator aria-hidden="true"></p>
+
               <div class="application-step" data-step="0">
                 <p class="application-kicker">Começamos simples.</p>
                 <h2 id="application-title">Olá, qual é o seu e-mail profissional?</h2>
@@ -206,7 +208,7 @@ const clubOptions = [
               </div>
 
               <div class="application-step" data-step="3" hidden>
-                <h2>6. Qual o seu cargo na empresa?</h2>
+                <h2>Qual o seu cargo na empresa?</h2>
                 <p class="application-copy">Isso ajuda a entender se você está na cadeira certa para a sala.</p>
                 <div class="application-options">
                   {roleOptions.map((option, index) => (
@@ -219,7 +221,7 @@ const clubOptions = [
               </div>
 
               <div class="application-step" data-step="4" hidden>
-                <h2>7. Qual o faturamento anual da sua empresa?</h2>
+                <h2>Qual o faturamento anual da sua empresa?</h2>
                 <p class="application-copy">A resposta orienta a curadoria, não aparece publicamente.</p>
                 <div class="application-options">
                   {revenueOptions.map((option) => (
@@ -232,7 +234,7 @@ const clubOptions = [
               </div>
 
               <div class="application-step" data-step="5" hidden>
-                <h2>8. Quantos colaboradores sua empresa possui?</h2>
+                <h2>Quantos colaboradores sua empresa possui?</h2>
                 <p class="application-copy">Tamanho de operação muda o tipo de troca que faz sentido.</p>
                 <div class="application-options">
                   {employeeOptions.map((option) => (
@@ -245,7 +247,7 @@ const clubOptions = [
               </div>
 
               <div class="application-step" data-step="6" hidden>
-                <h2>9. O que faria essa sala valer seu tempo agora?</h2>
+                <h2>O que faria essa sala valer seu tempo agora?</h2>
                 <p class="application-copy">Último contexto antes da curadoria.</p>
                 <label class="form-label" for="field-momento">Momento da empresa</label>
                 <select id="field-momento" name="momento" class="form-input application-input">
@@ -284,6 +286,7 @@ const clubOptions = [
               </div>
 
               <div class="application-actions">
+                <button type="button" class="btn-secondary" data-back hidden>Voltar</button>
                 <button type="button" class="btn-primary" data-action>Continuar</button>
               </div>
             </form>
@@ -309,6 +312,12 @@ const clubOptions = [
 </BaseLayout>
 
 <script>
+  import {
+    parseMissingFieldsFromError,
+    firstStepForMissingFields,
+    formatMissingFieldLabels,
+  } from '../lib/candidatura-payload.mjs';
+
   const LEAD_STORAGE_KEY = 'masterboard:aplicacao:leadId';
   const DRAFT_API = '/api/aplicacao/draft';
   const ACTION_LABELS = {
@@ -320,6 +329,8 @@ const clubOptions = [
   const form = document.getElementById('application-form') as HTMLFormElement | null;
   const steps = Array.from(document.querySelectorAll<HTMLElement>('[data-step]'));
   const actionBtn = document.querySelector<HTMLButtonElement>('[data-action]');
+  const backBtn = document.querySelector<HTMLButtonElement>('[data-back]');
+  const stepIndicator = document.querySelector<HTMLElement>('[data-step-indicator]');
   const progressBar = document.querySelector<HTMLElement>('[data-progress-bar]');
   const errorEl = document.getElementById('application-error');
   const successEl = document.getElementById('application-success');
@@ -370,9 +381,27 @@ const clubOptions = [
     if (actionBtn) {
       actionBtn.textContent = isLastStep() ? ACTION_LABELS.submit : ACTION_LABELS.continue;
     }
+    if (backBtn) {
+      if (currentStep === 0) backBtn.setAttribute('hidden', '');
+      else backBtn.removeAttribute('hidden');
+    }
+    if (stepIndicator) {
+      stepIndicator.textContent = `Passo ${currentStep + 1} de ${steps.length}`;
+      stepIndicator.removeAttribute('hidden');
+    }
     if (progressBar) progressBar.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
     if (formStepField) formStepField.value = String(currentStep);
     errorEl?.setAttribute('hidden', '');
+  };
+
+  const focusStep = (stepIndex: number) => {
+    const step = steps[stepIndex];
+    if (!step) return;
+
+    const focusable = step.querySelector<HTMLElement>(
+      'input:not([type="hidden"]):not([readonly]), select, textarea',
+    );
+    focusable?.focus({ preventScroll: false });
   };
 
   const syncPhone = () => {
@@ -394,9 +423,12 @@ const clubOptions = [
     cnpjStatus.hidden = !visible;
   };
 
-  const validateCurrentStep = () => {
-    const current = steps[currentStep];
-    const fields = Array.from(current.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('input, select, textarea'));
+  const validateStepElement = (stepEl: HTMLElement) => {
+    const fields = Array.from(
+      stepEl.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+        'input, select, textarea',
+      ),
+    );
     const missing: string[] = [];
     const seenRadioGroups = new Set<string>();
 
@@ -406,7 +438,7 @@ const clubOptions = [
       if (field instanceof HTMLInputElement && field.type === 'radio') {
         if (seenRadioGroups.has(field.name)) continue;
         seenRadioGroups.add(field.name);
-        if (!current.querySelector<HTMLInputElement>(`input[type="radio"][name="${field.name}"]:checked`)) {
+        if (!stepEl.querySelector<HTMLInputElement>(`input[type="radio"][name="${field.name}"]:checked`)) {
           missing.push(fieldLabel(field));
         }
         continue;
@@ -427,12 +459,36 @@ const clubOptions = [
       }
     }
 
+    return missing;
+  };
+
+  const findFirstInvalidStep = () => {
+    syncPhone();
+
+    for (let index = 0; index < steps.length; index += 1) {
+      const missing = validateStepElement(steps[index]);
+      if (missing.length > 0) return { step: index, missing };
+    }
+
+    return null;
+  };
+
+  const validateCurrentStep = () => {
+    const missing = validateStepElement(steps[currentStep]);
+
     if (missing.length > 0) {
       showMessage(`Falta preencher: ${missing.join(', ')}.`);
       return false;
     }
 
     return true;
+  };
+
+  const goToStep = (stepIndex: number, message?: string) => {
+    currentStep = Math.max(0, Math.min(stepIndex, steps.length - 1));
+    updateStep();
+    if (message) showMessage(message);
+    focusStep(currentStep);
   };
 
   const saveProgress = async (completedStep: number) => {
@@ -513,7 +569,10 @@ const clubOptions = [
   };
 
   const advanceStep = async () => {
-    if (!validateCurrentStep()) return;
+    if (!validateCurrentStep()) {
+      focusStep(currentStep);
+      return;
+    }
 
     try {
       await saveProgress(currentStep);
@@ -523,10 +582,34 @@ const clubOptions = [
 
     currentStep = Math.min(currentStep + 1, steps.length - 1);
     updateStep();
+    focusStep(currentStep);
+  };
+
+  const goBack = () => {
+    if (currentStep === 0) return;
+    currentStep -= 1;
+    updateStep();
+    focusStep(currentStep);
   };
 
   const submitCandidatura = async () => {
-    if (!validateCurrentStep() || !actionBtn || !form) return;
+    if (!actionBtn || !form) return;
+
+    const invalid = findFirstInvalidStep();
+    if (invalid) {
+      if (invalid.step !== currentStep) {
+        goToStep(
+          invalid.step,
+          `Antes de enviar, volte e complete: ${invalid.missing.join(', ')}.`,
+        );
+        return;
+      }
+
+      if (!validateCurrentStep()) {
+        focusStep(currentStep);
+        return;
+      }
+    }
 
     syncPhone();
     actionBtn.disabled = true;
@@ -547,7 +630,18 @@ const clubOptions = [
       });
 
       if (!response.ok) {
-        throw new Error('Falha ao enviar candidatura');
+        const body = (await response.json().catch(() => ({}))) as { error?: string };
+        const apiMissing = parseMissingFieldsFromError(body.error || '');
+
+        if (apiMissing.length > 0) {
+          goToStep(
+            firstStepForMissingFields(apiMissing),
+            `Complete: ${formatMissingFieldLabels(apiMissing)}.`,
+          );
+          return;
+        }
+
+        throw new Error(body.error || 'Falha ao enviar candidatura');
       }
 
       sessionStorage.removeItem(LEAD_STORAGE_KEY);
@@ -556,8 +650,12 @@ const clubOptions = [
       thanksEl?.removeAttribute('hidden');
       errorEl?.setAttribute('hidden', '');
       thanksEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } catch {
-      showMessage('Não conseguimos enviar agora. Tente novamente em instantes.');
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Não conseguimos enviar agora. Tente novamente em instantes.';
+      showMessage(message);
     } finally {
       actionBtn.disabled = false;
       actionBtn.textContent = ACTION_LABELS.submit;
@@ -570,6 +668,7 @@ const clubOptions = [
   };
 
   actionBtn?.addEventListener('click', handlePrimaryAction);
+  backBtn?.addEventListener('click', goBack);
 
   form?.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter') return;
@@ -705,6 +804,15 @@ const clubOptions = [
     margin-bottom: 0.8rem;
   }
 
+  .application-step-indicator {
+    margin-bottom: 0.35rem;
+    color: rgba(255, 255, 255, 0.42);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
   .application-kicker {
     color: var(--mb-yellow);
     font-size: 0.78rem;
@@ -741,6 +849,18 @@ const clubOptions = [
     color: rgba(255,255,255,0.34);
     font-weight: 400;
     font-size: 0.82em;
+  }
+
+  .application-input:-webkit-autofill,
+  .application-input:-webkit-autofill:hover,
+  .application-input:-webkit-autofill:focus,
+  .application-textarea:-webkit-autofill,
+  .application-textarea:-webkit-autofill:hover,
+  .application-textarea:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--mb-white) !important;
+    caret-color: var(--mb-white);
+    box-shadow: 0 0 0 1000px #0d0d0d inset;
+    transition: background-color 99999s ease-out;
   }
 
   .application-input,
@@ -867,9 +987,18 @@ const clubOptions = [
 
   .application-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     gap: 0.75rem;
     margin-top: clamp(1.05rem, 2vw, 1.55rem);
+  }
+
+  .application-actions [hidden] {
+    display: none !important;
+  }
+
+  .application-actions .btn-primary {
+    margin-left: auto;
   }
 
   .application-thanks {

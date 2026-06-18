@@ -118,6 +118,10 @@ function mb_candidatura_validate_payload(array $payload): array {
         }
     }
 
+    if (empty($payload['eventoInteresse'])) {
+        $missing[] = 'evento_interesse';
+    }
+
     if (empty($payload['lgpd'])) {
         $missing[] = 'lgpd';
     }

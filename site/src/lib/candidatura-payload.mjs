@@ -3,6 +3,51 @@ import { normalizeCnpj } from './cnpj-lookup.mjs';
 
 const DRAFT_PLACEHOLDER = '(em preenchimento)';
 
+export const FIELD_STEP_MAP = {
+  email: 0,
+  'email válido': 0,
+  evento_interesse: 1,
+  nome: 2,
+  telefone: 2,
+  empresa: 2,
+  cargo: 3,
+  faturamento: 4,
+  colaboradores: 5,
+  lgpd: 6,
+};
+
+export const FIELD_LABEL_MAP = {
+  email: 'e-mail profissional',
+  'email válido': 'e-mail válido',
+  evento_interesse: 'club de interesse',
+  nome: 'nome completo',
+  telefone: 'WhatsApp',
+  empresa: 'nome da empresa',
+  cargo: 'cargo',
+  faturamento: 'faturamento anual',
+  colaboradores: 'número de colaboradores',
+  lgpd: 'aceite da Política de Privacidade',
+};
+
+export function parseMissingFieldsFromError(error) {
+  const match = String(error || '').match(/ausentes:\s*(.+)$/i);
+  if (!match) return [];
+  return match[1]
+    .split(',')
+    .map((field) => field.trim())
+    .filter(Boolean);
+}
+
+export function firstStepForMissingFields(missing) {
+  if (!missing.length) return 0;
+  const steps = missing.map((field) => FIELD_STEP_MAP[field] ?? 6);
+  return Math.min(...steps);
+}
+
+export function formatMissingFieldLabels(missing) {
+  return missing.map((field) => FIELD_LABEL_MAP[field] || field).join(', ');
+}
+
 const requiredFields = [
   'email',
   'nome',
@@ -90,6 +135,10 @@ export function validateStep(step, payload) {
 
 export function validateCandidaturaPayload(payload) {
   const missing = requiredFields.filter((field) => !payload[field]);
+
+  if (!payload.eventoInteresse) {
+    missing.push('evento_interesse');
+  }
 
   if (!payload.lgpd) {
     missing.push('lgpd');

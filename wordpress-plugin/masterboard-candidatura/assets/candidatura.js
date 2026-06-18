@@ -7,11 +7,57 @@
     sending: 'Enviando para curadoria...',
   };
 
+  const FIELD_STEP_MAP = {
+    email: 0,
+    'email válido': 0,
+    evento_interesse: 1,
+    nome: 2,
+    telefone: 2,
+    empresa: 2,
+    cargo: 3,
+    faturamento: 4,
+    colaboradores: 5,
+    lgpd: 6,
+  };
+
+  const FIELD_LABEL_MAP = {
+    email: 'e-mail profissional',
+    'email válido': 'e-mail válido',
+    evento_interesse: 'club de interesse',
+    nome: 'nome completo',
+    telefone: 'WhatsApp',
+    empresa: 'nome da empresa',
+    cargo: 'cargo',
+    faturamento: 'faturamento anual',
+    colaboradores: 'número de colaboradores',
+    lgpd: 'aceite da Política de Privacidade',
+  };
+
+  const parseMissingFieldsFromError = (error) => {
+    const match = String(error || '').match(/ausentes:\s*(.+)$/i);
+    if (!match) return [];
+    return match[1]
+      .split(',')
+      .map((field) => field.trim())
+      .filter(Boolean);
+  };
+
+  const firstStepForMissingFields = (missing) => {
+    if (!missing.length) return 0;
+    const steps = missing.map((field) => FIELD_STEP_MAP[field] ?? 6);
+    return Math.min(...steps);
+  };
+
+  const formatMissingFieldLabels = (missing) =>
+    missing.map((field) => FIELD_LABEL_MAP[field] || field).join(', ');
+
   const form = document.getElementById('application-form');
   if (!form) return;
 
   const steps = Array.from(document.querySelectorAll('[data-step]'));
   const actionBtn = document.querySelector('[data-action]');
+  const backBtn = document.querySelector('[data-back]');
+  const stepIndicator = document.querySelector('[data-step-indicator]');
   const progressBar = document.querySelector('[data-progress-bar]');
   const errorEl = document.getElementById('application-error');
   const thanksEl = document.querySelector('[data-thanks]');
@@ -56,6 +102,16 @@
 
   const isLastStep = () => currentStep === steps.length - 1;
 
+  const focusStep = (stepIndex) => {
+    const step = steps[stepIndex];
+    if (!step) return;
+
+    const focusable = step.querySelector(
+      'input:not([type="hidden"]):not([readonly]), select, textarea',
+    );
+    focusable?.focus({ preventScroll: false });
+  };
+
   const updateStep = () => {
     steps.forEach((step, index) => {
       step.hidden = index !== currentStep;
@@ -63,9 +119,24 @@
     if (actionBtn) {
       actionBtn.textContent = isLastStep() ? ACTION_LABELS.submit : ACTION_LABELS.continue;
     }
+    if (backBtn) {
+      if (currentStep === 0) backBtn.setAttribute('hidden', '');
+      else backBtn.removeAttribute('hidden');
+    }
+    if (stepIndicator) {
+      stepIndicator.textContent = `Passo ${currentStep + 1} de ${steps.length}`;
+      stepIndicator.removeAttribute('hidden');
+    }
     if (progressBar) progressBar.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
     if (formStepField) formStepField.value = String(currentStep);
     if (errorEl) errorEl.hidden = true;
+  };
+
+  const goToStep = (stepIndex, message) => {
+    currentStep = Math.max(0, Math.min(stepIndex, steps.length - 1));
+    updateStep();
+    if (message) showMessage(message);
+    focusStep(currentStep);
   };
 
   const syncPhone = () => {
@@ -92,9 +163,8 @@
     return headers;
   };
 
-  const validateCurrentStep = () => {
-    const current = steps[currentStep];
-    const fields = Array.from(current.querySelectorAll('input, select, textarea'));
+  const validateStepElement = (stepEl) => {
+    const fields = Array.from(stepEl.querySelectorAll('input, select, textarea'));
     const missing = [];
     const seenRadioGroups = new Set();
 
@@ -104,7 +174,7 @@
       if (field.type === 'radio') {
         if (seenRadioGroups.has(field.name)) continue;
         seenRadioGroups.add(field.name);
-        if (!current.querySelector(`input[type="radio"][name="${field.name}"]:checked`)) {
+        if (!stepEl.querySelector(`input[type="radio"][name="${field.name}"]:checked`)) {
           missing.push(fieldLabel(field));
         }
         continue;
@@ -124,6 +194,23 @@
         missing.push(field.type === 'email' ? 'e-mail válido' : fieldLabel(field));
       }
     }
+
+    return missing;
+  };
+
+  const findFirstInvalidStep = () => {
+    syncPhone();
+
+    for (let index = 0; index < steps.length; index += 1) {
+      const missing = validateStepElement(steps[index]);
+      if (missing.length > 0) return { step: index, missing };
+    }
+
+    return null;
+  };
+
+  const validateCurrentStep = () => {
+    const missing = validateStepElement(steps[currentStep]);
 
     if (missing.length > 0) {
       showMessage(`Falta preencher: ${missing.join(', ')}.`);
@@ -207,7 +294,10 @@
   };
 
   const advanceStep = async () => {
-    if (!validateCurrentStep()) return;
+    if (!validateCurrentStep()) {
+      focusStep(currentStep);
+      return;
+    }
 
     try {
       await saveProgress(currentStep);
@@ -217,10 +307,34 @@
 
     currentStep = Math.min(currentStep + 1, steps.length - 1);
     updateStep();
+    focusStep(currentStep);
+  };
+
+  const goBack = () => {
+    if (currentStep === 0) return;
+    currentStep -= 1;
+    updateStep();
+    focusStep(currentStep);
   };
 
   const submitCandidatura = async () => {
-    if (!validateCurrentStep() || !actionBtn) return;
+    if (!actionBtn) return;
+
+    const invalid = findFirstInvalidStep();
+    if (invalid) {
+      if (invalid.step !== currentStep) {
+        goToStep(
+          invalid.step,
+          `Antes de enviar, volte e complete: ${invalid.missing.join(', ')}.`,
+        );
+        return;
+      }
+
+      if (!validateCurrentStep()) {
+        focusStep(currentStep);
+        return;
+      }
+    }
 
     syncPhone();
     actionBtn.disabled = true;
@@ -250,6 +364,16 @@
         } catch {
           detail = '';
         }
+
+        const apiMissing = parseMissingFieldsFromError(detail);
+        if (apiMissing.length > 0) {
+          goToStep(
+            firstStepForMissingFields(apiMissing),
+            `Complete: ${formatMissingFieldLabels(apiMissing)}.`,
+          );
+          return;
+        }
+
         throw new Error(detail || 'Falha ao enviar candidatura');
       }
 
@@ -277,6 +401,7 @@
   };
 
   actionBtn?.addEventListener('click', handlePrimaryAction);
+  backBtn?.addEventListener('click', goBack);
 
   form.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter') return;

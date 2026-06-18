@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import {
   buildCandidaturaPayload,
+  firstStepForMissingFields,
+  formatMissingFieldLabels,
+  parseMissingFieldsFromError,
   priorityFromScore,
   scoreLead,
   toDraftLeadRow,
@@ -20,6 +23,7 @@ data.set('empresa', 'Empresa Forte');
 data.set('cargo', 'Presidente ou CEO');
 data.set('faturamento', 'De R$10 a R$50 milhões ao ano');
 data.set('colaboradores', 'De 101 a 1.000 colaboradores');
+data.set('evento_interesse', 'Masterboard Club — Londrina');
 data.set('objetivo', 'Entrar em uma sala com pares certos');
 data.set('momento', 'Crescimento acelerado');
 data.set('lgpd', 'on');
@@ -68,7 +72,27 @@ assert.equal(notes.priority, 'high');
 const incomplete = new FormData();
 incomplete.set('email', 'lead@empresa.com');
 const missing = validateCandidaturaPayload(buildCandidaturaPayload(incomplete));
-assert.deepEqual(missing, ['nome', 'telefone', 'empresa', 'cargo', 'faturamento', 'colaboradores', 'lgpd']);
+assert.deepEqual(missing, [
+  'nome',
+  'telefone',
+  'empresa',
+  'cargo',
+  'faturamento',
+  'colaboradores',
+  'evento_interesse',
+  'lgpd',
+]);
+
+assert.deepEqual(parseMissingFieldsFromError('Campos obrigatórios ausentes: nome, telefone, empresa'), [
+  'nome',
+  'telefone',
+  'empresa',
+]);
+assert.equal(firstStepForMissingFields(['nome', 'telefone', 'empresa']), 2);
+assert.equal(
+  formatMissingFieldLabels(['nome', 'telefone', 'empresa']),
+  'nome completo, WhatsApp, nome da empresa',
+);
 
 assert.deepEqual(validateDraftEmail({ email: '' }), ['email']);
 assert.deepEqual(validateDraftEmail({ email: 'invalid' }), ['email válido']);
