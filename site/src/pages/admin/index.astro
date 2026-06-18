@@ -2,99 +2,337 @@
 export const prerender = false;
 
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { getAdminSession, getServiceSupabaseClient } from '../../lib/admin/auth';
+import { canManageLeads, getAdminSession, getServiceSupabaseClient } from '../../lib/admin/auth';
 import { listAdminSettings } from '../../lib/admin/settings';
+import { excludeDraftLeads, filterDraftLeads, filterNewLeads } from '../../lib/admin/lead-query.mjs';
 
 const session = await getAdminSession(Astro);
 if (!session) return Astro.redirect(`/admin/login/?next=${encodeURIComponent('/admin/')}`);
 
 const supabase = getServiceSupabaseClient();
-const [postsResult, leadsResult, settings] = await Promise.all([
+const showLeads = canManageLeads(session);
+
+const countLeads = async (modifier: (q: ReturnType<typeof supabase.from>) => ReturnType<typeof supabase.from>) => {
+  let q = supabase.from('leads').select('id', { count: 'exact', head: true });
+  return modifier(q);
+};
+
+const [postsResult, settings, leadsTotal, leadsNew, leadsDraft] = await Promise.all([
   supabase.from('content_posts').select('id', { count: 'exact', head: true }),
-  supabase.from('leads').select('id', { count: 'exact', head: true }),
   listAdminSettings(),
+  showLeads ? countLeads((q) => q) : Promise.resolve({ count: 0 }),
+  showLeads ? countLeads((q) => filterNewLeads(q)) : Promise.resolve({ count: 0 }),
+  showLeads ? countLeads((q) => filterDraftLeads(q)) : Promise.resolve({ count: 0 }),
 ]);
 
+const firstName = (session.name ?? session.email).split(/[\s@]/)[0];
+
 const stats = [
-  { label: 'Posts no blog', value: postsResult.count ?? 0, href: '/admin/blog/' },
-  { label: 'Leads recebidos', value: leadsResult.count ?? 0, href: '/admin/leads/' },
-  { label: 'Settings editáveis', value: settings.length, href: '/admin/settings/' },
+  {
+    label: 'Posts no blog',
+    value: postsResult.count ?? 0,
+    href: '/admin/blog/',
+    hint: 'Rascunhos e publicados',
+    tone: 'neutral',
+  },
+  {
+    label: 'Leads novos',
+    value: leadsNew.count ?? 0,
+    href: '/admin/leads/?status=new',
+    hint: 'Aguardando curadoria',
+    tone: 'gold',
+  },
+  {
+    label: 'Rascunhos',
+    value: leadsDraft.count ?? 0,
+    href: '/admin/leads/?status=draft',
+    hint: 'Formulário incompleto',
+    tone: 'muted',
+  },
+  {
+    label: 'Total de leads',
+    value: leadsTotal.count ?? 0,
+    href: '/admin/leads/?view=board',
+    hint: 'Ver quadro visual',
+    tone: 'neutral',
+  },
+  {
+    label: 'Ajustes do site',
+    value: settings.length,
+    href: '/admin/settings/',
+    hint: 'Hero, cores e textos',
+    tone: 'neutral',
+  },
+].filter((stat) => showLeads || !stat.href.includes('/admin/leads'));
+
+const quickLinks = [
+  { href: '/admin/leads/?view=board', label: 'Quadro de leads', desc: 'Kanban por etapa do funil' },
+  { href: '/admin/blog/new/', label: 'Novo post', desc: 'Publicar no blog institucional' },
+  { href: '/admin/settings/', label: 'Editar hero', desc: 'Textos e CTAs da home' },
+  { href: '/aplicacao/', label: 'Ver formulário', desc: 'Como o visitante aplica', external: true },
 ];
 ---
 
 <AdminLayout title="Painel" active="dashboard" session={session}>
-  <header class="admin-page-header">
-    <div>
-      <p class="admin-muted">Operação Masterboard</p>
-      <h1>Painel self-service</h1>
+  <section class="dashboard-hero">
+    <div class="dashboard-hero__copy">
+      <p class="dashboard-eyebrow">Operação Masterboard</p>
+      <h1>Olá, {firstName}.</h1>
+      <p class="dashboard-hero__lead">
+        Curadoria, conteúdo e candidaturas em um só lugar — com a mesma linguagem visual do site.
+      </p>
     </div>
-  </header>
+    <div class="dashboard-hero__mark" aria-hidden="true">
+      <img src="/brand/masterboard-symbol-yellow.webp" alt="" width="88" height="88" loading="lazy" />
+    </div>
+  </section>
 
-  <section class="admin-grid" aria-label="Resumo do admin">
+  <section class="dashboard-stats" aria-label="Resumo operacional">
     {stats.map((stat) => (
-      <a href={stat.href} class="admin-card dashboard-card">
-        <span>{stat.label}</span>
-        <strong>{stat.value}</strong>
+      <a href={stat.href} class={`dashboard-stat dashboard-stat--${stat.tone}`}>
+        <span class="dashboard-stat__label">{stat.label}</span>
+        <strong class="dashboard-stat__value">{stat.value}</strong>
+        <span class="dashboard-stat__hint">{stat.hint}</span>
       </a>
     ))}
   </section>
 
-  <section class="admin-card dashboard-help">
-    <h2>Fluxo recomendado</h2>
-    <p>
-      Edite em rascunho, revise no preview e publique só quando o conteúdo estiver pronto.
-      Mudanças salvas pelo admin entram no banco e aparecem no site sem mexer no GitHub.
-    </p>
-    <p class="dashboard-help__leads">
-      Para ver candidaturas do site, acesse <a href="/admin/leads/?view=board">Leads → Quadro</a>
-      (visão Kanban) ou <a href="/admin/leads/">Lista</a> com filtros por status e marca.
-    </p>
+  <section class="dashboard-grid">
+    <div class="dashboard-panel">
+      <p class="dashboard-eyebrow">Atalhos</p>
+      <h2>O que fazer agora</h2>
+      <ul class="dashboard-links">
+        {quickLinks.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              target={link.external ? '_blank' : undefined}
+              rel={link.external ? 'noopener noreferrer' : undefined}
+            >
+              <span class="dashboard-links__label">{link.label}</span>
+              <span class="dashboard-links__desc">{link.desc}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="dashboard-panel dashboard-panel--accent">
+      <p class="dashboard-eyebrow">Fluxo recomendado</p>
+      <h2>Publicar com segurança</h2>
+      <ol class="dashboard-steps">
+        <li>Edite em rascunho no blog ou ajuste textos em Site.</li>
+        <li>Revise no preview antes de publicar.</li>
+        <li>Priorize leads novos e rascunhos no quadro visual.</li>
+      </ol>
+      <p class="dashboard-panel__note">
+        Mudanças salvas aqui entram no Supabase e refletem no site sem deploy manual.
+      </p>
+    </div>
   </section>
 </AdminLayout>
 
 <style>
-  .dashboard-card {
-    color: var(--mb-white);
-    text-decoration: none;
+  .dashboard-hero {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    align-items: center;
+    margin-bottom: 1.75rem;
+    padding: 1.5rem 1.35rem;
+    border: 1px solid rgba(251, 190, 10, 0.22);
+    border-radius: 1.35rem;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(251, 190, 10, 0.14), transparent 42%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
   }
 
-  .dashboard-card span {
-    display: block;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.82rem;
-    font-weight: 900;
-    margin-bottom: 0.7rem;
-  }
-
-  .dashboard-card strong {
+  .dashboard-eyebrow {
     color: var(--mb-yellow);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 0.55rem;
+  }
+
+  .dashboard-hero h1 {
+    color: var(--mb-white);
+    font-size: clamp(2rem, 4.5vw, 3.2rem);
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+  }
+
+  .dashboard-hero__lead {
+    margin-top: 0.75rem;
+    max-width: 34rem;
+    color: rgba(255, 255, 255, 0.58);
+    line-height: 1.55;
+    font-size: 0.95rem;
+  }
+
+  .dashboard-hero__mark {
+    flex-shrink: 0;
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 1.1rem;
+    border: 1px solid rgba(251, 190, 10, 0.28);
+    background: rgba(251, 190, 10, 0.08);
+    display: grid;
+    place-items: center;
+  }
+
+  .dashboard-hero__mark img {
+    width: 3.4rem;
+    height: 3.4rem;
+    object-fit: contain;
+  }
+
+  .dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .dashboard-stat {
+    border: 1px solid var(--mb-border);
+    border-radius: 1.1rem;
+    background: var(--mb-card);
+    padding: 1rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  }
+
+  .dashboard-stat:hover {
+    transform: translateY(-2px);
+    border-color: rgba(251, 190, 10, 0.35);
+    background: rgba(251, 190, 10, 0.06);
+  }
+
+  .dashboard-stat--gold .dashboard-stat__value {
+    color: var(--mb-yellow);
+  }
+
+  .dashboard-stat--muted .dashboard-stat__value {
+    color: #cbd5e1;
+  }
+
+  .dashboard-stat__label {
+    display: block;
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .dashboard-stat__value {
+    display: block;
+    margin-top: 0.45rem;
+    color: var(--mb-white);
     font-size: 2rem;
     font-weight: 900;
+    line-height: 1;
   }
 
-  .dashboard-help {
-    margin-top: 1rem;
+  .dashboard-stat__hint {
+    display: block;
+    margin-top: 0.35rem;
+    color: rgba(255, 255, 255, 0.38);
+    font-size: 0.75rem;
   }
 
-  .dashboard-help h2 {
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 0.85rem;
+  }
+
+  .dashboard-panel {
+    border: 1px solid var(--mb-border);
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 1.15rem;
+  }
+
+  .dashboard-panel--accent {
+    border-color: rgba(251, 190, 10, 0.22);
+    background:
+      radial-gradient(circle at 0% 100%, rgba(251, 190, 10, 0.1), transparent 55%),
+      rgba(255, 255, 255, 0.03);
+  }
+
+  .dashboard-panel h2 {
     color: var(--mb-white);
-    font-size: 1.25rem;
+    font-size: 1.35rem;
     font-weight: 900;
-    margin-bottom: 0.5rem;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.85rem;
   }
 
-  .dashboard-help p {
-    color: rgba(255, 255, 255, 0.58);
-    line-height: 1.6;
+  .dashboard-links {
+    list-style: none;
+    display: grid;
+    gap: 0.55rem;
   }
 
-  .dashboard-help__leads {
-    margin-top: 0.75rem;
-  }
-
-  .dashboard-help__leads a {
-    color: var(--mb-yellow);
-    font-weight: 800;
+  .dashboard-links a {
+    display: grid;
+    gap: 0.15rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.95rem;
+    padding: 0.75rem 0.85rem;
     text-decoration: none;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .dashboard-links a:hover {
+    border-color: rgba(251, 190, 10, 0.4);
+    background: rgba(251, 190, 10, 0.07);
+  }
+
+  .dashboard-links__label {
+    color: var(--mb-white);
+    font-weight: 900;
+    font-size: 0.92rem;
+  }
+
+  .dashboard-links__desc {
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.8rem;
+  }
+
+  .dashboard-steps {
+    margin: 0;
+    padding-left: 1.1rem;
+    color: rgba(255, 255, 255, 0.62);
+    line-height: 1.6;
+    font-size: 0.9rem;
+  }
+
+  .dashboard-steps li + li {
+    margin-top: 0.45rem;
+  }
+
+  .dashboard-panel__note {
+    margin-top: 0.9rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 860px) {
+    .dashboard-hero {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

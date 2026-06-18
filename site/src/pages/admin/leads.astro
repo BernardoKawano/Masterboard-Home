@@ -11,6 +11,11 @@ import {
   parseLeadSource,
 } from '../../lib/lead-source.mjs';
 import { isDraftLead, parseLeadNotes } from '../../lib/candidatura-payload.mjs';
+import {
+  excludeDraftLeads,
+  filterDraftLeads,
+  filterNewLeads,
+} from '../../lib/admin/lead-query.mjs';
 
 type LeadRow = Record<string, unknown>;
 type ViewMode = 'list' | 'board';
@@ -179,10 +184,8 @@ if (isAuthorized && supabaseUrl && serviceRoleKey) {
     leadsRes,
   ] = await Promise.all([
     countWithBrand((q) => q),
-    countWithBrand((q) => q.or('status.eq.draft,notes.ilike.%"draft":true%')),
-    countWithBrand((q) =>
-      q.eq('status', 'new').not('notes', 'ilike', '%"draft":true%'),
-    ),
+    countWithBrand((q) => filterDraftLeads(q)),
+    countWithBrand((q) => filterNewLeads(q)),
     countWithBrand((q) => q.eq('status', 'contacted')),
     countWithBrand((q) => q.eq('status', 'approved')),
     countWithBrand((q) => q.eq('status', 'rejected')),
@@ -195,11 +198,11 @@ if (isAuthorized && supabaseUrl && serviceRoleKey) {
 
       if (viewMode === 'list') {
         if (selectedStatus === 'draft') {
-          query = query.or('status.eq.draft,notes.ilike.%"draft":true%');
+          query = filterDraftLeads(query);
         } else if (selectedStatus === 'all') {
-          query = query.neq('status', 'draft').not('notes', 'ilike', '%"draft":true%');
+          query = excludeDraftLeads(query);
         } else if (selectedStatus === 'new') {
-          query = query.eq('status', 'new').not('notes', 'ilike', '%"draft":true%');
+          query = filterNewLeads(query);
         } else {
           query = query.eq('status', selectedStatus);
         }

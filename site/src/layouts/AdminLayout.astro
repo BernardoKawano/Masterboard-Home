@@ -28,8 +28,15 @@ const nav = [
   <main class="admin-shell">
     <aside class="admin-sidebar">
       <a href="/admin/" class="admin-brand">
-        <span>Masterboard</span>
-        <strong>Admin</strong>
+        <img
+          src="/brand/masterboard-logo-yellow.webp"
+          alt="Masterboard"
+          class="admin-brand__logo"
+          width="148"
+          height="32"
+          loading="eager"
+        />
+        <span class="admin-brand__tag">Painel interno</span>
       </a>
 
       <nav class="admin-nav" aria-label="Admin">
@@ -59,7 +66,8 @@ const nav = [
     display: grid;
     grid-template-columns: 17rem minmax(0, 1fr);
     background:
-      radial-gradient(circle at 10% 0%, rgba(251, 190, 10, 0.12), transparent 30rem),
+      radial-gradient(circle at 8% 0%, rgba(251, 190, 10, 0.16), transparent 32rem),
+      radial-gradient(circle at 92% 100%, rgba(251, 190, 10, 0.06), transparent 28rem),
       var(--mb-black);
     color: var(--mb-white);
   }
@@ -68,8 +76,10 @@ const nav = [
     position: sticky;
     top: 0;
     height: 100vh;
-    border-right: 1px solid var(--mb-border);
-    background: rgba(255, 255, 255, 0.035);
+    border-right: 1px solid rgba(251, 190, 10, 0.12);
+    background:
+      linear-gradient(180deg, rgba(251, 190, 10, 0.05), transparent 28%),
+      rgba(255, 255, 255, 0.03);
     padding: 1.25rem;
     display: flex;
     flex-direction: column;
@@ -80,22 +90,23 @@ const nav = [
     color: var(--mb-white);
     text-decoration: none;
     line-height: 1;
+    display: grid;
+    gap: 0.55rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  .admin-brand span {
-    display: block;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.75rem;
+  .admin-brand__logo {
+    width: min(9.25rem, 100%);
+    height: auto;
+  }
+
+  .admin-brand__tag {
+    color: rgba(255, 255, 255, 0.42);
+    font-size: 0.68rem;
     font-weight: 800;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-  }
-
-  .admin-brand strong {
-    display: block;
-    margin-top: 0.35rem;
-    font-size: 1.55rem;
-    font-weight: 900;
   }
 
   .admin-nav {
@@ -118,8 +129,9 @@ const nav = [
 
   .admin-nav a:hover,
   .admin-nav a[aria-current='page'] {
-    background: rgba(251, 190, 10, 0.12);
+    background: rgba(251, 190, 10, 0.14);
     color: var(--mb-yellow);
+    box-shadow: inset 2px 0 0 var(--mb-yellow);
   }
 
   .admin-logout {
