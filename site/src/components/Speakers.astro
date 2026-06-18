@@ -47,15 +47,6 @@ const getSpeakerImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
 });
 
 const total = visibleSpeakers.length;
-
-const describeSpeaker = (speaker: Speaker) => {
-  if (speaker.bio) return speaker.bio;
-
-  const role = speaker.role || speaker.roleLabel || 'líder convidado';
-  const companySuffix = speaker.company ? ` à frente da ${speaker.company}` : '';
-
-  return `${speaker.name} chega à mesa como ${role}${companySuffix}, compartilhando bastidores reais de decisão, crescimento e construção de negócios.`;
-};
 ---
 
 {total > 0 && (
@@ -95,27 +86,40 @@ const describeSpeaker = (speaker: Speaker) => {
           empresas e compartilhando os bastidores reais do crescimento.
         </p>
 
-        <!-- Badge empresa -->
+        <!-- Empresa -->
         <div id="spk-company-wrap" class="spk-company-wrap">
+          <p class="spk-field-label">Empresa</p>
           <span id="spk-company" class="spk-company">
             {visibleSpeakers[0]?.company ?? ''}
           </span>
         </div>
 
-        <h3 id="spk-name" class="spk-name">
-          {visibleSpeakers[0]?.name}
-        </h3>
-
-        <div id="spk-role-wrap" class="spk-role-wrap">
-          <span class="spk-role-dot"></span>
-          <p id="spk-role" class="spk-role">
-            {visibleSpeakers[0]?.role ?? visibleSpeakers[0]?.roleLabel}
-          </p>
+        <!-- Speaker -->
+        <div class="spk-field-block">
+          <p class="spk-field-label">Speaker</p>
+          <h3 id="spk-name" class="spk-name">
+            {visibleSpeakers[0]?.name}
+          </h3>
         </div>
 
-        <p id="spk-bio" class="spk-bio">
-          {visibleSpeakers[0] ? describeSpeaker(visibleSpeakers[0]) : ''}
-        </p>
+        <!-- Cargo -->
+        <div id="spk-role-wrap" class="spk-role-wrap spk-field-block">
+          <p class="spk-field-label">Cargo</p>
+          <div class="spk-role-line">
+            <span class="spk-role-dot"></span>
+            <p id="spk-role" class="spk-role">
+              {visibleSpeakers[0]?.role ?? visibleSpeakers[0]?.roleLabel}
+            </p>
+          </div>
+        </div>
+
+        <!-- Apresenta -->
+        <div class="spk-field-block spk-presents-block">
+          <p class="spk-field-label">Apresenta</p>
+          <p id="spk-bio" class="spk-bio">
+            {visibleSpeakers[0]?.bio ?? ''}
+          </p>
+        </div>
 
         <!-- Setas -->
         <div class="flex items-center gap-3 mt-8">
@@ -243,7 +247,7 @@ const describeSpeaker = (speaker: Speaker) => {
     name: s.name,
     company: s.company ?? '',
     role: s.role ?? s.roleLabel ?? '',
-    bio: describeSpeaker(s),
+    bio: s.bio ?? '',
   })))}
 ></div>
 

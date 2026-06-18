@@ -5,9 +5,13 @@
  * ativo em src/lib/data-source.ts sem alterar as páginas.
  */
 
-import { createClient } from '@supabase/supabase-js';
+import type { createClient } from '@supabase/supabase-js';
+import { createServerSupabaseClient, normalizeEnvValue } from '../../supabase-client';
 import { fetchMemberPreview } from '../../bubble';
 import { parseRoleLabel } from '../../speaker-role';
+import { resolveSpeakerCompany } from '../../speaker-company';
+import { buildSpeakerBio } from '../../speaker-bio';
+import { resolveEventStatus, todayInSaoPaulo } from '../../event-status';
 import { mapBubbleUserToMember } from '../bubble/members';
 import type { ContentDataSource, ListEventsOptions, ListMemberCompaniesOptions } from '../../data-source';
 import type { ContentPost, Event, Member, MemberCompany, Speaker } from '../../../types/domain';
@@ -129,19 +133,17 @@ let client: SupabaseClient | null = null;
 function getSupabaseClient(): SupabaseClient {
   if (client) return client;
 
-  const url: string | undefined = import.meta.env.SUPABASE_URL;
-  const serviceRoleKey: string | undefined = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+  const urlRaw = import.meta.env.SUPABASE_URL as string | undefined;
+  const serviceRoleKeyRaw = import.meta.env.SUPABASE_SERVICE_ROLE_KEY as string | undefined;
 
-  if (!url || !serviceRoleKey) {
+  if (!urlRaw || !serviceRoleKeyRaw) {
     throw new Error('SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY precisam estar definidos no .env.');
   }
 
-  client = createClient(url, serviceRoleKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
+  const url = normalizeEnvValue(urlRaw);
+  const serviceRoleKey = normalizeEnvValue(serviceRoleKeyRaw);
+
+  client = createServerSupabaseClient(url, serviceRoleKey);
 
   return client;
 }
@@ -177,7 +179,7 @@ function mapEventRow(row: EventRow, speakerSourceIds: string[] = []): Event {
     topics: row.topics ?? [],
     edition: row.edition_label ?? undefined,
     editionNumber: row.edition_number ?? undefined,
-    status: row.status,
+    status: resolveEventStatus(row.date, row.status),
     accessType: row.access_type ?? undefined,
     speakerSourceIds,
     driveLink: row.drive_link ?? undefined,
@@ -187,9 +189,27 @@ function mapEventRow(row: EventRow, speakerSourceIds: string[] = []): Event {
 }
 
 function mapSpeakerRow(row: SpeakerRow): Speaker {
-  const parsedRole = parseRoleLabel(row.role_label ?? '');
-  const company = row.company ?? parsedRole.company;
-  const role = row.company ? row.role ?? parsedRole.role : parsedRole.role ?? row.role ?? undefined;
+  const resolution = resolveSpeakerCompany({
+    company: row.company,
+    role: row.role,
+    roleLabel: row.role_label,
+    companyLogoUrl: row.company_logo_url,
+    linkedinUrl: row.linkedin_url,
+  });
+
+  const role =
+    resolution.role ??
+    (row.company ? row.role ?? parseRoleLabel(row.role_label ?? '').role : parseRoleLabel(row.role_label ?? '').role ?? row.role ?? undefined);
+
+  const speakerInput = {
+    name: row.name,
+    role,
+    roleLabel: row.role_label ?? undefined,
+    bio: row.bio ?? undefined,
+    topics: row.topics ?? undefined,
+  };
+
+  const presentation = buildSpeakerBio(speakerInput, resolution);
 
   return {
     id: row.slug,
@@ -198,8 +218,8 @@ function mapSpeakerRow(row: SpeakerRow): Speaker {
     name: row.name,
     roleLabel: row.role_label ?? [row.role, row.company].filter(Boolean).join(' / '),
     role,
-    company,
-    bio: row.bio ?? undefined,
+    company: resolution.company,
+    bio: presentation,
     photo: row.photo_url ?? undefined,
     companyLogo: row.company_logo_url ?? undefined,
     topics: row.topics ?? undefined,
@@ -343,13 +363,18 @@ export const supabaseDataSource: ContentDataSource = {
 
   async listEvents(options: ListEventsOptions = {}): Promise<Event[]> {
     const { status = 'all', sortAscending, limit, offset = 0 } = options;
+    const today = todayInSaoPaulo();
 
     let query = getSupabaseClient()
       .from('events')
       .select('*')
       .eq('is_published', true);
 
-    if (status !== 'all') {
+    if (status === 'upcoming') {
+      query = query.gte('date', today).neq('status', 'cancelled');
+    } else if (status === 'past') {
+      query = query.lt('date', today);
+    } else if (status !== 'all') {
       query = query.eq('status', status);
     }
 

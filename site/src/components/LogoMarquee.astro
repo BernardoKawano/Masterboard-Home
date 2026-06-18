@@ -1,59 +1,7 @@
 ---
-import { existsSync, readdirSync } from 'node:fs';
+import { listMemberLogos } from '../lib/member-logos';
 
-/**
- * Carrega automaticamente as logos presentes em public/logos.
- * Os arquivos devem estar normalizados em branco puro e fundo transparente.
- */
-const logoDirectories = [
-  new URL('../../public/logos/', import.meta.url),
-  new URL('../../client/logos/', import.meta.url),
-];
-const logosDirectory = logoDirectories.find((directory) => existsSync(directory));
-const supportedLogoExtensions = new Set(['.svg', '.png', '.webp', '.avif', '.jpg', '.jpeg']);
-const preferredLogoExtensions = ['.avif', '.webp', '.svg', '.png', '.jpg', '.jpeg'];
-const getLogoExtension = (filename: string) => filename.slice(filename.lastIndexOf('.')).toLowerCase();
-const getLogoBase = (filename: string) => filename.replace(/\.[^.]+$/, '');
-
-const getLogoName = (filename: string) =>
-  getLogoBase(filename)
-    .replace(/[-_]+/g, ' ')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-
-const logos = logosDirectory
-  ? Array.from(
-      readdirSync(logosDirectory, { withFileTypes: true })
-      .filter((entry) => entry.isFile())
-      .map((entry) => entry.name)
-      .filter((filename) => {
-        const extension = getLogoExtension(filename);
-        return supportedLogoExtensions.has(extension);
-      })
-      .reduce((bestByBase, filename) => {
-        const base = getLogoBase(filename);
-        const current = bestByBase.get(base);
-        const extension = getLogoExtension(filename);
-        const currentExtension = current ? getLogoExtension(current) : undefined;
-
-        if (
-          !current ||
-          preferredLogoExtensions.indexOf(extension) < preferredLogoExtensions.indexOf(currentExtension ?? '.jpeg')
-        ) {
-          bestByBase.set(base, filename);
-        }
-
-        return bestByBase;
-      }, new Map<string, string>())
-      .values(),
-    )
-      .sort((first, second) => getLogoName(first).localeCompare(getLogoName(second), 'pt-BR'))
-      .map((filename) => ({
-        name: getLogoName(filename),
-        extension: getLogoExtension(filename).replace('.', ''),
-        src: `/logos/${filename}`,
-      }))
-  : [];
-
+const logos = listMemberLogos();
 const repetitions = Math.max(2, Math.ceil(12 / Math.max(logos.length, 1)));
 const marqueeLogos = Array.from({ length: repetitions }, () => logos).flat();
 ---
@@ -76,19 +24,15 @@ const marqueeLogos = Array.from({ length: repetitions }, () => logos).flat();
           data-logo={logo.name.toLowerCase().replace(/\s+/g, '-')}
           data-logo-extension={logo.extension}
         >
-          {logo.src ? (
-            <img
-              src={logo.src}
-              alt={logo.name}
-              loading="lazy"
-              fetchpriority="low"
-              decoding="async"
-              width="160"
-              height="48"
-            />
-          ) : (
-            <span class="logo-marquee-text">{logo.name}</span>
-          )}
+          <img
+            src={logo.src}
+            alt={logo.name}
+            loading="lazy"
+            fetchpriority="low"
+            decoding="async"
+            width="160"
+            height="48"
+          />
         </div>
       ))}
     </div>

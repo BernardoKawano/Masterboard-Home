@@ -1,5 +1,6 @@
 ---
 import { getPublicSiteSettings } from '../lib/admin/settings';
+import AnimatedGallery from './AnimatedGallery.astro';
 
 const settings = await getPublicSiteSettings();
 const hero = settings.home.hero;
@@ -10,8 +11,7 @@ const hero = settings.home.hero;
   class="hero-section relative min-h-screen flex flex-col justify-center overflow-hidden bg-mb-black"
   aria-label="Introdução ao Masterboard"
 >
-  <!-- Background image -->
-  <div class="hero-static-bg absolute inset-0" aria-hidden="true"></div>
+  <AnimatedGallery />
   <div class="hero-image-overlay absolute inset-0" aria-hidden="true"></div>
   <div class="hero-bg absolute inset-0" aria-hidden="true"></div>
   <div class="hero-orb hero-orb--primary" aria-hidden="true"></div>

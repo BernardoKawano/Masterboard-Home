@@ -1,7 +1,7 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { createClient } from '@supabase/supabase-js';
+import { createServerSupabaseClient } from '../../lib/supabase-client';
 import {
   buildCandidaturaPayload,
   isDraftLead,
@@ -10,9 +10,10 @@ import {
 } from '../../lib/candidatura-payload.mjs';
 
 function getSupabase() {
-  return createClient(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_SERVICE_ROLE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  return createServerSupabaseClient(
+    import.meta.env.SUPABASE_URL,
+    import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+  );
 }
 
 function jsonResponse(body: unknown, status: number) {

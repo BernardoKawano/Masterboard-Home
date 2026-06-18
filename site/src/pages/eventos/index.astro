@@ -6,6 +6,7 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { dataSource } from '../../lib/data-source';
 import { getResponsiveImageAttrs } from '../../lib/responsive-image';
+import { eventStatusLabel } from '../../lib/event-status';
 import { getEventUrl } from '../../types/domain';
 import type { Event } from '../../types/domain';
 
@@ -119,9 +120,9 @@ const eventListSchema = {
 
                 <div>
                   <div class="flex flex-wrap gap-2 mb-2">
-                    <span class="badge badge-upcoming text-[10px]">
-                      <span class="w-1.5 h-1.5 rounded-full bg-mb-yellow" aria-hidden="true"></span>
-                      Em breve
+                    <span class={`badge ${event.status === 'upcoming' ? 'badge-upcoming' : 'badge-past'} text-[10px]`}>
+                      <span class="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true"></span>
+                      {eventStatusLabel(event.status)}
                     </span>
                     {event.edition && (
                       <span class="badge" style="background:rgba(255,255,255,.04);border-color:var(--mb-border);color:rgba(255,255,255,.4);">
@@ -179,6 +180,11 @@ const eventListSchema = {
                     </div>
                   )}
                   <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                      <span class="badge badge-past text-[10px]">
+                        {eventStatusLabel(event.status)}
+                      </span>
+                    </div>
                     <p class="font-600 text-white/75 text-sm truncate group-hover:text-white transition-colors">
                       {event.title}
                     </p>

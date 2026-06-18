@@ -1,6 +1,7 @@
 ---
 import type { Event } from '../types/domain';
 import { getEventUrl } from '../types/domain';
+import { eventStatusLabel } from '../lib/event-status';
 import { getResponsiveImageAttrs } from '../lib/responsive-image';
 
 interface Props {
@@ -110,7 +111,7 @@ const getEventCardImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
                   <div class="event-image-card__badges">
                     <span class={`badge ${event.status === 'upcoming' ? 'badge-upcoming' : 'badge-past'} text-[10px]`}>
                       <span class="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true"></span>
-                      {event.status === 'upcoming' ? 'Em breve' : 'Realizado'}
+                      {eventStatusLabel(event.status)}
                     </span>
                     {event.edition && (
                       <span class="badge text-[10px]"
@@ -182,7 +183,7 @@ const getEventCardImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
                   <div class="flex flex-wrap items-center gap-2 mb-1">
                     <span class={`badge ${event.status === 'upcoming' ? 'badge-upcoming' : 'badge-past'}`}>
                       <span class="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true"></span>
-                      {event.status === 'upcoming' ? 'Em breve' : 'Realizado'}
+                      {eventStatusLabel(event.status)}
                     </span>
                     {event.edition && (
                       <span class="badge" style="background:rgba(255,255,255,.04);border-color:var(--mb-border);color:rgba(255,255,255,.45);">

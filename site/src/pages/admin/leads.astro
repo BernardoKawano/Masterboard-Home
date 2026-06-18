@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-import { createClient } from '@supabase/supabase-js';
+import { createServerSupabaseClient } from '../../lib/supabase-client';
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { canManageLeads, getAdminSession } from '../../lib/admin/auth';
 import {
@@ -95,12 +95,7 @@ let leads: LeadRow[] = [];
 let errorMessage = '';
 
 if (isAuthorized && supabaseUrl && serviceRoleKey) {
-  const supabase = createClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
+  const supabase = createServerSupabaseClient(supabaseUrl, serviceRoleKey);
 
   let query = supabase
     .from('leads')

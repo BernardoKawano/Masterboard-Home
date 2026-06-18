@@ -8,6 +8,7 @@ import Footer from '../../components/Footer.astro';
 import { dataSource } from '../../lib/data-source';
 import { getResponsiveImageAttrs } from '../../lib/responsive-image';
 import { bbcodeToHtml } from '../../lib/bubble';
+import { eventStatusLabel } from '../../lib/event-status';
 import { formatEventDate, formatEventTime } from '../../lib/adapters/bubble/index';
 import { getEventUrl } from '../../types/domain';
 
@@ -155,7 +156,7 @@ const eventSchema = {
               <div class="flex flex-wrap gap-2 mb-4" data-animate>
                 <span class={`badge ${event.status === 'upcoming' ? 'badge-upcoming' : 'badge-past'}`}>
                   <span class="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true"></span>
-                  {event.status === 'upcoming' ? 'Em breve' : event.status === 'cancelled' ? 'Cancelado' : 'Realizado'}
+                  {eventStatusLabel(event.status)}
                 </span>
                 {event.edition && (
                   <span class="badge" style="background:rgba(255,255,255,.04);border-color:var(--mb-border);color:rgba(255,255,255,.5);">

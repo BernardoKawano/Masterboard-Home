@@ -16,12 +16,20 @@
     "test:cnpj": "node scripts/cnpj-lookup.test.mjs",
     "test:lead-source": "node scripts/lead-source.test.mjs",
     "test:speakers": "node scripts/speaker-parser.test.mjs",
+    "test:speaker-companies": "node scripts/speaker-company.test.mjs",
+    "test:speaker-bios": "node scripts/speaker-bio.test.mjs",
     "test:blog-import": "node scripts/import-blog-posts-to-supabase.test.mjs",
     "test:admin": "node scripts/admin-utils.test.mjs",
     "test:gallery": "node scripts/gallery-columns.test.mjs",
+    "test:member-logos": "node scripts/member-logos.test.mjs",
+    "test:event-status": "node scripts/event-status.test.mjs",
+    "test:supabase-client": "node scripts/supabase-client.test.mjs",
     "test:images": "node scripts/responsive-image.test.mjs",
     "test:media": "node scripts/migrate-media-to-storage.test.mjs",
     "review:speaker-companies": "node scripts/generate-speaker-company-review.mjs",
+    "apply:speaker-companies": "node scripts/apply-speaker-companies.mjs",
+    "research:speaker-companies": "node scripts/research-speaker-companies.mjs",
+    "generate:speaker-bios": "node scripts/generate-speaker-bios.mjs",
     "import:blog-posts": "node scripts/import-blog-posts-to-supabase.mjs",
     "migrate:media": "node scripts/migrate-media-to-storage.mjs"
   },
@@ -32,10 +40,12 @@
     "@astrojs/vercel": "^7.8.2",
     "@supabase/supabase-js": "^2.108.1",
     "astro": "^4.16.18",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
+    "@types/ws": "^8.18.1",
     "typescript": "^5.7.2"
   }
 }

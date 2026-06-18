@@ -1,4 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { createServerSupabaseClient } from '../supabase-client';
 
 export const ADMIN_SESSION_COOKIE = 'mb_admin_session';
 
@@ -31,14 +32,12 @@ interface AdminUserRow {
   is_active: boolean;
 }
 
-type SupabaseClient = ReturnType<typeof createClient>;
-
 let serviceClient: SupabaseClient | null = null;
 
 function getRequiredEnv(name: string): string {
   const value = import.meta.env[name] as string | undefined;
   if (!value) throw new Error(`${name} precisa estar definido no ambiente.`);
-  return value;
+  return value.replace(/^\uFEFF/, '').trim();
 }
 
 function getAdminEmailAllowlist(): Set<string> {
@@ -54,20 +53,18 @@ function getAdminEmailAllowlist(): Set<string> {
 export function getServiceSupabaseClient(): SupabaseClient {
   if (serviceClient) return serviceClient;
 
-  serviceClient = createClient(
+  serviceClient = createServerSupabaseClient(
     getRequiredEnv('SUPABASE_URL'),
     getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY'),
-    { auth: { persistSession: false, autoRefreshToken: false } },
   );
 
   return serviceClient;
 }
 
 export function getAuthSupabaseClient(): SupabaseClient {
-  return createClient(
+  return createServerSupabaseClient(
     getRequiredEnv('SUPABASE_URL'),
     getRequiredEnv('SUPABASE_ANON_KEY'),
-    { auth: { persistSession: false, autoRefreshToken: false } },
   );
 }
 
