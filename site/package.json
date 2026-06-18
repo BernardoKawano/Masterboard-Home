@@ -22,6 +22,7 @@
     "test:admin": "node scripts/admin-utils.test.mjs",
     "test:gallery": "node scripts/gallery-columns.test.mjs",
     "test:member-logos": "node scripts/member-logos.test.mjs",
+    "test:member-companies": "node scripts/member-company-score.test.mjs",
     "test:event-status": "node scripts/event-status.test.mjs",
     "test:supabase-client": "node scripts/supabase-client.test.mjs",
     "test:images": "node scripts/responsive-image.test.mjs",

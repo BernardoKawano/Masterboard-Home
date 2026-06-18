@@ -8,6 +8,13 @@
 
 import type { Member, MemberCompany } from '../types/domain';
 import { getResponsiveImageAttrs } from '../lib/responsive-image';
+import {
+  MEMBER_COMPANY_VISIBLE_COUNT,
+  MEMBER_PROFILE_VISIBLE_COUNT,
+  MEMBER_VISIBLE_ROWS,
+  sortCompaniesByPrestige,
+  sortMembersByCompanyPrestige,
+} from '../lib/member-company-score';
 
 interface Props {
   members?: Member[];
@@ -36,13 +43,23 @@ const getMemberDisplayName = (name: string) => {
 
 const getMemberRole = (member: Member) => member.role ?? member.roleLabel;
 
-const visibleMembers = members
-  .filter((member) => member.name && member.photo && member.company && getMemberRole(member) && getNameParts(member.name).length >= 2)
-  .slice(0, 18);
+const eligibleMembers = members.filter(
+  (member) =>
+    member.name &&
+    member.photo &&
+    member.company &&
+    getMemberRole(member) &&
+    getNameParts(member.name).length >= 2,
+);
 
-const visibleCompanies = companies
-  .filter((company) => company.name)
-  .slice(0, 12);
+const visibleMembers = sortMembersByCompanyPrestige(eligibleMembers).slice(
+  0,
+  MEMBER_PROFILE_VISIBLE_COUNT,
+);
+
+const visibleCompanies = sortCompaniesByPrestige(
+  companies.filter((company) => company.name),
+).slice(0, MEMBER_COMPANY_VISIBLE_COUNT);
 
 const hasMemberProfiles = visibleMembers.length > 0;
 const displayMemberCount = memberCount ?? Math.max(members.length, visibleMembers.length);
@@ -112,9 +129,14 @@ const getMemberImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
       </div>
     </div>
 
-    <div class="members-grid-shell" data-animate data-animate-delay="200">
+    <div
+      class="members-grid-shell"
+      data-animate
+      data-animate-delay="200"
+      style={`--members-visible-rows: ${MEMBER_VISIBLE_ROWS}`}
+    >
       {hasMemberProfiles ? (
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
+        <div class="members-profile-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
           {visibleMembers.map((member, i) => (
             <article
               class="member-profile-card"
@@ -141,7 +163,7 @@ const getMemberImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
           ))}
         </div>
       ) : (
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+        <div class="members-company-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {visibleCompanies.map((company, i) => (
             <article
               class="member-company-card"
@@ -189,6 +211,44 @@ const getMemberImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
 
   .members-grid-shell {
     position: relative;
+    container-type: inline-size;
+  }
+
+  .members-profile-grid,
+  .members-company-grid {
+    --members-gap: 0.75rem;
+    --members-columns: 2;
+    overflow: hidden;
+    max-height: calc(
+      ((100cqi - ((var(--members-columns) - 1) * var(--members-gap))) / var(--members-columns))
+        * var(--members-visible-rows, 2.5)
+      + (var(--members-gap) * (var(--members-visible-rows, 2.5) - 0.5))
+    );
+  }
+
+  @media (min-width: 640px) {
+    .members-profile-grid,
+    .members-company-grid {
+      --members-gap: 1rem;
+    }
+
+    .members-profile-grid {
+      --members-columns: 3;
+    }
+
+    .members-company-grid {
+      --members-columns: 2;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .members-profile-grid {
+      --members-columns: 6;
+    }
+
+    .members-company-grid {
+      --members-columns: 3;
+    }
   }
 
   .member-profile-card {
@@ -356,7 +416,7 @@ const getMemberImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
     left: 0;
     right: 0;
     bottom: 0;
-    height: min(10rem, 40%);
+    height: min(11rem, 46%);
     pointer-events: none;
     background: linear-gradient(
       to top,
