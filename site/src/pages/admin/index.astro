@@ -45,6 +45,10 @@ const stats = [
       Edite em rascunho, revise no preview e publique só quando o conteúdo estiver pronto.
       Mudanças salvas pelo admin entram no banco e aparecem no site sem mexer no GitHub.
     </p>
+    <p class="dashboard-help__leads">
+      Para ver candidaturas do site, acesse <a href="/admin/leads/?view=board">Leads → Quadro</a>
+      (visão Kanban) ou <a href="/admin/leads/">Lista</a> com filtros por status e marca.
+    </p>
   </section>
 </AdminLayout>
 
@@ -82,5 +86,15 @@ const stats = [
   .dashboard-help p {
     color: rgba(255, 255, 255, 0.58);
     line-height: 1.6;
+  }
+
+  .dashboard-help__leads {
+    margin-top: 0.75rem;
+  }
+
+  .dashboard-help__leads a {
+    color: var(--mb-yellow);
+    font-weight: 800;
+    text-decoration: none;
   }
 </style>

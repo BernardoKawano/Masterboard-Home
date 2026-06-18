@@ -6,24 +6,31 @@
  * completos, a seção cai para empresas reais da comunidade sem inventar pessoas.
  */
 
-import type { Member, MemberCompany } from '../types/domain';
+import type { Member, MemberCompany, Speaker } from '../types/domain';
 import { getResponsiveImageAttrs } from '../lib/responsive-image';
 import {
   MEMBER_COMPANY_VISIBLE_COUNT,
   MEMBER_PROFILE_VISIBLE_COUNT,
   MEMBER_VISIBLE_ROWS,
+  pickMembersWithUniqueCompanies,
   sortCompaniesByPrestige,
-  sortMembersByCompanyPrestige,
 } from '../lib/member-company-score';
+import {
+  buildSpeakerPhotoLookup,
+  resolveMemberPhoto,
+} from '../lib/member-photo';
 
 interface Props {
   members?: Member[];
   companies?: MemberCompany[];
+  speakers?: Speaker[];
   companyCount?: number;
   memberCount?: number;
 }
 
-const { members = [], companies = [], companyCount, memberCount } = Astro.props;
+const { members = [], companies = [], speakers = [], companyCount, memberCount } = Astro.props;
+
+const speakerPhotoLookup = buildSpeakerPhotoLookup(speakers);
 
 const getNameParts = (name: string) =>
   name
@@ -43,17 +50,34 @@ const getMemberDisplayName = (name: string) => {
 
 const getMemberRole = (member: Member) => member.role ?? member.roleLabel;
 
-const eligibleMembers = members.filter(
-  (member) =>
-    member.name &&
-    member.photo &&
-    member.company &&
-    getMemberRole(member) &&
-    getNameParts(member.name).length >= 2,
-);
+const getMemberPhoto = (member: Member) =>
+  resolveMemberPhoto(
+    {
+      name: member.name,
+      sourceId: member.sourceId,
+      photo: member.photo,
+      companyLogo: member.companyLogo,
+      linkedin: member.linkedin,
+    },
+    speakerPhotoLookup,
+  );
 
-const visibleMembers = sortMembersByCompanyPrestige(eligibleMembers).slice(
-  0,
+const eligibleMembers = members
+  .map((member) => ({
+    ...member,
+    photo: getMemberPhoto(member),
+  }))
+  .filter(
+    (member) =>
+      member.name &&
+      member.photo &&
+      member.company &&
+      getMemberRole(member) &&
+      getNameParts(member.name).length >= 2,
+  );
+
+const visibleMembers = pickMembersWithUniqueCompanies(
+  eligibleMembers,
   MEMBER_PROFILE_VISIBLE_COUNT,
 );
 

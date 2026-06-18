@@ -3,6 +3,7 @@ import { loadTsModuleFromPath } from './load-ts-bundle.mjs';
 
 const {
   resolveSpeakerCompany,
+  resolveSpeakerCompanies,
   isPersistableCompanyConfidence,
   logoHint,
 } = loadTsModuleFromPath('../src/lib/speaker-company.ts');
@@ -144,5 +145,27 @@ assert.deepEqual(
 assert.equal(isPersistableCompanyConfidence('alta'), true);
 assert.equal(isPersistableCompanyConfidence('nenhuma'), false);
 assert.equal(logoHint('https://cdn/a/b/heineken.svg'), 'heineken');
+
+const thiagoCompanies = resolveSpeakerCompanies(
+  { company: 'Artesian Móveis', roleLabel: 'Empresa' },
+  resolveSpeakerCompany({ company: 'Artesian Móveis', roleLabel: 'Empresa' }),
+);
+assert.equal(thiagoCompanies.length, 1);
+assert.match(thiagoCompanies[0], /artesian/i);
+
+const multiCompanies = resolveSpeakerCompanies(
+  { company: 'Grupo Barigui / Ford', roleLabel: 'CEO do Grupo Barigui' },
+  resolveSpeakerCompany({ company: 'Grupo Barigui / Ford', roleLabel: 'CEO do Grupo Barigui' }),
+);
+assert.equal(multiCompanies.length, 2);
+assert.match(multiCompanies.join(' '), /barigui/i);
+assert.match(multiCompanies.join(' '), /ford/i);
+
+const brandCompanies = resolveSpeakerCompanies(
+  { roleLabel: 'Liderança na Microsoft e AWS' },
+  resolveSpeakerCompany({ roleLabel: 'Liderança na Microsoft e AWS' }),
+);
+assert.ok(brandCompanies.some((c) => /microsoft/i.test(c)));
+assert.ok(brandCompanies.some((c) => /amazon web services/i.test(c)));
 
 console.log('speaker-company.test.mjs: all assertions passed');

@@ -1017,8 +1017,14 @@
   transition: opacity 0.18s ease;
 }
 
-.spk-company-wrap:not(:has(.spk-company:not(:empty))) {
+.spk-company-wrap:not(:has(.spk-company)) {
   display: none;
+}
+
+.spk-companies-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
 }
 
 .spk-field-block {

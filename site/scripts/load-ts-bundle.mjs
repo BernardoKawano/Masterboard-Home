@@ -128,7 +128,7 @@ function bundleTsModule(entryFile) {
   const entryVar = moduleVars.get(entryPath);
   lines.push(`module.exports = ${entryVar}.exports;`);
 
-  const sandbox = { module: { exports: {} }, exports: {}, decodeURIComponent };
+  const sandbox = { module: { exports: {} }, exports: {}, decodeURIComponent, URL };
   runInNewContext(lines.join('\n'), sandbox, { filename: 'bundle.js' });
   return sandbox.module.exports;
 }

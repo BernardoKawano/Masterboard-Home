@@ -111,6 +111,94 @@ function hintPatternMatches(pattern: RegExp, value: string): boolean {
   return pattern.test(value);
 }
 
+/** Todas as marcas identificáveis no label/logo — sem inventar nomes novos. */
+export function findAllBrandHints(input: SpeakerCompanyInput): string[] {
+  const roleLabel = String(input.roleLabel ?? '');
+  const logoFileHint = logoHint(input.companyLogoUrl);
+  const evidenceParts = [
+    roleLabel,
+    input.company,
+    input.companyLogoUrl,
+    logoFileHint,
+  ].filter(Boolean);
+  const evidence = evidenceParts.join(' ');
+  const normalizedEvidence = normalizeSpeakerText(evidence);
+  const matches: string[] = [];
+
+  for (const hint of brandHints) {
+    if (hint.pattern.test(evidence) || hint.pattern.test(normalizedEvidence)) {
+      matches.push(hint.company);
+    }
+  }
+
+  return matches;
+}
+
+const companyListSeparators = /\s+(?:e|\/|\|)\s+|\s*,\s*/i;
+
+function dedupeCompanies(companies: string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+
+  for (const company of companies) {
+    const trimmed = company.trim();
+    if (!trimmed) continue;
+
+    const key = normalizeSpeakerText(trimmed);
+    if (seen.has(key)) continue;
+
+    seen.add(key);
+    result.push(trimmed);
+  }
+
+  return result;
+}
+
+function splitCompanyCandidates(value?: string | null): string[] {
+  const raw = String(value ?? '').trim();
+  if (!raw) return [];
+
+  if (!companyListSeparators.test(raw)) {
+    return [raw];
+  }
+
+  return raw
+    .split(companyListSeparators)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function looksLikeCompanyName(value: string): boolean {
+  const normalized = normalizeSpeakerText(value);
+  if (!normalized || normalized.length < 2) return false;
+  if (/^(empresa|marketing|vendas|comercial|tecnologia|gestao|comunicacao|cx|automotivo|aviacao)$/.test(normalized)) {
+    return false;
+  }
+  return true;
+}
+
+/** Empresas verificáveis associadas ao speaker (primária + extras do label/logo). */
+export function resolveSpeakerCompanies(
+  input: SpeakerCompanyInput,
+  resolution: CompanyResolution,
+): string[] {
+  const candidates: string[] = [];
+
+  if (resolution.company) {
+    candidates.push(...splitCompanyCandidates(resolution.company));
+  }
+
+  candidates.push(...splitCompanyCandidates(input.company));
+  candidates.push(...findAllBrandHints(input));
+
+  const parsed = parseRoleLabel(input.roleLabel || input.role || '');
+  if (parsed.company) {
+    candidates.push(...splitCompanyCandidates(parsed.company));
+  }
+
+  return dedupeCompanies(candidates.filter(looksLikeCompanyName));
+}
+
 function extractLinkedInCompany(url?: string | null): string | undefined {
   const raw = String(url ?? '').trim();
   if (!raw) return undefined;

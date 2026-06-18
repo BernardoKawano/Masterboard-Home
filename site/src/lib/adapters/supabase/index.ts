@@ -9,7 +9,8 @@ import type { createClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient, normalizeEnvValue } from '../../supabase-client';
 import { fetchMemberPreview } from '../../bubble';
 import { parseRoleLabel } from '../../speaker-role';
-import { resolveSpeakerCompany } from '../../speaker-company';
+import { resolveSpeakerCompany, resolveSpeakerCompanies } from '../../speaker-company';
+import { displaySpeakerRole } from '../../speaker-display';
 import { buildSpeakerBio } from '../../speaker-bio';
 import { resolveEventStatus, todayInSaoPaulo } from '../../event-status';
 import { mapBubbleUserToMember } from '../bubble/members';
@@ -74,6 +75,7 @@ interface MemberRow {
   role: string | null;
   city: string | null;
   photo_url?: string | null;
+  linkedin_url?: string | null;
   tier: string | null;
   joined_at: string | null;
   source_id: string | null;
@@ -189,17 +191,22 @@ function mapEventRow(row: EventRow, speakerSourceIds: string[] = []): Event {
 }
 
 function mapSpeakerRow(row: SpeakerRow): Speaker {
-  const resolution = resolveSpeakerCompany({
+  const companyInput = {
     company: row.company,
     role: row.role,
     roleLabel: row.role_label,
     companyLogoUrl: row.company_logo_url,
     linkedinUrl: row.linkedin_url,
-  });
+  };
 
-  const role =
+  const resolution = resolveSpeakerCompany(companyInput);
+
+  const rawRole =
     resolution.role ??
     (row.company ? row.role ?? parseRoleLabel(row.role_label ?? '').role : parseRoleLabel(row.role_label ?? '').role ?? row.role ?? undefined);
+
+  const role = displaySpeakerRole(rawRole, row.role_label);
+  const companies = resolveSpeakerCompanies(companyInput, resolution);
 
   const speakerInput = {
     name: row.name,
@@ -218,7 +225,8 @@ function mapSpeakerRow(row: SpeakerRow): Speaker {
     name: row.name,
     roleLabel: row.role_label ?? [row.role, row.company].filter(Boolean).join(' / '),
     role,
-    company: resolution.company,
+    company: companies[0] ?? resolution.company,
+    companies: companies.length > 0 ? companies : undefined,
     bio: presentation,
     photo: row.photo_url ?? undefined,
     companyLogo: row.company_logo_url ?? undefined,
@@ -247,6 +255,7 @@ function mapMemberRow(row: MemberRow): Member {
     city: row.city ?? undefined,
     photo: row.photo_url ?? undefined,
     companyLogo: row.companies?.logo_url ?? undefined,
+    linkedin: row.linkedin_url ?? undefined,
     tier: row.tier ?? undefined,
     joinedAt: row.joined_at ?? undefined,
   };

@@ -1,12 +1,19 @@
 ---
 import type { Speaker } from '../types/domain';
 import { getResponsiveImageAttrs } from '../lib/responsive-image';
+import { displaySpeakerRole, speakerCompanyFieldLabel } from '../lib/speaker-display';
 
 interface Props {
   speakers: Speaker[];
 }
 
 const { speakers } = Astro.props;
+
+const getSpeakerCompanies = (speaker: Speaker): string[] => {
+  if (speaker.companies?.length) return speaker.companies;
+  if (speaker.company) return [speaker.company];
+  return [];
+};
 
 const featuredCompanySignals = [
   'viasoft', 'rp trader', 'fight music show', 'driva', 'vpx',
@@ -47,6 +54,8 @@ const getSpeakerImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
 });
 
 const total = visibleSpeakers.length;
+const initialSpeaker = visibleSpeakers[0];
+const initialCompanies = initialSpeaker ? getSpeakerCompanies(initialSpeaker) : [];
 ---
 
 {total > 0 && (
@@ -86,12 +95,16 @@ const total = visibleSpeakers.length;
           empresas e compartilhando os bastidores reais do crescimento.
         </p>
 
-        <!-- Empresa -->
+        <!-- Empresa(s) -->
         <div id="spk-company-wrap" class="spk-company-wrap">
-          <p class="spk-field-label">Empresa</p>
-          <span id="spk-company" class="spk-company">
-            {visibleSpeakers[0]?.company ?? ''}
-          </span>
+          <p id="spk-company-label" class="spk-field-label">
+            {speakerCompanyFieldLabel(initialCompanies.length)}
+          </p>
+          <div id="spk-companies" class="spk-companies-list">
+            {initialCompanies.map((company) => (
+              <span class="spk-company">{company}</span>
+            ))}
+          </div>
         </div>
 
         <!-- Speaker -->
@@ -108,7 +121,7 @@ const total = visibleSpeakers.length;
           <div class="spk-role-line">
             <span class="spk-role-dot"></span>
             <p id="spk-role" class="spk-role">
-              {visibleSpeakers[0]?.role ?? visibleSpeakers[0]?.roleLabel}
+              {displaySpeakerRole(initialSpeaker?.role, initialSpeaker?.roleLabel)}
             </p>
           </div>
         </div>
@@ -180,7 +193,7 @@ const total = visibleSpeakers.length;
               <!-- Faixa inferior: nome + cargo -->
               <div class="spk-card-bottom" aria-hidden="true">
                 <span class="spk-card-name">{speaker.name}</span>
-                <span class="spk-card-role">{speaker.role || speaker.roleLabel}</span>
+                <span class="spk-card-role">{displaySpeakerRole(speaker.role, speaker.roleLabel)}</span>
               </div>
             </button>
           ))}
@@ -243,12 +256,16 @@ const total = visibleSpeakers.length;
 <div
   id="spk-data"
   hidden
-  data-json={JSON.stringify(visibleSpeakers.map(s => ({
-    name: s.name,
-    company: s.company ?? '',
-    role: s.role ?? s.roleLabel ?? '',
-    bio: s.bio ?? '',
-  })))}
+  data-json={JSON.stringify(visibleSpeakers.map(s => {
+    const companies = getSpeakerCompanies(s);
+    return {
+      name: s.name,
+      companies,
+      companyLabel: speakerCompanyFieldLabel(companies.length),
+      role: displaySpeakerRole(s.role, s.roleLabel),
+      bio: s.bio ?? '',
+    };
+  }))}
 ></div>
 
 <script is:inline>
@@ -290,7 +307,8 @@ const total = visibleSpeakers.length;
   var nameEl      = document.getElementById('spk-name');
   var roleEl      = document.getElementById('spk-role');
   var bioEl       = document.getElementById('spk-bio');
-  var companyEl   = document.getElementById('spk-company');
+  var companyLabelEl = document.getElementById('spk-company-label');
+  var companiesEl    = document.getElementById('spk-companies');
   var companyWrap = document.getElementById('spk-company-wrap');
   var dataEl      = document.getElementById('spk-data');
   var prevBtn     = document.querySelector('.spk-arrow-prev');
@@ -348,7 +366,12 @@ const total = visibleSpeakers.length;
       if (nameEl)    nameEl.textContent    = data.name;
       if (roleEl)    roleEl.textContent    = data.role;
       if (bioEl)     bioEl.textContent     = data.bio;
-      if (companyEl) companyEl.textContent = data.company;
+      if (companyLabelEl) companyLabelEl.textContent = data.companyLabel || 'Empresa';
+      if (companiesEl) {
+        companiesEl.innerHTML = (data.companies || []).map(function (c) {
+          return '<span class="spk-company">' + String(c).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>';
+        }).join('');
+      }
       [nameEl, roleEl, bioEl, companyWrap].forEach(function (el) { if (el) el.classList.remove('spk-fade'); });
     }, 180);
   }

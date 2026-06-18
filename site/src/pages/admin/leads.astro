@@ -13,6 +13,8 @@ import {
 import { isDraftLead, parseLeadNotes } from '../../lib/candidatura-payload.mjs';
 
 type LeadRow = Record<string, unknown>;
+type ViewMode = 'list' | 'board';
+type EffectiveStatus = 'draft' | 'new' | 'contacted' | 'approved' | 'rejected';
 
 const supabaseUrl = import.meta.env.SUPABASE_URL;
 const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -22,10 +24,10 @@ if (!session) return Astro.redirect(`/admin/login/?next=${encodeURIComponent('/a
 const isAuthorized = canManageLeads(session);
 const selectedStatus = Astro.url.searchParams.get('status') ?? 'all';
 const selectedBrand = Astro.url.searchParams.get('brand') ?? 'all';
+const viewMode: ViewMode = Astro.url.searchParams.get('view') === 'board' ? 'board' : 'list';
 
 const parseNotes = (value: unknown) => {
   if (typeof value !== 'string' || !value.trim()) return {};
-
   try {
     return JSON.parse(value) as Record<string, unknown>;
   } catch {
@@ -51,22 +53,51 @@ const formatDate = (value: unknown) => {
   }).format(new Date(value));
 };
 
+const formatShortDate = (value: unknown) => {
+  if (typeof value !== 'string') return '-';
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    timeZone: 'America/Sao_Paulo',
+  }).format(new Date(value));
+};
+
 const getQualification = (lead: LeadRow) => {
   const notes = parseNotes(lead.notes);
-
   return {
     revenue: text(lead.annual_revenue ?? notes.faturamento),
     employees: text(lead.employee_count ?? notes.colaboradores),
     moment: text(lead.company_moment ?? notes.momento),
     objective: text(lead.objective ?? notes.objetivo),
-    score: text(lead.score ?? notes.score, '0'),
+    score: Number(lead.score ?? notes.score ?? 0) || 0,
     priority: text(lead.priority ?? notes.priority, 'normal'),
     whatsapp: text(lead.whatsapp ?? notes.whatsapp),
   };
 };
 
-const statusOptions = ['all', 'new', 'draft', 'contacted', 'approved', 'rejected'];
-const brandOptions = ['all', 'masterboard', 'scale'] as const;
+const getEffectiveStatus = (lead: LeadRow): EffectiveStatus => {
+  if (isDraftLead(lead)) return 'draft';
+  const status = text(lead.status, 'new');
+  if (status === 'contacted' || status === 'approved' || status === 'rejected') return status;
+  return 'new';
+};
+
+const getInitials = (name: string, email: string) => {
+  const clean = name.trim();
+  if (clean && clean !== '(em preenchimento)' && clean !== '(sem nome)' && clean !== '-') {
+    const parts = clean.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  return email.slice(0, 2).toUpperCase();
+};
+
+const priorityLabels: Record<string, string> = {
+  high: 'Alta',
+  normal: 'Normal',
+  low: 'Baixa',
+};
+
 const statusLabels: Record<string, string> = {
   all: 'Todos',
   new: 'Novos',
@@ -75,53 +106,120 @@ const statusLabels: Record<string, string> = {
   approved: 'Aprovados',
   rejected: 'Rejeitados',
 };
+
 const brandLabels: Record<string, string> = {
   all: 'Todas as marcas',
   masterboard: 'Masterboard',
   scale: 'Scale',
 };
 
-const buildLeadsHref = (params: { status?: string; brand?: string }) => {
+const boardColumns: { id: EffectiveStatus; label: string; hint: string }[] = [
+  { id: 'draft', label: 'Rascunhos', hint: 'Abandonou o formulário' },
+  { id: 'new', label: 'Novos', hint: 'Aguardando contato' },
+  { id: 'contacted', label: 'Contatados', hint: 'Em conversa' },
+  { id: 'approved', label: 'Aprovados', hint: 'Entrou na curadoria' },
+  { id: 'rejected', label: 'Rejeitados', hint: 'Não seguiu' },
+];
+
+const statusOptions = ['all', 'new', 'draft', 'contacted', 'approved', 'rejected'];
+const brandOptions = ['all', 'masterboard', 'scale'] as const;
+
+const buildLeadsHref = (params: { status?: string; brand?: string; view?: ViewMode }) => {
   const search = new URLSearchParams();
   const status = params.status ?? selectedStatus;
   const brand = params.brand ?? selectedBrand;
+  const view = params.view ?? viewMode;
   if (status !== 'all') search.set('status', status);
   if (brand !== 'all') search.set('brand', brand);
+  if (view === 'board') search.set('view', 'board');
   const query = search.toString();
   return query ? `/admin/leads/?${query}` : '/admin/leads/';
 };
 
+const applyBrandFilter = (
+  query: ReturnType<ReturnType<typeof createServerSupabaseClient>['from']>,
+  brand: string,
+) => {
+  const brandFilter = leadSourceFilterValues(
+    brand === 'masterboard' || brand === 'scale' ? brand : 'all',
+  );
+  if (brand !== 'all' && brandFilter?.supabaseOr) {
+    return query.or(brandFilter.supabaseOr);
+  }
+  return query;
+};
+
 let leads: LeadRow[] = [];
 let errorMessage = '';
+let globalCounts: Record<EffectiveStatus | 'total', number> = {
+  total: 0,
+  draft: 0,
+  new: 0,
+  contacted: 0,
+  approved: 0,
+  rejected: 0,
+};
 
 if (isAuthorized && supabaseUrl && serviceRoleKey) {
   const supabase = createServerSupabaseClient(supabaseUrl, serviceRoleKey);
 
-  let query = supabase
-    .from('leads')
-    .select('*')
-    .order('submitted_at', { ascending: false })
-    .limit(100);
+  const countWithBrand = async (modifier: (q: ReturnType<typeof supabase.from>) => typeof q) => {
+    let q = supabase.from('leads').select('id', { count: 'exact', head: true });
+    q = applyBrandFilter(q, selectedBrand) as typeof q;
+    return modifier(q);
+  };
 
-  if (selectedStatus === 'draft') {
-    query = query.or('status.eq.draft,notes.ilike.%"draft":true%');
-  } else if (selectedStatus === 'all') {
-    query = query.neq('status', 'draft').not('notes', 'ilike', '%"draft":true%');
-  } else if (selectedStatus === 'new') {
-    query = query.eq('status', 'new').not('notes', 'ilike', '%"draft":true%');
-  } else {
-    query = query.eq('status', selectedStatus);
-  }
+  const [
+    totalRes,
+    draftRes,
+    newRes,
+    contactedRes,
+    approvedRes,
+    rejectedRes,
+    leadsRes,
+  ] = await Promise.all([
+    countWithBrand((q) => q),
+    countWithBrand((q) => q.or('status.eq.draft,notes.ilike.%"draft":true%')),
+    countWithBrand((q) =>
+      q.eq('status', 'new').not('notes', 'ilike', '%"draft":true%'),
+    ),
+    countWithBrand((q) => q.eq('status', 'contacted')),
+    countWithBrand((q) => q.eq('status', 'approved')),
+    countWithBrand((q) => q.eq('status', 'rejected')),
+    (async () => {
+      let query = supabase
+        .from('leads')
+        .select('*')
+        .order('submitted_at', { ascending: false })
+        .limit(viewMode === 'board' ? 150 : 100);
 
-  const brandFilter = leadSourceFilterValues(
-    selectedBrand === 'masterboard' || selectedBrand === 'scale' ? selectedBrand : 'all',
-  );
-  if (selectedBrand !== 'all' && brandFilter?.supabaseOr) {
-    query = query.or(brandFilter.supabaseOr);
-  }
+      if (viewMode === 'list') {
+        if (selectedStatus === 'draft') {
+          query = query.or('status.eq.draft,notes.ilike.%"draft":true%');
+        } else if (selectedStatus === 'all') {
+          query = query.neq('status', 'draft').not('notes', 'ilike', '%"draft":true%');
+        } else if (selectedStatus === 'new') {
+          query = query.eq('status', 'new').not('notes', 'ilike', '%"draft":true%');
+        } else {
+          query = query.eq('status', selectedStatus);
+        }
+      }
 
-  const { data, error } = await query;
+      query = applyBrandFilter(query, selectedBrand) as typeof query;
+      return await query;
+    })(),
+  ]);
 
+  globalCounts = {
+    total: totalRes.count ?? 0,
+    draft: draftRes.count ?? 0,
+    new: newRes.count ?? 0,
+    contacted: contactedRes.count ?? 0,
+    approved: approvedRes.count ?? 0,
+    rejected: rejectedRes.count ?? 0,
+  };
+
+  const { data, error } = await leadsRes;
   if (error) {
     errorMessage = error.message;
   } else {
@@ -131,405 +229,832 @@ if (isAuthorized && supabaseUrl && serviceRoleKey) {
   errorMessage = 'SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY precisam estar configurados.';
 }
 
-const counts: { total: number; byStatus: Record<string, number> } = {
-  total: leads.length,
-  byStatus: {},
-};
+const leadsByColumn = boardColumns.reduce(
+  (acc, col) => {
+    acc[col.id] = leads.filter((lead) => getEffectiveStatus(lead) === col.id);
+    return acc;
+  },
+  {} as Record<EffectiveStatus, LeadRow[]>,
+);
 
-for (const lead of leads) {
-  const status = text(lead.status, 'new');
-  counts.byStatus[status] = (counts.byStatus[status] ?? 0) + 1;
-}
+const FORM_STEPS = 7;
+
+const scoreColor = (score: number) => {
+  if (score >= 70) return '#fbbf0a';
+  if (score >= 30) return '#93c5fd';
+  return '#94a3b8';
+};
 ---
 
 <AdminLayout
-  title="Leads | Masterboard"
-  description="Painel operacional de candidaturas Masterboard."
+  title="Leads"
+  description="Painel visual de candidaturas Masterboard."
   active="leads"
   session={session}
 >
-  <section class="lead-admin">
-    <section class="lead-admin__shell">
-      <header class="lead-admin__header">
-        <div>
-          <p class="lead-admin__eyebrow">Operação Masterboard</p>
-          <h1>Leads de candidatura</h1>
-          <p>Primeira visão para priorizar contato, entender porte e acompanhar status.</p>
-        </div>
-        <a href="/aplicacao/" class="lead-admin__link">Ver formulário</a>
-      </header>
+  {!isAuthorized ? (
+    <section class="lead-empty admin-card">
+      <h2>Acesso restrito</h2>
+      <p>Somente usuários com papel <code>admin</code> podem visualizar leads.</p>
+    </section>
+  ) : errorMessage ? (
+    <section class="lead-empty admin-card">
+      <h2>Não foi possível carregar os leads</h2>
+      <p>{errorMessage}</p>
+    </section>
+  ) : (
+  <>
+    <header class="lead-header">
+      <div>
+        <p class="lead-eyebrow">Operação Masterboard</p>
+        <h1>Leads do site</h1>
+        <p>Visualize candidaturas, rascunhos e prioridade de contato em tempo real.</p>
+      </div>
+      <div class="lead-header__actions">
+        <nav class="lead-view-toggle" aria-label="Modo de visualização">
+          <a href={buildLeadsHref({ view: 'list' })} aria-current={viewMode === 'list' ? 'page' : undefined}>
+            Lista
+          </a>
+          <a href={buildLeadsHref({ view: 'board' })} aria-current={viewMode === 'board' ? 'page' : undefined}>
+            Quadro
+          </a>
+        </nav>
+        <a href="/aplicacao/" class="lead-link" target="_blank" rel="noopener noreferrer">Ver formulário</a>
+      </div>
+    </header>
 
-      {!isAuthorized ? (
-        <section class="lead-admin__empty">
-          <h2>Acesso restrito</h2>
-          <p>Somente usuários com papel `admin` podem visualizar leads.</p>
-        </section>
-      ) : errorMessage ? (
-        <section class="lead-admin__empty">
-          <h2>Não foi possível carregar os leads</h2>
-          <p>{errorMessage}</p>
-        </section>
-      ) : (
-        <>
-          <section class="lead-admin__stats" aria-label="Resumo de leads">
-            <article>
-              <span>Total filtrado</span>
-              <strong>{counts.total}</strong>
-            </article>
-            {['new', 'draft', 'contacted', 'approved', 'rejected'].map((status) => (
-              <article>
-                <span>{statusLabels[status]}</span>
-                <strong>{counts.byStatus[status] ?? 0}</strong>
-              </article>
-            ))}
-          </section>
+    <section class="lead-metrics" aria-label="Resumo de leads">
+      <a href={buildLeadsHref({ status: 'all', view: viewMode })} class="lead-metric" data-active={selectedStatus === 'all' && viewMode === 'list' ? 'true' : undefined}>
+        <span class="lead-metric__value">{globalCounts.total}</span>
+        <span class="lead-metric__label">Total</span>
+      </a>
+      {boardColumns.map((col) => (
+        <a
+          href={buildLeadsHref({ status: col.id, view: 'list' })}
+          class="lead-metric"
+          data-status={col.id}
+          data-active={selectedStatus === col.id && viewMode === 'list' ? 'true' : undefined}
+        >
+          <span class="lead-metric__value">{globalCounts[col.id]}</span>
+          <span class="lead-metric__label">{col.label}</span>
+        </a>
+      ))}
+    </section>
 
-          <nav class="lead-admin__filters" aria-label="Filtrar por marca">
-            {brandOptions.map((brand) => (
-              <a href={buildLeadsHref({ brand })} aria-current={selectedBrand === brand ? 'page' : undefined}>
-                {brandLabels[brand]}
-              </a>
-            ))}
-          </nav>
+    <nav class="lead-filters" aria-label="Filtrar por marca">
+      {brandOptions.map((brand) => (
+        <a href={buildLeadsHref({ brand, view: viewMode })} aria-current={selectedBrand === brand ? 'page' : undefined}>
+          {brandLabels[brand]}
+        </a>
+      ))}
+    </nav>
 
-          <nav class="lead-admin__filters" aria-label="Filtrar por status">
-            {statusOptions.map((status) => (
-              <a href={buildLeadsHref({ status })} aria-current={selectedStatus === status ? 'page' : undefined}>
-                {statusLabels[status]}
-              </a>
-            ))}
-          </nav>
+    {viewMode === 'list' && (
+      <nav class="lead-filters" aria-label="Filtrar por status">
+        {statusOptions.map((status) => (
+          <a href={buildLeadsHref({ status, view: 'list' })} aria-current={selectedStatus === status ? 'page' : undefined}>
+            {statusLabels[status]}
+          </a>
+        ))}
+      </nav>
+    )}
 
-          <section class="lead-admin__list" aria-label="Lista de leads">
-            {leads.length === 0 ? (
-              <div class="lead-admin__empty">
-                <h2>Nenhum lead neste filtro</h2>
-                <p>Quando novas candidaturas chegarem, elas aparecem aqui.</p>
+    {viewMode === 'board' ? (
+      <section class="lead-board" aria-label="Quadro de leads">
+        {boardColumns.map((col) => {
+          const columnLeads = leadsByColumn[col.id];
+          return (
+            <div class="lead-column" data-status={col.id}>
+              <header class="lead-column__header">
+                <div>
+                  <h2>{col.label}</h2>
+                  <p>{col.hint}</p>
+                </div>
+                <span class="lead-column__count">{globalCounts[col.id]}</span>
+              </header>
+              <div class="lead-column__cards">
+                {columnLeads.length === 0 ? (
+                  <p class="lead-column__empty">Nenhum lead aqui</p>
+                ) : (
+                  columnLeads.map((lead) => {
+                    const q = getQualification(lead);
+                    const displayName = text(lead.name, col.id === 'draft' ? '(sem nome)' : '-');
+                    const initials = getInitials(displayName, text(lead.email));
+                    const notes = parseLeadNotes(lead.notes);
+                    const formStep = Number(notes.form_step ?? 0);
+                    const whatsapp = text(lead.phone);
+                    const whatsappUrl = whatsapp !== '-' ? `https://wa.me/${whatsapp.replace(/\D/g, '')}` : '';
+                    const club = text(lead.evento_interesse);
+                    const shortClub = club !== '-' ? club.replace('Masterboard Club — ', '') : '-';
+
+                    return (
+                      <article class="lead-mini-card" data-priority={q.priority}>
+                        <div class="lead-mini-card__top">
+                          <div class="lead-avatar" aria-hidden="true">{initials}</div>
+                          <div class="lead-mini-card__identity">
+                            <p class="lead-mini-card__name">{displayName}</p>
+                            <p class="lead-mini-card__company">{text(lead.company, col.id === 'draft' ? '—' : '-')}</p>
+                          </div>
+                          <div class="lead-score" data-score={q.score} title={`Score ${q.score}`}>
+                            <svg viewBox="0 0 36 36" aria-hidden="true">
+                              <circle class="lead-score__track" cx="18" cy="18" r="15.5" />
+                              <circle
+                                class="lead-score__fill"
+                                cx="18"
+                                cy="18"
+                                r="15.5"
+                                style={`stroke-dasharray: ${q.score} 100; stroke: ${scoreColor(q.score)}`}
+                              />
+                            </svg>
+                            <span>{q.score}</span>
+                          </div>
+                        </div>
+                        {col.id === 'draft' && (
+                          <div class="lead-step-bar" aria-label={`Passo ${formStep + 1} de ${FORM_STEPS}`}>
+                            <div class="lead-step-bar__fill" style={`width: ${((formStep + 1) / FORM_STEPS) * 100}%`} />
+                            <span>Passo {formStep + 1}/{FORM_STEPS}</span>
+                          </div>
+                        )}
+                        <dl class="lead-mini-card__meta">
+                          <div><dt>E-mail</dt><dd>{text(lead.email)}</dd></div>
+                          {shortClub !== '-' && <div><dt>Club</dt><dd>{shortClub}</dd></div>}
+                          {q.revenue !== '-' && <div><dt>Faturamento</dt><dd>{q.revenue}</dd></div>}
+                        </dl>
+                        <footer class="lead-mini-card__footer">
+                          <time datetime={String(lead.submitted_at)}>{formatShortDate(lead.submitted_at)}</time>
+                          {whatsappUrl ? (
+                            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+                          ) : (
+                            <span class="lead-mini-card__muted">Sem WhatsApp</span>
+                          )}
+                        </footer>
+                      </article>
+                    );
+                  })
+                )}
               </div>
-            ) : (
-              leads.map((lead) => {
-                const q = getQualification(lead);
-                const source = parseLeadSource(typeof lead.source === 'string' ? lead.source : '');
-                const whatsapp = text(lead.phone);
-                const whatsappUrl = whatsapp !== '-'
-                  ? `https://wa.me/${whatsapp.replace(/\D/g, '')}`
-                  : '';
+            </div>
+          );
+        })}
+      </section>
+    ) : (
+      <section class="lead-list" aria-label="Lista de leads">
+        {leads.length === 0 ? (
+          <div class="lead-empty admin-card">
+            <h2>Nenhum lead neste filtro</h2>
+            <p>Quando novas candidaturas chegarem, elas aparecem aqui.</p>
+            <a href={buildLeadsHref({ status: 'all', view: 'list' })} class="lead-link">Ver todos os leads</a>
+          </div>
+        ) : (
+          leads.map((lead) => {
+            const q = getQualification(lead);
+            const source = parseLeadSource(typeof lead.source === 'string' ? lead.source : '');
+            const effectiveStatus = getEffectiveStatus(lead);
+            const displayName = text(lead.name, effectiveStatus === 'draft' ? '(sem nome)' : '-');
+            const initials = getInitials(displayName, text(lead.email));
+            const whatsapp = text(lead.phone);
+            const whatsappUrl = whatsapp !== '-' ? `https://wa.me/${whatsapp.replace(/\D/g, '')}` : '';
+            const notes = parseLeadNotes(lead.notes);
+            const formStep = Number(notes.form_step ?? 0);
+            const club = text(lead.evento_interesse);
+            const cnpj = text(lead.cnpj ?? notes.cnpj);
 
-                const notes = parseLeadNotes(lead.notes);
-                const isDraft = isDraftLead(lead);
-                const formStep = typeof lead.form_step === 'number' ? lead.form_step : Number(notes.form_step ?? 0);
-                const club = text(lead.evento_interesse);
-                const cnpj = text(lead.cnpj ?? notes.cnpj);
-
-                return (
-                  <article class="lead-card" data-draft={isDraft ? 'true' : undefined}>
-                    <div class="lead-card__top">
-                      <div>
-                        <p class="lead-card__name">{text(lead.name, isDraft ? '(sem nome)' : '-')}</p>
-                        <p class="lead-card__company">
-                          {text(lead.company, isDraft ? 'Empresa não informada' : '-')} · {text(lead.role, isDraft ? 'Cargo pendente' : '-')}
-                        </p>
-                      </div>
-                      <div class="lead-card__badges">
-                        <span data-brand={source.brand}>{getLeadBrandLabel(source.brand)}</span>
-                        <span data-priority={q.priority}>{q.priority}</span>
-                        <span data-status={text(lead.status, 'new')}>{text(lead.status, 'new')}</span>
-                        {isDraft && <span data-draft-badge>Passo {formStep}</span>}
-                        <span>Score {q.score}</span>
+            return (
+              <article class="lead-card" data-draft={effectiveStatus === 'draft' ? 'true' : undefined} data-priority={q.priority}>
+                <div class="lead-card__hero">
+                  <div class="lead-avatar lead-avatar--lg" aria-hidden="true">{initials}</div>
+                  <div class="lead-card__intro">
+                    <div class="lead-card__title-row">
+                      <h2 class="lead-card__name">{displayName}</h2>
+                      <div class="lead-score lead-score--lg" data-score={q.score} title={`Score ${q.score}`}>
+                        <svg viewBox="0 0 36 36" aria-hidden="true">
+                          <circle class="lead-score__track" cx="18" cy="18" r="15.5" />
+                          <circle class="lead-score__fill" cx="18" cy="18" r="15.5" style={`stroke-dasharray: ${q.score} 100; stroke: ${scoreColor(q.score)}`} />
+                        </svg>
+                        <span>{q.score}</span>
                       </div>
                     </div>
-
-                    <dl class="lead-card__grid">
-                      <div>
-                        <dt>E-mail</dt>
-                        <dd>{text(lead.email)}</dd>
+                    <p class="lead-card__company">
+                      {text(lead.company, effectiveStatus === 'draft' ? 'Empresa não informada' : '-')}
+                      · {text(lead.role, effectiveStatus === 'draft' ? 'Cargo pendente' : '-')}
+                    </p>
+                    <div class="lead-card__badges">
+                      <span data-brand={source.brand}>{getLeadBrandLabel(source.brand)}</span>
+                      <span data-priority={q.priority}>{priorityLabels[q.priority] ?? q.priority}</span>
+                      <span data-status={effectiveStatus}>{statusLabels[effectiveStatus] ?? effectiveStatus}</span>
+                      {effectiveStatus === 'draft' && <span data-draft-badge>Passo {formStep + 1}/{FORM_STEPS}</span>}
+                    </div>
+                    {effectiveStatus === 'draft' && (
+                      <div class="lead-step-bar lead-step-bar--wide" aria-label={`Passo ${formStep + 1} de ${FORM_STEPS}`}>
+                        <div class="lead-step-bar__fill" style={`width: ${((formStep + 1) / FORM_STEPS) * 100}%`} />
                       </div>
-                      <div>
-                        <dt>Club</dt>
-                        <dd>{club}</dd>
-                      </div>
-                      <div>
-                        <dt>CNPJ</dt>
-                        <dd>{cnpj}</dd>
-                      </div>
-                      <div>
-                        <dt>WhatsApp</dt>
-                        <dd>
-                          {whatsappUrl ? <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">{whatsapp}</a> : whatsapp}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>Faturamento</dt>
-                        <dd>{q.revenue}</dd>
-                      </div>
-                      <div>
-                        <dt>Colaboradores</dt>
-                        <dd>{q.employees}</dd>
-                      </div>
-                      <div>
-                        <dt>Momento</dt>
-                        <dd>{q.moment}</dd>
-                      </div>
-                      <div>
-                        <dt>Origem</dt>
-                        <dd>{formatLeadSourceLabel(source)}</dd>
-                      </div>
-                      <div>
-                        <dt>Source técnico</dt>
-                        <dd>{text(lead.source)}</dd>
-                      </div>
-                    </dl>
-
-                    {q.objective !== '-' && (
-                      <p class="lead-card__objective">{q.objective}</p>
                     )}
+                  </div>
+                </div>
 
-                    <footer class="lead-card__footer">
-                      <span>Recebido em {formatDate(lead.submitted_at)}</span>
-                      <span>{text(lead.referrer, 'Sem referência')}</span>
-                    </footer>
-                  </article>
-                );
-              })
-            )}
-          </section>
-        </>
-      )}
-    </section>
-  </section>
+                <dl class="lead-card__grid">
+                  <div><dt>E-mail</dt><dd>{text(lead.email)}</dd></div>
+                  <div><dt>Club</dt><dd>{club}</dd></div>
+                  <div><dt>CNPJ</dt><dd>{cnpj}</dd></div>
+                  <div>
+                    <dt>WhatsApp</dt>
+                    <dd>
+                      {whatsappUrl ? (
+                        <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" class="lead-wa-link">{whatsapp}</a>
+                      ) : whatsapp}
+                    </dd>
+                  </div>
+                  <div><dt>Faturamento</dt><dd>{q.revenue}</dd></div>
+                  <div><dt>Colaboradores</dt><dd>{q.employees}</dd></div>
+                  <div><dt>Momento</dt><dd>{q.moment}</dd></div>
+                  <div><dt>Origem</dt><dd>{formatLeadSourceLabel(source)}</dd></div>
+                </dl>
+
+                {q.objective !== '-' && <p class="lead-card__objective">{q.objective}</p>}
+
+                <footer class="lead-card__footer">
+                  <span>Recebido em {formatDate(lead.submitted_at)}</span>
+                  {whatsappUrl && (
+                    <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" class="lead-wa-btn">Abrir WhatsApp</a>
+                  )}
+                </footer>
+              </article>
+            );
+          })
+        )}
+      </section>
+    )}
+  </>
+  )}
 </AdminLayout>
 
 <style>
-  .lead-admin {
-    min-height: 100vh;
-    background:
-      radial-gradient(circle at 12% 8%, rgba(251,190,10,0.12), transparent 28rem),
-      var(--mb-black);
-    padding: 5.5rem 0 4rem;
-  }
-
-  .lead-admin__shell {
-    width: min(1180px, calc(100% - 2rem));
-    margin: 0 auto;
-  }
-
-  .lead-admin__header {
+  .lead-header {
     display: flex;
     justify-content: space-between;
-    gap: 2rem;
-    align-items: end;
+    gap: 1.5rem;
+    align-items: flex-end;
     margin-bottom: 1.5rem;
   }
 
-  .lead-admin__eyebrow {
+  .lead-eyebrow {
     color: var(--mb-yellow);
     font-size: 0.75rem;
     font-weight: 800;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    margin-bottom: 0.7rem;
+    margin-bottom: 0.5rem;
   }
 
-  .lead-admin__header h1 {
+  .lead-header h1 {
     color: var(--mb-white);
-    font-size: clamp(2rem, 5vw, 4.2rem);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
     font-weight: 900;
-    letter-spacing: -0.055em;
-    line-height: 0.95;
-  }
-
-  .lead-admin__header p {
-    color: rgba(255,255,255,0.55);
-    margin-top: 0.8rem;
-    max-width: 38rem;
-  }
-
-  .lead-admin__link,
-  .lead-admin__filters a {
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 999px;
-    color: rgba(255,255,255,0.72);
-    padding: 0.65rem 0.9rem;
-    font-size: 0.85rem;
-    font-weight: 800;
-  }
-
-  .lead-admin__stats {
-    display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-  }
-
-  .lead-admin__stats article,
-  .lead-card,
-  .lead-admin__empty {
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 1.2rem;
-    background: rgba(255,255,255,0.04);
-  }
-
-  .lead-admin__stats article {
-    padding: 1rem;
-  }
-
-  .lead-admin__stats span {
-    display: block;
-    color: rgba(255,255,255,0.45);
-    font-size: 0.78rem;
-    margin-bottom: 0.35rem;
-  }
-
-  .lead-admin__stats strong {
-    color: var(--mb-white);
-    font-size: 1.7rem;
+    letter-spacing: -0.04em;
     line-height: 1;
   }
 
-  .lead-admin__filters {
+  .lead-header p {
+    color: rgba(255, 255, 255, 0.55);
+    margin-top: 0.6rem;
+    max-width: 32rem;
+    font-size: 0.92rem;
+  }
+
+  .lead-header__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.6rem;
+    align-items: center;
+  }
+
+  .lead-view-toggle {
+    display: inline-flex;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    padding: 0.2rem;
+    gap: 0.15rem;
+  }
+
+  .lead-view-toggle a,
+  .lead-filters a,
+  .lead-link {
+    border-radius: 999px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .lead-view-toggle a {
+    padding: 0.5rem 0.85rem;
+  }
+
+  .lead-view-toggle a[aria-current='page'] {
+    background: var(--mb-yellow);
+    color: var(--mb-black);
+  }
+
+  .lead-link {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 0.55rem 0.9rem;
+  }
+
+  .lead-link:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--mb-white);
+  }
+
+  .lead-metrics {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.65rem;
     margin-bottom: 1rem;
   }
 
-  .lead-admin__filters a[aria-current='page'] {
-    background: rgba(251,190,10,0.12);
-    border-color: rgba(251,190,10,0.45);
+  .lead-metric {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.85rem 0.9rem;
+    text-decoration: none;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .lead-metric:hover,
+  .lead-metric[data-active='true'] {
+    border-color: rgba(251, 190, 10, 0.45);
+    background: rgba(251, 190, 10, 0.08);
+  }
+
+  .lead-metric__value {
+    display: block;
+    color: var(--mb-white);
+    font-size: 1.6rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .lead-metric__label {
+    display: block;
+    margin-top: 0.3rem;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .lead-metric[data-status='draft'] .lead-metric__value { color: #cbd5e1; }
+  .lead-metric[data-status='new'] .lead-metric__value { color: var(--mb-yellow); }
+  .lead-metric[data-status='contacted'] .lead-metric__value { color: #93c5fd; }
+  .lead-metric[data-status='approved'] .lead-metric__value { color: #86efac; }
+  .lead-metric[data-status='rejected'] .lead-metric__value { color: #fca5a5; }
+
+  .lead-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-bottom: 1rem;
+  }
+
+  .lead-filters a {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 0.8rem;
+  }
+
+  .lead-filters a[aria-current='page'] {
+    background: rgba(251, 190, 10, 0.12);
+    border-color: rgba(251, 190, 10, 0.45);
     color: var(--mb-yellow);
   }
 
-  .lead-admin__list {
+  .lead-board {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(220px, 1fr));
+    gap: 0.75rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    align-items: start;
+  }
+
+  .lead-column {
+    min-width: 220px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    background: rgba(0, 0, 0, 0.22);
+    max-height: calc(100vh - 14rem);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .lead-column__header {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.85rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    position: sticky;
+    top: 0;
+    background: rgba(10, 10, 10, 0.92);
+    border-radius: 1rem 1rem 0 0;
+    z-index: 1;
+  }
+
+  .lead-column[data-status='draft'] .lead-column__header { border-top: 3px solid #94a3b8; }
+  .lead-column[data-status='new'] .lead-column__header { border-top: 3px solid var(--mb-yellow); }
+  .lead-column[data-status='contacted'] .lead-column__header { border-top: 3px solid #60a5fa; }
+  .lead-column[data-status='approved'] .lead-column__header { border-top: 3px solid #4ade80; }
+  .lead-column[data-status='rejected'] .lead-column__header { border-top: 3px solid #f87171; }
+
+  .lead-column__header h2 {
+    color: var(--mb-white);
+    font-size: 0.9rem;
+    font-weight: 900;
+  }
+
+  .lead-column__header p {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.72rem;
+    margin-top: 0.15rem;
+  }
+
+  .lead-column__count {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.85rem;
+    font-weight: 900;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 999px;
+    padding: 0.2rem 0.55rem;
+    height: fit-content;
+  }
+
+  .lead-column__cards {
+    display: grid;
+    gap: 0.55rem;
+    padding: 0.65rem;
+    overflow-y: auto;
+  }
+
+  .lead-column__empty {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 1.5rem 0.5rem;
+  }
+
+  .lead-mini-card {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.85rem;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.7rem;
+  }
+
+  .lead-mini-card[data-priority='high'] {
+    border-left: 3px solid var(--mb-yellow);
+  }
+
+  .lead-mini-card__top {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.55rem;
+    align-items: center;
+  }
+
+  .lead-avatar {
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 999px;
+    background: rgba(251, 190, 10, 0.15);
+    border: 1px solid rgba(251, 190, 10, 0.35);
+    color: var(--mb-yellow);
+    display: grid;
+    place-items: center;
+    font-size: 0.72rem;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+
+  .lead-avatar--lg {
+    width: 3rem;
+    height: 3rem;
+    font-size: 0.95rem;
+  }
+
+  .lead-mini-card__name,
+  .lead-card__name {
+    color: var(--mb-white);
+    font-size: 0.88rem;
+    font-weight: 900;
+    line-height: 1.2;
+  }
+
+  .lead-card__name {
+    font-size: 1.15rem;
+  }
+
+  .lead-mini-card__company,
+  .lead-card__company {
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.72rem;
+    margin-top: 0.1rem;
+  }
+
+  .lead-card__company {
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+  }
+
+  .lead-score {
+    position: relative;
+    width: 2.4rem;
+    height: 2.4rem;
+    flex-shrink: 0;
+  }
+
+  .lead-score--lg {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .lead-score svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .lead-score__track {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 3;
+  }
+
+  .lead-score__fill {
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+
+  .lead-score span {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 0.62rem;
+    font-weight: 900;
+    color: var(--mb-white);
+  }
+
+  .lead-score--lg span {
+    font-size: 0.75rem;
+  }
+
+  .lead-step-bar {
+    margin-top: 0.55rem;
+    height: 0.35rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .lead-step-bar--wide {
+    margin-top: 0.75rem;
+    height: 0.4rem;
+  }
+
+  .lead-step-bar__fill {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #94a3b8, #cbd5e1);
+  }
+
+  .lead-step-bar span {
+    display: block;
+    margin-top: 0.25rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.65rem;
+    font-weight: 800;
+  }
+
+  .lead-mini-card__meta {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0.55rem 0;
+  }
+
+  .lead-mini-card__meta dt {
+    color: rgba(255, 255, 255, 0.32);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .lead-mini-card__meta dd {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.75rem;
+    overflow-wrap: anywhere;
+  }
+
+  .lead-mini-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .lead-mini-card__footer time {
+    color: rgba(255, 255, 255, 0.38);
+  }
+
+  .lead-mini-card__footer a {
+    color: #86efac;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .lead-mini-card__muted {
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  .lead-list {
     display: grid;
     gap: 0.85rem;
   }
 
   .lead-card {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.1rem;
+    background: rgba(255, 255, 255, 0.04);
     padding: 1rem;
   }
 
-  .lead-card__top,
-  .lead-card__footer {
+  .lead-card[data-draft='true'] {
+    border-color: rgba(148, 163, 184, 0.25);
+  }
+
+  .lead-card[data-priority='high'] {
+    border-left: 4px solid var(--mb-yellow);
+  }
+
+  .lead-card__hero {
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+  }
+
+  .lead-card__intro {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .lead-card__title-row {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
-  }
-
-  .lead-card__name {
-    color: var(--mb-white);
-    font-size: 1.1rem;
-    font-weight: 900;
-  }
-
-  .lead-card__company,
-  .lead-card__footer {
-    color: rgba(255,255,255,0.48);
-    font-size: 0.82rem;
+    gap: 0.75rem;
+    align-items: flex-start;
   }
 
   .lead-card__badges {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 0.45rem;
+    gap: 0.4rem;
+    margin-top: 0.65rem;
   }
 
   .lead-card__badges span {
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 999px;
-    padding: 0.35rem 0.55rem;
-    color: rgba(255,255,255,0.62);
-    font-size: 0.72rem;
+    padding: 0.3rem 0.55rem;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 0.7rem;
     font-weight: 800;
   }
 
   .lead-card__badges [data-brand='masterboard'] {
-    border-color: rgba(251,190,10,0.45);
+    border-color: rgba(251, 190, 10, 0.45);
     color: var(--mb-yellow);
   }
 
-  .lead-card__badges [data-brand='scale'] {
-    border-color: rgba(96,165,250,0.45);
-    color: #93c5fd;
-  }
-
   .lead-card__badges [data-priority='high'] {
-    border-color: rgba(251,190,10,0.45);
+    border-color: rgba(251, 190, 10, 0.45);
     color: var(--mb-yellow);
   }
 
   .lead-card__badges [data-status='draft'],
   .lead-card__badges [data-draft-badge] {
-    border-color: rgba(148,163,184,0.45);
+    border-color: rgba(148, 163, 184, 0.45);
     color: #cbd5e1;
-  }
-
-  .lead-card[data-draft='true'] {
-    border-color: rgba(148,163,184,0.22);
   }
 
   .lead-card__grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.7rem;
-    margin: 1rem 0;
+    margin: 1rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .lead-card__grid dt {
-    color: rgba(255,255,255,0.35);
-    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.68rem;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 0.25rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.2rem;
   }
 
   .lead-card__grid dd,
   .lead-card__grid a {
-    color: rgba(255,255,255,0.76);
-    font-size: 0.86rem;
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 0.84rem;
     overflow-wrap: anywhere;
   }
 
+  .lead-wa-link {
+    color: #86efac;
+    text-decoration: none;
+    font-weight: 800;
+  }
+
   .lead-card__objective {
-    border-top: 1px solid rgba(255,255,255,0.08);
-    padding-top: 0.85rem;
-    color: rgba(255,255,255,0.62);
-    line-height: 1.55;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.88rem;
+    line-height: 1.5;
   }
 
   .lead-card__footer {
-    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     padding-top: 0.75rem;
     margin-top: 0.85rem;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.8rem;
   }
 
-  .lead-admin__empty {
-    padding: 1.25rem;
-    color: rgba(255,255,255,0.6);
+  .lead-wa-btn {
+    border: 1px solid rgba(134, 239, 172, 0.35);
+    border-radius: 999px;
+    color: #86efac;
+    font-size: 0.78rem;
+    font-weight: 900;
+    padding: 0.45rem 0.8rem;
+    text-decoration: none;
   }
 
-  .lead-admin__empty h2 {
+  .lead-wa-btn:hover {
+    background: rgba(134, 239, 172, 0.1);
+  }
+
+  .lead-empty {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .lead-empty h2 {
     color: var(--mb-white);
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 900;
     margin-bottom: 0.4rem;
   }
 
-  @media (max-width: 860px) {
-    .lead-admin__header,
-    .lead-card__top,
-    .lead-card__footer {
+  .lead-empty .lead-link {
+    display: inline-block;
+    margin-top: 0.75rem;
+  }
+
+  @media (max-width: 1100px) {
+    .lead-metrics {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .lead-board {
+      grid-template-columns: repeat(5, minmax(260px, 1fr));
+    }
+  }
+
+  @media (max-width: 760px) {
+    .lead-header {
       flex-direction: column;
       align-items: flex-start;
     }
 
-    .lead-admin__stats,
+    .lead-metrics,
     .lead-card__grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr 1fr;
     }
 
-    .lead-card__badges {
-      justify-content: flex-start;
+    .lead-card__hero {
+      flex-direction: column;
     }
   }
 </style>

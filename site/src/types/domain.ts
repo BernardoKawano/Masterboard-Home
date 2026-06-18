@@ -109,6 +109,9 @@ export interface Speaker {
   /** Empresa isolada, ex: "VIASOFT" — derivada do roleLabel quando possível */
   company?: string;
 
+  /** Empresas verificáveis para exibição quando houver mais de uma */
+  companies?: string[];
+
   bio?: string;
 
   /** URL absoluta HTTPS da foto do speaker */
@@ -138,8 +141,10 @@ export interface Member {
   roleLabel?: string;
   role?: string;
   city?: string;
+  /** URL absoluta HTTPS da foto de perfil */
   photo?: string;
   companyLogo?: string;
+  linkedin?: string;
 
   /** Nível de acesso / tier */
   tier?: string;

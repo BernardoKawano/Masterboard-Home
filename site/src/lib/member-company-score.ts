@@ -117,6 +117,38 @@ export function sortMembersByCompanyPrestige<T extends MemberLike>(members: T[])
   return [...members].sort(compareMembersByCompanyPrestige);
 }
 
+/** Chave de deduplicação — usa a primeira empresa quando houver "A / B". */
+export function getMemberCompanyKey(company?: string | null): string {
+  const primary = String(company ?? '')
+    .split(/\s*[\/|]\s*/)[0]
+    ?.trim();
+
+  return normalizeSpeakerText(primary);
+}
+
+/** Seleciona membros priorizados sem repetir a mesma empresa. */
+export function pickMembersWithUniqueCompanies<T extends MemberLike>(
+  members: T[],
+  limit: number = MEMBER_PROFILE_VISIBLE_COUNT,
+): T[] {
+  const sorted = sortMembersByCompanyPrestige(members);
+  const picked: T[] = [];
+  const seenCompanies = new Set<string>();
+
+  for (const member of sorted) {
+    const companyKey = getMemberCompanyKey(member.company);
+    if (!companyKey) continue;
+    if (seenCompanies.has(companyKey)) continue;
+
+    seenCompanies.add(companyKey);
+    picked.push(member);
+
+    if (picked.length >= limit) break;
+  }
+
+  return picked;
+}
+
 export function sortCompaniesByPrestige<T extends CompanyLike>(companies: T[]): T[] {
   return [...companies].sort(compareCompaniesByPrestige);
 }
