@@ -4,6 +4,19 @@ import AnimatedGallery from './AnimatedGallery.astro';
 
 const settings = await getPublicSiteSettings();
 const hero = settings.home.hero;
+
+const heroEyebrow = hero.eyebrow.trim();
+const heroPill = hero.pill.trim();
+const showHeroMeta = Boolean(heroEyebrow || heroPill);
+const heroLines = [
+  { text: hero.line1, className: 'block' },
+  { text: hero.line2, className: 'block' },
+  { text: hero.highlight, className: 'block text-gradient-yellow' },
+  { text: hero.line3, className: 'block' },
+].filter((line) => line.text.trim());
+
+// Temporariamente oculto — altere para true para exibir o card lateral novamente
+const SHOW_HERO_INTEL_CARD = false;
 ---
 
 <section
@@ -16,17 +29,22 @@ const hero = settings.home.hero;
   <div class="hero-bg absolute inset-0" aria-hidden="true"></div>
   <div class="hero-orb hero-orb--primary" aria-hidden="true"></div>
   <div class="hero-orb hero-orb--secondary" aria-hidden="true"></div>
+  <div class="mb-glow-orb mb-glow-orb--center" aria-hidden="true"></div>
 
   <!-- Conteúdo -->
   <div class="container hero-container relative z-10 pt-24 pb-14 md:pt-28 md:pb-20">
-    <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-10 xl:gap-16 items-end">
+    <div class:list={[
+      'grid grid-cols-1 gap-10 xl:gap-16 items-end',
+      SHOW_HERO_INTEL_CARD && 'xl:grid-cols-[minmax(0,1fr)_360px]',
+    ]}>
       <div class="max-w-5xl">
 
-        <!-- Eyebrow -->
-        <div class="flex flex-wrap items-center gap-3 mb-4 md:mb-5" data-animate>
-          <p class="eyebrow">{hero.eyebrow}</p>
-          <span class="hero-pill">{hero.pill}</span>
-        </div>
+        {showHeroMeta && (
+          <div class="flex flex-wrap items-center gap-3 mb-4 md:mb-5" data-animate>
+            {heroEyebrow && <p class="eyebrow">{heroEyebrow}</p>}
+            {heroPill && <span class="hero-pill">{heroPill}</span>}
+          </div>
+        )}
 
         <!-- H1 principal -->
         <h1
@@ -34,10 +52,9 @@ const hero = settings.home.hero;
           data-animate
           data-animate-delay="100"
         >
-          <span class="block">{hero.line1}</span>
-          <span class="block">{hero.line2}</span>
-          <span class="block text-gradient-yellow">{hero.highlight}</span>
-          <span class="block">{hero.line3}</span>
+          {heroLines.map((line) => (
+            <span class={line.className}>{line.text}</span>
+          ))}
         </h1>
 
         <!-- Descrição -->
@@ -74,6 +91,7 @@ const hero = settings.home.hero;
 
       </div>
 
+      {SHOW_HERO_INTEL_CARD && (
       <aside class="hero-intel-card" data-animate data-animate-delay="500" aria-label="Resumo da experiência Masterboard">
         <p class="text-xs uppercase tracking-[0.22em] text-mb-yellow/80 mb-5">Dentro da sala</p>
         <div class="space-y-5">
@@ -97,6 +115,7 @@ const hero = settings.home.hero;
           </p>
         </div>
       </aside>
+      )}
     </div>
   </div>
 

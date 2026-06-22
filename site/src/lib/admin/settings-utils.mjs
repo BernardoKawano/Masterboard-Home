@@ -19,49 +19,53 @@ export const SETTING_DEFINITIONS = [
     key: 'home.hero.eyebrow',
     label: 'Hero: chamada superior',
     type: 'text',
-    defaultValue: 'Acesso por curadoria',
+    defaultValue: '',
+    allowEmpty: true,
   },
   {
     key: 'home.hero.pill',
     label: 'Hero: selo',
     type: 'text',
-    defaultValue: 'Candidaturas abertas',
+    defaultValue: '',
+    allowEmpty: true,
   },
   {
     key: 'home.hero.line1',
     label: 'Hero: linha 1',
     type: 'text',
-    defaultValue: 'Dizem que',
+    defaultValue: 'Ecossistema empresarial',
   },
   {
     key: 'home.hero.line2',
     label: 'Hero: linha 2',
     type: 'text',
-    defaultValue: 'o topo é',
+    defaultValue: 'de educação',
   },
   {
     key: 'home.hero.highlight',
     label: 'Hero: destaque',
     type: 'text',
-    defaultValue: 'solitário.',
+    defaultValue: 'e negócios',
   },
   {
     key: 'home.hero.line3',
     label: 'Hero: linha final',
     type: 'text',
-    defaultValue: 'Nós discordamos.',
+    defaultValue: '',
+    allowEmpty: true,
   },
   {
     key: 'home.hero.description',
     label: 'Hero: descrição',
     type: 'textarea',
-    defaultValue: 'Um club empresarial fechado para fundadores, CEOs e executivos que querem crescer com pares certos, experiências de alto contexto e conversas que viram decisão.',
+    defaultValue:
+      'Reunimos métodos, experiências e aprendizados de grandes executivos que construíram resultados em empresas como Microsoft, Salesforce, Amazon, SAP, Azul e Wellhub para ajudar empresários a tomar melhores decisões, desenvolver seus times e construir negócios preparados para crescer.',
   },
   {
     key: 'home.hero.primaryCtaLabel',
     label: 'Hero: texto do botão principal',
     type: 'text',
-    defaultValue: 'Candidatar-se ao club',
+    defaultValue: 'Quero participar',
   },
   {
     key: 'home.hero.primaryCtaHref',
@@ -82,6 +86,34 @@ export const SETTING_DEFINITIONS = [
     defaultValue: '#experiencias',
   },
 ];
+
+const HERO_SETTING_KEYS = SETTING_DEFINITIONS
+  .filter((definition) => definition.key.startsWith('home.hero.'))
+  .map((definition) => definition.key);
+
+const LEGACY_HERO_MARKERS = {
+  line1: new Set(['Dizem que']),
+  eyebrow: new Set(['Acesso por curadoria']),
+  primaryCtaLabel: new Set(['Candidatar-se ao club']),
+};
+
+export function isLegacyHeroContent(hero = {}) {
+  return (
+    LEGACY_HERO_MARKERS.line1.has(hero.line1) ||
+    LEGACY_HERO_MARKERS.eyebrow.has(hero.eyebrow) ||
+    LEGACY_HERO_MARKERS.primaryCtaLabel.has(hero.primaryCtaLabel)
+  );
+}
+
+function applyHeroPdfRefreshDefaults(settings) {
+  for (const key of HERO_SETTING_KEYS) {
+    const definition = SETTING_DEFINITIONS.find((item) => item.key === key);
+    if (!definition) continue;
+    setNestedValue(settings, key, normalizeSettingValue(definition, definition.defaultValue));
+  }
+
+  return settings;
+}
 
 export function defaultSettingsObject() {
   return settingsRowsToObject([]);
@@ -105,7 +137,9 @@ function normalizeSettingValue(definition, value) {
   }
 
   const text = String(value ?? '').trim();
-  return text || definition.defaultValue;
+  if (text) return text;
+  if (definition.allowEmpty) return '';
+  return definition.defaultValue;
 }
 
 export function settingsRowsToObject(rows = []) {
@@ -116,6 +150,10 @@ export function settingsRowsToObject(rows = []) {
     const rawValue = byKey.has(definition.key) ? byKey.get(definition.key) : definition.defaultValue;
     const value = normalizeSettingValue(definition, rawValue);
     setNestedValue(settings, definition.key, value);
+  }
+
+  if (isLegacyHeroContent(settings.home?.hero)) {
+    applyHeroPdfRefreshDefaults(settings);
   }
 
   return settings;

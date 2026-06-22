@@ -88,9 +88,12 @@ export interface BubbleEmpresa {
   Faturamento?: string;
   'Localização'?: string;
   Tamanho?: string;
-  Cadastro_completo?: boolean;
+  Setores?: string;
   'Setores - Outro'?: string;
-  Serviços_ofertados?: string;
+  Desafios?: string;
+  'Desafios - ICP'?: string;
+  Cadastro_completo?: boolean;
+  'Serviços_ofertados'?: string;
   'Created Date'?: string;
   'Modified Date'?: string;
   [key: string]: unknown;
@@ -316,6 +319,10 @@ export async function fetchEventById(id: string): Promise<BubbleEvento | null> {
  */
 export async function fetchAllSpeakers(): Promise<BubbleSpeaker[]> {
   return fetchAllPages<BubbleSpeaker>('speaker');
+}
+
+export async function fetchAllEmpresas(): Promise<BubbleEmpresa[]> {
+  return fetchAllPages<BubbleEmpresa>('empresa');
 }
 
 /**

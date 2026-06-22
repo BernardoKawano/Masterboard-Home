@@ -34,13 +34,14 @@ const formatMetricValue = (metric: (typeof metrics)[number]) =>
 
 <section
   id="numeros"
-  class="section-py bg-mb-black relative overflow-hidden"
+  class="section-py section-ambient relative overflow-hidden"
   aria-label="Números do Masterboard"
 >
+  <div class="mb-glow-orb mb-glow-orb--top-right" aria-hidden="true"></div>
   <!-- Linha decorativa sutil -->
   <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
 
-  <div class="container">
+  <div class="container relative z-10">
 
     <!-- Intro -->
     <div class="max-w-2xl mb-10 md:mb-12" data-animate>

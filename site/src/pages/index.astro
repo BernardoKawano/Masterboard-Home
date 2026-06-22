@@ -26,6 +26,9 @@ const [upcomingEvents, speakers, members, memberCount] = await Promise.all([
   dataSource.getMemberCount?.(),
 ]);
 
+// Temporariamente oculto — altere para true para exibir a seção de depoimentos novamente
+const SHOW_TESTIMONIALS = false;
+
 const faqSchema = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
@@ -53,7 +56,7 @@ const faqSchema = {
     <Speakers speakers={speakers} />
     <Members members={members ?? []} speakers={speakers} memberCount={memberCount} />
     <Events events={upcomingEvents} limit={5} showViewAll={true} />
-    <Testimonials />
+    {SHOW_TESTIMONIALS && <Testimonials />}
     <FAQ />
     <CTAFinal />
   </main>

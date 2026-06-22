@@ -351,7 +351,7 @@ const scoreColor = (score: number) => {
                     const shortClub = club !== '-' ? club.replace('Masterboard Club — ', '') : '-';
 
                     return (
-                      <article class="lead-mini-card" data-priority={q.priority}>
+                      <article class="lead-mini-card" data-priority={q.priority} data-lead-id={String(lead.id)}>
                         <div class="lead-mini-card__top">
                           <div class="lead-avatar" aria-hidden="true">{initials}</div>
                           <div class="lead-mini-card__identity">
@@ -385,11 +385,16 @@ const scoreColor = (score: number) => {
                         </dl>
                         <footer class="lead-mini-card__footer">
                           <time datetime={String(lead.submitted_at)}>{formatShortDate(lead.submitted_at)}</time>
-                          {whatsappUrl ? (
-                            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-                          ) : (
-                            <span class="lead-mini-card__muted">Sem WhatsApp</span>
-                          )}
+                          <div class="lead-card-actions">
+                            {whatsappUrl ? (
+                              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+                            ) : (
+                              <span class="lead-mini-card__muted">Sem WhatsApp</span>
+                            )}
+                            <button type="button" class="lead-delete-btn" data-lead-delete aria-label={`Excluir ${displayName}`}>
+                              Excluir
+                            </button>
+                          </div>
                         </footer>
                       </article>
                     );
@@ -423,7 +428,7 @@ const scoreColor = (score: number) => {
             const cnpj = text(lead.cnpj ?? notes.cnpj);
 
             return (
-              <article class="lead-card" data-draft={effectiveStatus === 'draft' ? 'true' : undefined} data-priority={q.priority}>
+              <article class="lead-card" data-draft={effectiveStatus === 'draft' ? 'true' : undefined} data-priority={q.priority} data-lead-id={String(lead.id)}>
                 <div class="lead-card__hero">
                   <div class="lead-avatar lead-avatar--lg" aria-hidden="true">{initials}</div>
                   <div class="lead-card__intro">
@@ -477,9 +482,14 @@ const scoreColor = (score: number) => {
 
                 <footer class="lead-card__footer">
                   <span>Recebido em {formatDate(lead.submitted_at)}</span>
-                  {whatsappUrl && (
-                    <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" class="lead-wa-btn">Abrir WhatsApp</a>
-                  )}
+                  <div class="lead-card-actions">
+                    {whatsappUrl && (
+                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" class="lead-wa-btn">Abrir WhatsApp</a>
+                    )}
+                    <button type="button" class="lead-delete-btn" data-lead-delete aria-label={`Excluir ${displayName}`}>
+                      Excluir card
+                    </button>
+                  </div>
                 </footer>
               </article>
             );
@@ -490,6 +500,57 @@ const scoreColor = (score: number) => {
   </>
   )}
 </AdminLayout>
+
+<script>
+  const deleteButtons = document.querySelectorAll('[data-lead-delete]');
+
+  deleteButtons.forEach((button) => {
+    button.addEventListener('click', async () => {
+      const card = button.closest('[data-lead-id]');
+      const leadId = card?.getAttribute('data-lead-id');
+      if (!leadId) return;
+
+      const leadName =
+        card?.querySelector('.lead-card__name, .lead-mini-card__name')?.textContent?.trim() || 'este lead';
+
+      if (!window.confirm(`Excluir permanentemente ${leadName}? Esta ação não pode ser desfeita.`)) {
+        return;
+      }
+
+      button.setAttribute('disabled', 'true');
+
+      try {
+        const response = await fetch('/api/admin/leads', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', id: leadId }),
+        });
+
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(typeof payload.error === 'string' ? payload.error : 'Não foi possível excluir.');
+        }
+
+        card?.remove();
+
+        const emptyColumn = document.querySelector('.lead-column__cards:not(:has(.lead-mini-card))');
+        emptyColumn?.querySelector('.lead-column__empty')?.remove();
+        if (emptyColumn && !emptyColumn.querySelector('.lead-mini-card')) {
+          const empty = document.createElement('p');
+          empty.className = 'lead-column__empty';
+          empty.textContent = 'Nenhum lead aqui';
+          emptyColumn.appendChild(empty);
+        }
+      } catch (error) {
+        button.removeAttribute('disabled');
+        const message = error instanceof Error ? error.message : 'Não foi possível excluir o lead.';
+        window.alert(message);
+      }
+    });
+  });
+</script>
 
 <style>
   .lead-header {
@@ -868,6 +929,36 @@ const scoreColor = (score: number) => {
     border-top: 1px solid rgba(255, 255, 255, 0.06);
     padding-top: 0.5rem;
     font-size: 0.7rem;
+  }
+
+  .lead-card-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .lead-delete-btn {
+    border: 1px solid rgba(255, 120, 120, 0.35);
+    border-radius: 999px;
+    background: transparent;
+    color: #ffb4b4;
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 0.28rem 0.55rem;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .lead-delete-btn:hover:not(:disabled) {
+    background: rgba(255, 120, 120, 0.12);
+    color: #ffd0d0;
+  }
+
+  .lead-delete-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
   }
 
   .lead-mini-card__footer time {

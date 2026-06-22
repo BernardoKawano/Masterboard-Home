@@ -35,17 +35,19 @@ const timelineItems = [
 
 <section
   id="experiencias"
-  class="section-py relative section-glow"
-  style="background: linear-gradient(180deg, var(--mb-black) 0%, rgba(251,190,10,0.02) 50%, var(--mb-black) 100%);"
+  class="section-py section-ambient relative"
   aria-labelledby="ecosystem-heading"
 >
+  <div class="section-ambient__backdrop" aria-hidden="true">
+    <div class="mb-glow-orb mb-glow-orb--bottom-left"></div>
+  </div>
   <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
 
-  <div class="container">
+  <div class="container relative z-10">
 
     <div class="grid grid-cols-1 lg:grid-cols-[0.78fr_1.22fr] gap-8 lg:gap-12 items-start">
       <!-- Cabeçalho -->
-      <div class="lg:sticky lg:top-28 max-w-xl">
+      <div class="lg:sticky lg:top-28 lg:self-start max-w-xl">
         <p class="eyebrow mb-4" data-animate>O que você acessa</p>
         <h2
           id="ecosystem-heading"
@@ -61,7 +63,7 @@ const timelineItems = [
         </p>
         <div class="mt-6" data-animate data-animate-delay="200">
           <a href="/aplicacao/" class="btn-primary">
-            Pedir acesso às experiências
+            Quero participar
           </a>
         </div>
       </div>

@@ -1,0 +1,942 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { canManageMembers, getAdminSession } from '../../lib/admin/auth';
+import { filterAppUsers, toAppUserListItem } from '../../lib/admin/bubble-users.mjs';
+import {
+  applyUserFilters,
+  parseUserFilters,
+} from '../../lib/admin/user-filters.mjs';
+import {
+  getAllAppUsersMapped,
+  isBubbleUsersConfigured,
+} from '../../lib/admin/fetch-bubble-users';
+
+const session = await getAdminSession(Astro);
+if (!session) return Astro.redirect(`/admin/login/?next=${encodeURIComponent('/admin/users/')}`);
+
+const isAuthorized = canManageMembers(session);
+const initialQuery = (Astro.url.searchParams.get('q') ?? '').trim();
+const initialFilters = parseUserFilters(Astro.url.searchParams);
+const pageSize = 50;
+
+let users: ReturnType<typeof toAppUserListItem>[] = [];
+let total = 0;
+let globalTotal = 0;
+let errorMessage = '';
+let tokenMissing = false;
+
+if (isAuthorized) {
+  if (!isBubbleUsersConfigured()) {
+    tokenMissing = true;
+    errorMessage = 'BUBBLE_API_TOKEN não configurado. Adicione o token do Bubble no ambiente para sincronizar usuários do app.';
+  } else {
+    try {
+      const allUsers = await getAllAppUsersMapped();
+      globalTotal = allUsers.length;
+      const searched = filterAppUsers(allUsers, initialQuery);
+      const filtered = applyUserFilters(searched, initialFilters);
+      total = filtered.length;
+      users = filtered.slice(0, pageSize).map(toAppUserListItem);
+    } catch (error) {
+      errorMessage = error instanceof Error ? error.message : 'Não foi possível carregar usuários do app.';
+    }
+  }
+}
+---
+
+<AdminLayout
+  title="Usuários"
+  description="Todos os cadastros do app Masterboard."
+  active="users"
+  session={session}
+>
+  {!isAuthorized ? (
+    <section class="users-empty admin-card">
+      <h2>Acesso restrito</h2>
+      <p>Somente usuários com papel <code>admin</code> podem consultar usuários do app.</p>
+    </section>
+  ) : errorMessage ? (
+    <section class="users-empty admin-card">
+      <h2>{tokenMissing ? 'Integração Bubble pendente' : 'Não foi possível carregar usuários'}</h2>
+      <p>{errorMessage}</p>
+    </section>
+  ) : (
+    <>
+      <header class="users-header">
+        <div>
+          <p class="users-eyebrow">App Masterboard</p>
+          <h1>Usuários</h1>
+          <p>Todos que se cadastraram pelo menos uma vez no app — espelhando a base comercial do Bubble.</p>
+        </div>
+      </header>
+
+      <div class="users-toolbar">
+        <label class="users-search" for="users-search-input">
+          <span class="material-symbols-rounded" aria-hidden="true">search</span>
+          <input
+            id="users-search-input"
+            type="search"
+            value={initialQuery}
+            placeholder="Pesquisar"
+            autocomplete="off"
+            spellcheck="false"
+            data-users-search
+          />
+        </label>
+        <button type="button" class="users-toolbar__btn" data-users-filters-open>
+          Filtros
+          <span class="users-toolbar__badge" data-users-filter-count hidden>0</span>
+        </button>
+        <p class="users-toolbar__total" data-users-total>Total: {total.toLocaleString('pt-BR')}</p>
+        <button type="button" class="users-toolbar__btn users-toolbar__btn--options" disabled title="Em breve">
+          Opções
+          <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+        </button>
+      </div>
+
+      <div class="users-table-wrap">
+        <table class="users-table" aria-label="Usuários do app">
+          <thead>
+            <tr>
+              <th scope="col">Nome</th>
+              <th scope="col">Email</th>
+              <th scope="col">Whatsapp</th>
+              <th scope="col">Data de cadastro</th>
+              <th scope="col">Acessar dados</th>
+            </tr>
+          </thead>
+          <tbody data-users-table-body>
+            {users.map((user) => (
+              <tr data-user-id={user.id}>
+                <td>{user.name}</td>
+                <td>{user.email}</td>
+                <td>{user.whatsapp}</td>
+                <td>{user.registeredAtLabel}</td>
+                <td>
+                  <button type="button" class="users-data-btn" data-user-open={user.id}>
+                    Dados
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="users-footer">
+        <button type="button" class="users-load-more" data-users-load-more hidden={total <= users.length}>
+          Carregar mais...
+        </button>
+      </div>
+
+      <dialog class="users-filters-dialog" data-users-filters-dialog aria-labelledby="users-filters-title">
+        <form class="users-filters-panel" method="dialog" data-users-filters-form>
+          <header class="users-filters-panel__header">
+            <h2 id="users-filters-title">Filtros</h2>
+            <button type="button" class="users-filters-panel__icon" data-users-filters-close aria-label="Fechar">
+              <span class="material-symbols-rounded" aria-hidden="true">settings</span>
+            </button>
+          </header>
+
+          <div class="users-filters-grid" data-users-filters-grid>
+            <p class="users-filters-loading">Carregando opções...</p>
+          </div>
+
+          <footer class="users-filters-panel__footer">
+            <button type="button" class="users-filters-cancel" data-users-filters-cancel>Cancelar</button>
+            <button type="submit" class="users-filters-apply">Aplicar</button>
+          </footer>
+        </form>
+      </dialog>
+
+      <dialog class="users-dialog" data-users-dialog aria-labelledby="users-dialog-title">
+        <article class="users-dialog__panel">
+          <header class="users-dialog__header">
+            <div>
+              <p class="users-eyebrow">Dados do usuário</p>
+              <h2 id="users-dialog-title" data-user-detail-name>—</h2>
+            </div>
+            <button type="button" class="users-dialog__close" data-users-dialog-close aria-label="Fechar">×</button>
+          </header>
+
+          <div class="users-dialog__body" data-user-detail-body>
+            <p class="users-dialog__loading">Carregando...</p>
+          </div>
+        </article>
+      </dialog>
+
+      <script define:vars={{ pageSize, initialUsers: users, initialTotal: total, initialQuery, initialFilters, globalTotal }}>
+        const FILTER_FIELDS = [
+          { id: 'tipo', label: 'Tipo' },
+          { id: 'tier', label: 'Tier' },
+          { id: 'cargo', label: 'Cargo' },
+          { id: 'renewalAt', label: 'Data de renovação' },
+          { id: 'faturamento', label: 'Faturamento' },
+          { id: 'tamanho', label: 'Tamanho' },
+          { id: 'eventoConvidado', label: 'Evento convidado' },
+          { id: 'eventoConfirmado', label: 'Evento confirmado' },
+          { id: 'qualificacao', label: 'Qualificação' },
+          { id: 'status', label: 'Status' },
+          { id: 'responsavel', label: 'Responsável' },
+          { id: 'setor', label: 'Setor' },
+          { id: 'desafios', label: 'Desafios' },
+          { id: 'desafiosIcp', label: 'Desafios - ICP' },
+        ];
+
+        const searchInput = document.querySelector('[data-users-search]');
+        const tableBody = document.querySelector('[data-users-table-body]');
+        const totalEl = document.querySelector('[data-users-total]');
+        const loadMoreBtn = document.querySelector('[data-users-load-more]');
+        const dialog = document.querySelector('[data-users-dialog]');
+        const detailName = document.querySelector('[data-user-detail-name]');
+        const detailBody = document.querySelector('[data-user-detail-body]');
+        const filtersDialog = document.querySelector('[data-users-filters-dialog]');
+        const filtersGrid = document.querySelector('[data-users-filters-grid]');
+        const filtersForm = document.querySelector('[data-users-filters-form]');
+        const filterCountBadge = document.querySelector('[data-users-filter-count]');
+
+        let currentQuery = initialQuery ?? '';
+        let currentFilters = { ...(initialFilters ?? {}) };
+        let draftFilters = { ...(initialFilters ?? {}) };
+        let filterOptions = null;
+        let currentOffset = Array.isArray(initialUsers) ? initialUsers.length : 0;
+        let currentTotal = initialTotal ?? 0;
+        let isLoading = false;
+
+        const escapeHtml = (value) =>
+          String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+
+        const renderRows = (rows, append = false) => {
+          if (!tableBody) return;
+          const html = rows
+            .map(
+              (user) => `
+                <tr data-user-id="${escapeHtml(user.id)}">
+                  <td>${escapeHtml(user.name)}</td>
+                  <td>${escapeHtml(user.email)}</td>
+                  <td>${escapeHtml(user.whatsapp)}</td>
+                  <td>${escapeHtml(user.registeredAtLabel)}</td>
+                  <td>
+                    <button type="button" class="users-data-btn" data-user-open="${escapeHtml(user.id)}">Dados</button>
+                  </td>
+                </tr>
+              `,
+            )
+            .join('');
+
+          if (append) {
+            tableBody.insertAdjacentHTML('beforeend', html);
+          } else {
+            tableBody.innerHTML = html;
+          }
+
+          bindOpenButtons();
+        };
+
+        const updateFilterBadge = () => {
+          const count = Object.values(currentFilters).filter(Boolean).length;
+          if (!filterCountBadge) return;
+          filterCountBadge.textContent = String(count);
+          filterCountBadge.hidden = count === 0;
+        };
+
+        const buildFilterParams = () => {
+          const params = new URLSearchParams();
+          if (currentQuery) params.set('q', currentQuery);
+          Object.entries(currentFilters).forEach(([key, value]) => {
+            if (value) params.set(key, value);
+          });
+          return params;
+        };
+
+        const renderFilterFields = () => {
+          if (!filtersGrid) return;
+
+          filtersGrid.innerHTML = FILTER_FIELDS.map((field) => {
+            const options = filterOptions?.[field.id] ?? [];
+            const selected = draftFilters[field.id] ?? '';
+
+            return `
+              <label class="users-filter-field">
+                <span>${field.label}</span>
+                <select name="${field.id}" data-filter-field="${field.id}">
+                  <option value="">Selecionar...</option>
+                  ${options
+                    .map(
+                      (option) =>
+                        `<option value="${escapeHtml(option)}"${selected === option ? ' selected' : ''}>${escapeHtml(option)}</option>`,
+                    )
+                    .join('')}
+                </select>
+              </label>
+            `;
+          }).join('');
+
+          filtersGrid.querySelectorAll('[data-filter-field]').forEach((select) => {
+            select.addEventListener('change', () => {
+              const id = select.getAttribute('data-filter-field');
+              if (!id) return;
+              draftFilters[id] = select.value;
+            });
+          });
+        };
+
+        const loadFilterOptions = async () => {
+          if (filterOptions) return filterOptions;
+
+          const response = await fetch('/api/admin/users', {
+            method: 'POST',
+            credentials: 'same-origin',
+          });
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error ?? 'Erro ao carregar filtros.');
+
+          filterOptions = payload.options ?? {};
+          return filterOptions;
+        };
+
+        const openFiltersDialog = async () => {
+          if (!filtersDialog || !filtersGrid) return;
+          draftFilters = { ...currentFilters };
+          filtersGrid.innerHTML = '<p class="users-filters-loading">Carregando opções...</p>';
+          filtersDialog.showModal();
+
+          try {
+            await loadFilterOptions();
+            renderFilterFields();
+          } catch (error) {
+            filtersGrid.innerHTML = `<p class="users-filters-loading">${escapeHtml(error?.message ?? 'Erro.')}</p>`;
+          }
+        };
+
+        const updateFooter = () => {
+          if (totalEl) totalEl.textContent = `Total: ${currentTotal.toLocaleString('pt-BR')}`;
+          if (loadMoreBtn) loadMoreBtn.hidden = currentOffset >= currentTotal;
+        };
+
+        const fetchUsers = async ({ append = false } = {}) => {
+          if (isLoading) return;
+          isLoading = true;
+          if (loadMoreBtn) loadMoreBtn.setAttribute('disabled', 'true');
+
+          try {
+            const params = buildFilterParams();
+            params.set('offset', append ? String(currentOffset) : '0');
+            params.set('limit', String(pageSize));
+
+            const response = await fetch(`/api/admin/users?${params}`, { credentials: 'same-origin' });
+            const payload = await response.json();
+
+            if (!response.ok) throw new Error(payload.error ?? 'Erro ao buscar usuários.');
+
+            const rows = Array.isArray(payload.users) ? payload.users : [];
+            currentTotal = Number(payload.total ?? rows.length);
+            currentOffset = append ? currentOffset + rows.length : rows.length;
+            renderRows(rows, append);
+            updateFooter();
+          } catch (error) {
+            if (!append && tableBody) {
+              tableBody.innerHTML = `<tr><td colspan="5">${escapeHtml(error?.message ?? 'Erro ao carregar.')}</td></tr>`;
+            }
+          } finally {
+            isLoading = false;
+            loadMoreBtn?.removeAttribute('disabled');
+          }
+        };
+
+        const renderField = (label, value, { link = false } = {}) => {
+          const safe = escapeHtml(value || '—');
+          const content =
+            link && value && value !== '—'
+              ? `<a href="${escapeHtml(value)}" target="_blank" rel="noopener noreferrer">${safe}</a>`
+              : safe;
+          return `<div class="users-detail-field"><dt>${escapeHtml(label)}</dt><dd>${content}</dd></div>`;
+        };
+
+        const renderListField = (label, items) => {
+          if (!items?.length) return renderField(label, '—');
+          return `<div class="users-detail-field users-detail-field--full"><dt>${escapeHtml(label)}</dt><dd><ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul></dd></div>`;
+        };
+
+        const renderDetail = (user) => {
+          if (!detailBody || !detailName) return;
+          detailName.textContent = user.name || '(sem nome)';
+
+          detailBody.innerHTML = `
+            <section class="users-detail-section">
+              <h3>Dados</h3>
+              <dl class="users-detail-grid">
+                ${renderField('Nome', user.name)}
+                ${renderField('Email', user.email)}
+                ${renderField('Whatsapp', user.whatsapp)}
+                ${renderField('LinkedIn', user.linkedin, { link: true })}
+                ${renderField('Instagram', user.instagram, { link: true })}
+                ${renderField('Website', user.website, { link: true })}
+                ${renderField('Cidades de atuação', user.cities)}
+                ${renderField('Cargo', user.role)}
+                ${renderField('Cargo - Outro', user.roleOther)}
+                ${renderField('Empresa - Nome', user.companyName)}
+                ${renderField('Empresa - Tamanho', user.companySize)}
+                ${renderField('Empresa - Faturamento', user.companyRevenue)}
+                ${renderField('Como chegou', user.referral)}
+              </dl>
+            </section>
+            <section class="users-detail-section">
+              <h3>Visualização admin</h3>
+              <dl class="users-detail-grid">
+                ${renderField('Tier usuário', user.tier)}
+                ${renderField('Tipo usuário', user.userType)}
+                ${renderField('Data de ingresso', user.joinedAtLabel)}
+                ${renderField('Data de renovação', user.renewalAtLabel)}
+                ${renderField('Status', user.status)}
+                ${renderField('Account responsável', user.accountOwner)}
+                ${renderField('Critérios de qualificação', user.qualification)}
+                ${renderListField('Eventos convidado', user.invitedEvents)}
+                ${renderListField('Eventos confirmado', user.confirmedEvents)}
+              </dl>
+            </section>
+          `;
+        };
+
+        const openUser = async (id) => {
+          if (!dialog || !detailBody || !detailName) return;
+          detailName.textContent = 'Carregando...';
+          detailBody.innerHTML = '<p class="users-dialog__loading">Carregando dados...</p>';
+          dialog.showModal();
+
+          try {
+            const response = await fetch(`/api/admin/users/${encodeURIComponent(id)}`, {
+              credentials: 'same-origin',
+            });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.error ?? 'Usuário não encontrado.');
+            renderDetail(payload.user);
+          } catch (error) {
+            detailName.textContent = 'Erro';
+            detailBody.innerHTML = `<p class="users-dialog__loading">${escapeHtml(error?.message ?? 'Erro.')}</p>`;
+          }
+        };
+
+        const bindOpenButtons = () => {
+          document.querySelectorAll('[data-user-open]').forEach((button) => {
+            if (button.dataset.bound === '1') return;
+            button.dataset.bound = '1';
+            button.addEventListener('click', () => {
+              const id = button.getAttribute('data-user-open');
+              if (id) openUser(id);
+            });
+          });
+        };
+
+        let debounceTimer;
+        searchInput?.addEventListener('input', () => {
+          clearTimeout(debounceTimer);
+          debounceTimer = window.setTimeout(() => {
+            currentQuery = searchInput.value.trim();
+            currentOffset = 0;
+            fetchUsers({ append: false });
+          }, 260);
+        });
+
+        loadMoreBtn?.addEventListener('click', () => fetchUsers({ append: true }));
+
+        document.querySelector('[data-users-filters-open]')?.addEventListener('click', () => {
+          openFiltersDialog();
+        });
+
+        document.querySelector('[data-users-filters-close]')?.addEventListener('click', () => {
+          filtersDialog?.close();
+        });
+
+        document.querySelector('[data-users-filters-cancel]')?.addEventListener('click', () => {
+          filtersDialog?.close();
+        });
+
+        filtersDialog?.addEventListener('click', (event) => {
+          if (event.target === filtersDialog) filtersDialog.close();
+        });
+
+        filtersForm?.addEventListener('submit', (event) => {
+          event.preventDefault();
+          currentFilters = { ...draftFilters };
+          currentOffset = 0;
+          updateFilterBadge();
+          filtersDialog?.close();
+          fetchUsers({ append: false });
+        });
+
+        document.querySelector('[data-users-dialog-close]')?.addEventListener('click', () => dialog?.close());
+        dialog?.addEventListener('click', (event) => {
+          if (event.target === dialog) dialog.close();
+        });
+
+        bindOpenButtons();
+        updateFilterBadge();
+        updateFooter();
+      </script>
+    </>
+  )}
+</AdminLayout>
+
+<style>
+  .users-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .users-eyebrow {
+    color: var(--mb-yellow);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .users-header h1 {
+    color: var(--mb-white);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .users-header p {
+    color: rgba(255, 255, 255, 0.55);
+    margin-top: 0.6rem;
+    max-width: 38rem;
+    font-size: 0.92rem;
+  }
+
+  .users-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .users-search {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex: 1 1 14rem;
+    min-width: 12rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.75rem;
+    background: rgba(0, 0, 0, 0.28);
+    padding: 0.65rem 0.8rem;
+  }
+
+  .users-search span {
+    color: rgba(255, 255, 255, 0.42);
+    font-size: 1.1rem;
+  }
+
+  .users-search input {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--mb-white);
+    font-size: 0.92rem;
+    font-weight: 700;
+    outline: none;
+  }
+
+  .users-toolbar__btn {
+    border: 0;
+    border-radius: 0.75rem;
+    background: var(--mb-yellow);
+    color: var(--mb-black);
+    font-size: 0.82rem;
+    font-weight: 900;
+    padding: 0.65rem 0.9rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .users-toolbar__badge {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.15rem;
+    height: 1.15rem;
+    padding: 0 0.25rem;
+    border-radius: 999px;
+    background: var(--mb-black);
+    color: var(--mb-yellow);
+    font-size: 0.62rem;
+    font-weight: 900;
+  }
+
+  .users-toolbar__btn--options {
+    margin-left: auto;
+    cursor: not-allowed;
+    opacity: 0.72;
+  }
+
+  .users-filters-dialog {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    width: min(58rem, calc(100vw - 1.5rem));
+    max-height: calc(100vh - 2rem);
+  }
+
+  .users-filters-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.72);
+  }
+
+  .users-filters-panel {
+    margin: 0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1rem;
+    background: rgba(28, 28, 28, 0.98);
+    max-height: calc(100vh - 2rem);
+    overflow: auto;
+  }
+
+  .users-filters-panel__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.1rem 0.85rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .users-filters-panel__header h2 {
+    color: var(--mb-white);
+    font-size: 1.15rem;
+    font-weight: 900;
+  }
+
+  .users-filters-panel__icon {
+    border: 0;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.45);
+    cursor: pointer;
+    padding: 0.15rem;
+  }
+
+  .users-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem;
+    padding: 1rem 1.1rem;
+  }
+
+  .users-filter-field {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .users-filter-field span {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
+
+  .users-filter-field select {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.65rem;
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 0.65rem 0.75rem;
+    appearance: none;
+    background-image:
+      linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.45) 50%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.45) 50%, transparent 50%);
+    background-position:
+      calc(100% - 16px) calc(50% + 2px),
+      calc(100% - 11px) calc(50% + 2px);
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+  }
+
+  .users-filter-field select:focus {
+    outline: none;
+    border-color: rgba(251, 190, 10, 0.45);
+  }
+
+  .users-filters-loading {
+    grid-column: 1 / -1;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.88rem;
+  }
+
+  .users-filters-panel__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.65rem;
+    padding: 0.85rem 1.1rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .users-filters-cancel,
+  .users-filters-apply {
+    border-radius: 0.75rem;
+    font-size: 0.84rem;
+    font-weight: 900;
+    padding: 0.65rem 1rem;
+    cursor: pointer;
+  }
+
+  .users-filters-cancel {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--mb-black);
+  }
+
+  .users-filters-apply {
+    border: 0;
+    background: var(--mb-yellow);
+    color: var(--mb-black);
+  }
+
+  .users-toolbar__total {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.88rem;
+    font-weight: 800;
+  }
+
+  .users-table-wrap {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.85rem;
+    overflow: auto;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .users-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 52rem;
+  }
+
+  .users-table thead th {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.78rem;
+    font-weight: 900;
+    text-align: left;
+    padding: 0.75rem 0.85rem;
+    white-space: nowrap;
+  }
+
+  .users-table tbody td {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.84rem;
+    padding: 0.72rem 0.85rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    vertical-align: middle;
+  }
+
+  .users-table tbody tr:nth-child(even) td {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .users-table tbody tr:hover td {
+    background: rgba(251, 190, 10, 0.06);
+  }
+
+  .users-data-btn {
+    border: 0;
+    border-radius: 0.65rem;
+    background: var(--mb-yellow);
+    color: var(--mb-black);
+    font-size: 0.78rem;
+    font-weight: 900;
+    padding: 0.45rem 0.75rem;
+    cursor: pointer;
+  }
+
+  .users-data-btn:hover {
+    filter: brightness(1.05);
+  }
+
+  .users-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.85rem;
+  }
+
+  .users-load-more {
+    border: 0;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.88rem;
+    font-weight: 800;
+    cursor: pointer;
+    padding: 0.35rem 0.2rem;
+  }
+
+  .users-load-more:hover {
+    color: var(--mb-yellow);
+  }
+
+  .users-empty h2 {
+    color: var(--mb-white);
+    font-size: 1.2rem;
+    font-weight: 900;
+    margin-bottom: 0.35rem;
+  }
+
+  .users-empty p {
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  .users-dialog {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    width: min(52rem, calc(100vw - 1.5rem));
+    max-height: calc(100vh - 2rem);
+  }
+
+  .users-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.72);
+  }
+
+  .users-dialog__backdrop {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .users-dialog__panel {
+    border: 1px solid rgba(251, 190, 10, 0.22);
+    border-radius: 1.1rem;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(251, 190, 10, 0.1), transparent 42%),
+      rgba(18, 18, 18, 0.98);
+    max-height: calc(100vh - 2rem);
+    overflow: auto;
+  }
+
+  .users-dialog__header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1rem 1rem 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    position: sticky;
+    top: 0;
+    background: inherit;
+    z-index: 1;
+  }
+
+  .users-dialog__header h2 {
+    color: var(--mb-white);
+    font-size: 1.35rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+  }
+
+  .users-dialog__close {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.65rem;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.72);
+    width: 2rem;
+    height: 2rem;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .users-dialog__body {
+    padding: 0.85rem 1rem 1.1rem;
+  }
+
+  .users-dialog__loading {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.9rem;
+  }
+
+  .users-detail-section + .users-detail-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .users-detail-section h3 {
+    color: var(--mb-yellow);
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.65rem;
+  }
+
+  .users-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem 0.85rem;
+  }
+
+  .users-detail-field dt {
+    color: rgba(255, 255, 255, 0.38);
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .users-detail-field dd {
+    margin-top: 0.15rem;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.86rem;
+    overflow-wrap: anywhere;
+  }
+
+  .users-detail-field dd a {
+    color: rgba(255, 255, 255, 0.86);
+  }
+
+  .users-detail-field dd a:hover {
+    color: var(--mb-yellow);
+  }
+
+  .users-detail-field--full {
+    grid-column: 1 / -1;
+  }
+
+  .users-detail-field ul {
+    margin: 0.2rem 0 0;
+    padding-left: 1rem;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.84rem;
+  }
+
+  @media (max-width: 960px) {
+    .users-filters-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .users-detail-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .users-toolbar__btn--options {
+      margin-left: 0;
+    }
+
+    .users-filters-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

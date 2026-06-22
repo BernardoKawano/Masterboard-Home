@@ -109,6 +109,37 @@
     );
   }
 
+  /* Degradê + glow de fundo para seções escuras */
+  .section-ambient {
+    background-color: #0a0a0a;
+    background-image:
+      radial-gradient(
+        ellipse 90% 65% at 50% -8%,
+        rgba(251, 190, 10, 0.16) 0%,
+        transparent 62%
+      ),
+      radial-gradient(
+        ellipse 55% 40% at 100% 55%,
+        rgba(251, 190, 10, 0.08) 0%,
+        transparent 68%
+      ),
+      linear-gradient(
+        180deg,
+        #080808 0%,
+        rgba(251, 190, 10, 0.06) 48%,
+        #080808 100%
+      );
+  }
+
+  /* Recorte dos glows sem quebrar position: sticky dos filhos */
+  .section-ambient__backdrop {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+
   .text-balance {
     text-wrap: balance;
   }
@@ -181,6 +212,31 @@
     font-size: 1.5rem;
   }
 
+  .brand-lockup--header {
+    gap: clamp(0.4rem, 0.9vw, 0.55rem);
+  }
+
+  .brand-wordmark--header {
+    color: #ffffff;
+    font-size: clamp(0.95rem, 1.45vw, 1.2rem);
+    letter-spacing: -0.06em;
+  }
+
+  .brand-mark--header {
+    width: auto;
+    height: clamp(1.05rem, 1.55vw, 1.35rem);
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .brand-lockup--header:hover .brand-wordmark--header {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .brand-lockup--header:hover .brand-mark--header {
+    filter: drop-shadow(0 0 14px rgba(251, 190, 10, 0.35));
+  }
+
   /* Legacy lockup/logo helpers (mantidos para compatibilidade) */
   .brand-lockup {
     display: inline-flex;
@@ -201,7 +257,7 @@
   }
 
   .brand-logo--header {
-    height: clamp(1.35rem, 2vw, 1.75rem);
+    height: clamp(1.1rem, 1.6vw, 1.45rem);
   }
 
   .brand-logo--footer {
@@ -363,7 +419,8 @@
   }
 
   .hero-orb--primary,
-  .hero-orb--secondary {
+  .hero-orb--secondary,
+  .mb-glow-orb {
     animation: none !important;
   }
 
@@ -551,7 +608,9 @@
 .hero-image-overlay {
   z-index: 2;
   pointer-events: none;
-  background: radial-gradient(circle at center, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.85));
+  background:
+    radial-gradient(circle at 20% 20%, rgba(251, 190, 10, 0.12), transparent 42%),
+    radial-gradient(circle at center, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.72));
 }
 
 .hero-bg {
@@ -586,8 +645,9 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 70% -10%, rgba(251, 190, 10, 0.10) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(251, 190, 10, 0.04) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 60% at 70% -10%, rgba(251, 190, 10, 0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(251, 190, 10, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse 45% 35% at 8% 85%, rgba(251, 190, 10, 0.08) 0%, transparent 55%);
   pointer-events: none;
 }
 
@@ -620,7 +680,7 @@
   height: min(42vw, 520px);
   top: 9%;
   right: -10%;
-  background: radial-gradient(circle, rgba(251, 190, 10, 0.22), transparent 64%);
+  background: radial-gradient(circle, rgba(251, 190, 10, 0.38), transparent 64%);
 }
 
 .hero-orb--secondary {
@@ -629,6 +689,56 @@
   left: -12%;
   bottom: 5%;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.10), transparent 62%);
+}
+
+/* ─── Ambient glow orbs (seções escuras) ─────────────────── */
+@keyframes glow-breathe {
+  0%, 100% { opacity: 0.62; }
+  50%       { opacity: 1; }
+}
+
+@keyframes glow-breathe-scale {
+  0%, 100% { opacity: 0.62; transform: scale(1); }
+  50%       { opacity: 1; transform: scale(1.1); }
+}
+
+.mb-glow-orb {
+  position: absolute;
+  z-index: 0;
+  border-radius: 9999px;
+  filter: blur(58px);
+  pointer-events: none;
+  mix-blend-mode: screen;
+  animation: glow-breathe-scale 7s ease-in-out infinite;
+}
+
+.mb-glow-orb--top-right {
+  width: min(42vw, 480px);
+  height: min(42vw, 480px);
+  top: -12%;
+  right: -10%;
+  background: radial-gradient(circle, rgba(251, 190, 10, 0.32), transparent 68%);
+}
+
+.mb-glow-orb--bottom-left {
+  width: min(36vw, 400px);
+  height: min(36vw, 400px);
+  left: -12%;
+  bottom: -8%;
+  background: radial-gradient(circle, rgba(251, 190, 10, 0.22), transparent 70%);
+  animation-delay: -3.5s;
+}
+
+.mb-glow-orb--center {
+  width: min(50vw, 560px);
+  height: min(34vw, 380px);
+  top: 35%;
+  left: 25%;
+  right: 25%;
+  margin-inline: auto;
+  background: radial-gradient(circle, rgba(251, 190, 10, 0.14), transparent 72%);
+  animation: glow-breathe 7s ease-in-out infinite;
+  animation-delay: -1.5s;
 }
 
 .brand-grid-mark {
@@ -1887,10 +1997,12 @@
 
 /* ─── Logo Marquee (parceiros) ───────────────────────────── */
 .logo-marquee-section {
+  position: relative;
   padding-block: clamp(1.25rem, 2vw, 1.75rem);
   border-top: 1px solid var(--mb-border);
   border-bottom: 1px solid var(--mb-border);
   overflow: hidden;
+  background: var(--mb-black);
 }
 
 .logo-marquee-wrapper {
@@ -1914,8 +2026,8 @@
 
 .logo-marquee-item {
   flex-shrink: 0;
-  min-width: 10rem;
-  height: 3rem;
+  min-width: 7rem;
+  height: 2.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1924,13 +2036,13 @@
 .logo-marquee-item[data-logo-extension="png"],
 .logo-marquee-item[data-logo-extension="webp"],
 .logo-marquee-item[data-logo-extension="avif"] {
-  height: 10rem;
+  height: 6.5rem;
 }
 
 .logo-marquee-item[data-logo="artesian"][data-logo-extension="png"],
 .logo-marquee-item[data-logo="artesian"][data-logo-extension="webp"],
 .logo-marquee-item[data-logo="artesian"][data-logo-extension="avif"] {
-  height: 12.65rem;
+  height: 8.25rem;
 }
 
 .logo-marquee-item[data-logo="hardrock"][data-logo-extension="png"],
@@ -1942,14 +2054,14 @@
 .logo-marquee-item[data-logo="hardrock"][data-logo-extension="avif"],
 .logo-marquee-item[data-logo="hard-rock"][data-logo-extension="avif"],
 .logo-marquee-item[data-logo="hard-rock-cafe"][data-logo-extension="avif"] {
-  height: 8.5rem;
+  height: 5.5rem;
 }
 
 .logo-marquee-item img {
   width: auto;
   height: auto;
   max-height: 100%;
-  max-width: 12rem;
+  max-width: 8rem;
   object-fit: contain;
   filter: none;
   mix-blend-mode: normal;

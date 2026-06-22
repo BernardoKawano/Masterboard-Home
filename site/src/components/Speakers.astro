@@ -61,12 +61,14 @@ const initialCompanies = initialSpeaker ? getSpeakerCompanies(initialSpeaker) : 
 {total > 0 && (
 <section
   id="speakers"
-  class="section-py bg-mb-black relative overflow-hidden"
+  class="section-py section-ambient relative overflow-hidden"
   aria-labelledby="speakers-heading"
 >
+  <div class="mb-glow-orb mb-glow-orb--top-right" aria-hidden="true"></div>
+  <div class="mb-glow-orb mb-glow-orb--bottom-left" aria-hidden="true"></div>
   <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
 
-  <div class="container">
+  <div class="container relative z-10">
 
     <!-- ── Cabeçalho ───────────────────────────────────────── -->
     <div class="max-w-2xl mb-10 md:mb-12">
@@ -76,8 +78,8 @@ const initialCompanies = initialSpeaker ? getSpeakerCompanies(initialSpeaker) : 
         class="section-title text-white text-balance"
         data-animate data-animate-delay="100"
       >
-        Speakers do<br />
-        <span class="text-mb-yellow">Masterboard</span>
+        Aprenda com quem<br />
+        <span class="text-mb-yellow">está no jogo</span>
       </h2>
     </div>
 

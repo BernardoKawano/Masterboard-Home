@@ -76,6 +76,10 @@ export function canManageLeads(session: AdminSession): boolean {
   return session.role === 'admin';
 }
 
+export function canManageMembers(session: AdminSession): boolean {
+  return session.role === 'admin';
+}
+
 async function resolveAdminProfile(userId: string, email: string): Promise<AdminSession | null> {
   const normalizedEmail = email.toLowerCase();
   const allowlist = getAdminEmailAllowlist();

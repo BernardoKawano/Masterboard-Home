@@ -7,16 +7,19 @@ const faqs = faqsData as FAQ[];
 
 <section
   id="faq"
-  class="section-py bg-mb-black relative"
+  class="section-py section-ambient relative"
   aria-labelledby="faq-heading"
 >
+  <div class="section-ambient__backdrop" aria-hidden="true">
+    <div class="mb-glow-orb mb-glow-orb--top-right"></div>
+  </div>
   <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
 
-  <div class="container">
+  <div class="container relative z-10">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
 
       <!-- Sticky header no desktop -->
-      <div class="lg:sticky lg:top-24 self-start">
+      <div class="lg:sticky lg:top-24 lg:self-start self-start">
         <p class="eyebrow mb-4" data-animate>Antes de entrar</p>
         <h2
           id="faq-heading"

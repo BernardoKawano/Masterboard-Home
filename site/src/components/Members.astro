@@ -122,14 +122,15 @@ const getMemberImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
 
 <section
   id="membros"
-  class="section-py bg-mb-black relative overflow-hidden"
+  class="section-py section-ambient relative overflow-hidden"
   aria-labelledby="members-heading"
 >
+  <div class="mb-glow-orb mb-glow-orb--bottom-left" aria-hidden="true"></div>
   <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
 
   <div class="brand-grid-mark" aria-hidden="true" style="opacity:0.35; right: 2%; bottom: 5%;"></div>
 
-  <div class="container">
+  <div class="container relative z-10">
     <div class="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-14 mb-12 md:mb-14">
       <div>
         <p class="eyebrow mb-4" data-animate>A comunidade</p>

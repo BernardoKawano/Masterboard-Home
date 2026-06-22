@@ -5,7 +5,7 @@ import type { AdminSession } from '../lib/admin/auth';
 export interface Props {
   title: string;
   description?: string;
-  active?: 'dashboard' | 'blog' | 'leads' | 'settings';
+  active?: 'dashboard' | 'blog' | 'leads' | 'users' | 'settings';
   session: AdminSession;
 }
 
@@ -17,35 +17,132 @@ const {
 } = Astro.props;
 
 const nav = [
-  { id: 'dashboard', href: '/admin/', label: 'Painel' },
-  { id: 'blog', href: '/admin/blog/', label: 'Blog' },
-  { id: 'leads', href: '/admin/leads/', label: 'Leads' },
-  { id: 'settings', href: '/admin/settings/', label: 'Site' },
-];
+  {
+    id: 'dashboard',
+    href: '/admin/',
+    label: 'Painel',
+    icon: 'dashboard',
+  },
+  {
+    id: 'blog',
+    href: '/admin/blog/',
+    label: 'Blog',
+    icon: 'article',
+  },
+  {
+    id: 'leads',
+    href: '/admin/leads/',
+    label: 'Leads',
+    icon: 'group',
+  },
+  {
+    id: 'users',
+    href: '/admin/users/',
+    label: 'Usuários',
+    icon: 'person_search',
+  },
+  {
+    id: 'settings',
+    href: '/admin/settings/',
+    label: 'Site',
+    icon: 'settings',
+  },
+] as const;
+
+const tools = [
+  {
+    href: 'https://masterboard-creative.vercel.app/',
+    label: 'Inteligência Criativa',
+    description: 'Gere posts, roteiros e bibliotecas de hooks',
+    icon: 'auto_awesome',
+  },
+  {
+    href: 'https://masterboard.scaleco.ai/',
+    label: 'Diagnóstico Scale',
+    description: 'Diagnóstico de arquitetura de receita',
+    icon: 'analytics',
+  },
+  {
+    href: 'https://masterboard.scaleco.ai/aceite',
+    label: 'Fechamento / aceite Scale',
+    description: 'Registro de aceite comercial',
+    icon: 'handshake',
+  },
+  {
+    href: 'https://masterboard.scaleco.ai/dashboard',
+    label: 'Dashboard Scale',
+    description: 'Leads, diagnósticos e aceites',
+    icon: 'space_dashboard',
+  },
+  {
+    href: 'https://masterboard.scaleco.ai/landing/',
+    label: 'Landing page evento',
+    description: 'Imersão presencial Scale × Masterboard',
+    icon: 'public',
+  },
+] as const;
 ---
 
 <BaseLayout title={`${title} | Admin Masterboard`} description={description} noindex={true}>
-  <main class="admin-shell">
-    <aside class="admin-sidebar">
-      <a href="/admin/" class="admin-brand">
-        <img
-          src="/brand/masterboard-logo-yellow.webp"
-          alt="Masterboard"
-          class="admin-brand__logo"
-          width="148"
-          height="32"
-          loading="eager"
-        />
-        <span class="admin-brand__tag">Painel interno</span>
-      </a>
+  <main class="admin-shell" data-admin-shell>
+    <aside class="admin-sidebar" data-admin-sidebar>
+      <div class="admin-sidebar__head">
+        <a href="/admin/" class="admin-brand">
+          <img
+            src="/brand/masterboard-logo-yellow.webp"
+            alt="Masterboard"
+            class="admin-brand__logo"
+            width="148"
+            height="32"
+            loading="eager"
+          />
+          <span class="admin-brand__tag">Painel interno</span>
+        </a>
+
+        <button
+          type="button"
+          class="admin-sidebar__toggle"
+          data-sidebar-collapse
+          aria-label="Ocultar menu lateral"
+          title="Ocultar menu"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      </div>
 
       <nav class="admin-nav" aria-label="Admin">
         {nav.map((item) => (
           <a href={item.href} aria-current={active === item.id ? 'page' : undefined}>
-            {item.label}
+            <span class="admin-nav__icon material-symbols-rounded" aria-hidden="true">{item.icon}</span>
+            <span class="admin-nav__label">{item.label}</span>
           </a>
         ))}
       </nav>
+
+      <div class="admin-sidebar__scroll admin-scroll">
+        <div class="admin-tools">
+          <p class="admin-tools__heading">Ferramentas</p>
+          <nav class="admin-nav admin-nav--tools" aria-label="Ferramentas externas">
+            {tools.map((item) => (
+              <a
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={item.description}
+              >
+                <span class="admin-nav__icon material-symbols-rounded" aria-hidden="true">{item.icon}</span>
+                <span class="admin-nav__text">
+                  <span class="admin-nav__label">{item.label}</span>
+                  <span class="admin-nav__desc">{item.description}</span>
+                </span>
+                <span class="admin-nav__external material-symbols-rounded" aria-hidden="true">open_in_new</span>
+              </a>
+            ))}
+          </nav>
+        </div>
+      </div>
 
       <form method="post" action="/api/admin/logout" class="admin-logout">
         <p>{session.name ?? session.email}</p>
@@ -54,17 +151,76 @@ const nav = [
       </form>
     </aside>
 
-    <section class="admin-content">
+    <button
+      type="button"
+      class="admin-sidebar__expand"
+      data-sidebar-expand
+      hidden
+      aria-label="Mostrar menu lateral"
+      title="Mostrar menu"
+    >
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+
+    <section class="admin-content admin-scroll">
       <slot />
     </section>
   </main>
+
+  <script>
+    const STORAGE_KEY = 'mb-admin-sidebar-collapsed';
+
+    function initAdminSidebar() {
+      const shell = document.querySelector('[data-admin-shell]');
+      const collapseBtn = document.querySelector('[data-sidebar-collapse]');
+      const expandBtn = document.querySelector('[data-sidebar-expand]');
+
+      if (!shell || !collapseBtn || !expandBtn) return;
+      if (collapseBtn.dataset.bound === '1') return;
+      collapseBtn.dataset.bound = '1';
+
+      function setCollapsed(collapsed: boolean) {
+        shell.classList.toggle('is-sidebar-collapsed', collapsed);
+        collapseBtn.toggleAttribute('hidden', collapsed);
+        expandBtn.toggleAttribute('hidden', !collapsed);
+        try {
+          localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
+        } catch {
+          /* ignore */
+        }
+      }
+
+      let initialCollapsed = false;
+      try {
+        initialCollapsed = localStorage.getItem(STORAGE_KEY) === '1';
+      } catch {
+        /* ignore */
+      }
+
+      setCollapsed(initialCollapsed);
+
+      collapseBtn.addEventListener('click', () => setCollapsed(true));
+      expandBtn.addEventListener('click', () => setCollapsed(false));
+    }
+
+    initAdminSidebar();
+    document.addEventListener('astro:page-load', initAdminSidebar);
+  </script>
 </BaseLayout>
 
 <style>
+  :global(body:has([data-admin-shell])) {
+    overflow: hidden;
+  }
+
   .admin-shell {
-    min-height: 100vh;
-    display: grid;
-    grid-template-columns: 17rem minmax(0, 1fr);
+    --admin-sidebar-width: 17rem;
+    display: flex;
+    min-height: 100dvh;
+    height: 100dvh;
+    overflow: hidden;
     background:
       radial-gradient(circle at 8% 0%, rgba(251, 190, 10, 0.16), transparent 32rem),
       radial-gradient(circle at 92% 100%, rgba(251, 190, 10, 0.06), transparent 28rem),
@@ -72,18 +228,104 @@ const nav = [
     color: var(--mb-white);
   }
 
+  .admin-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(251, 190, 10, 0.28) transparent;
+  }
+
+  .admin-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .admin-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .admin-scroll::-webkit-scrollbar-thumb {
+    background: rgba(251, 190, 10, 0.2);
+    border-radius: 999px;
+  }
+
+  .admin-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(251, 190, 10, 0.42);
+  }
+
   .admin-sidebar {
-    position: sticky;
+    position: fixed;
     top: 0;
-    height: 100vh;
+    left: 0;
+    z-index: 40;
+    width: var(--admin-sidebar-width);
+    height: 100dvh;
     border-right: 1px solid rgba(251, 190, 10, 0.12);
     background:
       linear-gradient(180deg, rgba(251, 190, 10, 0.05), transparent 28%),
       rgba(255, 255, 255, 0.03);
-    padding: 1.25rem;
+    padding: 1.25rem 1rem 0;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0.85rem;
+    overflow: hidden;
+    transition: transform 0.28s ease;
+  }
+
+  .admin-shell.is-sidebar-collapsed .admin-sidebar {
+    transform: translateX(calc(-1 * var(--admin-sidebar-width)));
+  }
+
+  .admin-sidebar__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .admin-sidebar__scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin-right: -0.35rem;
+    padding-right: 0.35rem;
+  }
+
+  .admin-sidebar__toggle,
+  .admin-sidebar__expand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.65rem;
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.62);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .admin-sidebar__toggle:hover,
+  .admin-sidebar__expand:hover {
+    background: rgba(251, 190, 10, 0.12);
+    border-color: rgba(251, 190, 10, 0.28);
+    color: var(--mb-yellow);
+  }
+
+  .admin-sidebar__toggle svg,
+  .admin-sidebar__expand svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .admin-sidebar__expand {
+    position: fixed;
+    top: 1rem;
+    left: 0.75rem;
+    z-index: 41;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
   }
 
   .admin-brand {
@@ -94,6 +336,8 @@ const nav = [
     gap: 0.55rem;
     padding-bottom: 0.35rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    min-width: 0;
+    flex: 1;
   }
 
   .admin-brand__logo {
@@ -109,9 +353,27 @@ const nav = [
     text-transform: uppercase;
   }
 
+  .admin-tools {
+    display: grid;
+    gap: 0.55rem;
+    padding-top: 0.35rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .admin-tools__heading {
+    margin: 0;
+    padding: 0 0.35rem;
+    color: rgba(255, 255, 255, 0.38);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
   .admin-nav {
     display: grid;
-    gap: 0.4rem;
+    gap: 0.35rem;
+    flex-shrink: 0;
   }
 
   .admin-nav a,
@@ -124,7 +386,57 @@ const nav = [
   }
 
   .admin-nav a {
-    padding: 0.8rem 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.72rem 0.75rem;
+  }
+
+  .admin-nav--tools a {
+    align-items: flex-start;
+    padding: 0.62rem 0.7rem;
+  }
+
+  .admin-nav--tools .admin-nav__desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .admin-nav__icon {
+    margin-top: 0.05rem;
+    font-size: 1.15rem;
+    color: rgba(251, 190, 10, 0.72);
+  }
+
+  .admin-nav__text {
+    display: grid;
+    gap: 0.15rem;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .admin-nav__label {
+    line-height: 1.2;
+  }
+
+  .admin-nav__desc {
+    color: rgba(255, 255, 255, 0.38);
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .admin-nav__external {
+    margin-top: 0.1rem;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.28);
+    flex-shrink: 0;
+  }
+
+  .admin-nav--tools a:hover .admin-nav__external {
+    color: rgba(251, 190, 10, 0.72);
   }
 
   .admin-nav a:hover,
@@ -134,10 +446,20 @@ const nav = [
     box-shadow: inset 2px 0 0 var(--mb-yellow);
   }
 
+  .admin-nav a:hover .admin-nav__icon,
+  .admin-nav a[aria-current='page'] .admin-nav__icon {
+    color: var(--mb-yellow);
+  }
+
   .admin-logout {
-    margin-top: auto;
+    flex-shrink: 0;
+    margin-top: 0;
     border-top: 1px solid var(--mb-border);
-    padding-top: 1rem;
+    padding: 1rem 0 1.25rem;
+    background:
+      linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.42) 18%),
+      rgba(0, 0, 0, 0.28);
+    box-shadow: 0 -12px 24px rgba(0, 0, 0, 0.22);
   }
 
   .admin-logout p {
@@ -169,9 +491,23 @@ const nav = [
   }
 
   .admin-content {
+    flex: 1;
+    min-width: 0;
+    width: min(1120px, calc(100vw - var(--admin-sidebar-width) - 2rem));
+    height: 100dvh;
+    margin-left: var(--admin-sidebar-width);
+    margin-right: auto;
+    padding: 2rem 1.25rem 4rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    transition: margin-left 0.28s ease, width 0.28s ease, padding-left 0.28s ease;
+  }
+
+  .admin-shell.is-sidebar-collapsed .admin-content {
     width: min(1120px, calc(100% - 2rem));
-    margin: 0 auto;
-    padding: 2rem 0 4rem;
+    margin-left: auto;
+    padding-left: 3.25rem;
   }
 
   :global(.admin-page-header) {
@@ -279,13 +615,48 @@ const nav = [
   }
 
   @media (max-width: 860px) {
+    :global(body:has([data-admin-shell])) {
+      overflow: auto;
+    }
+
     .admin-shell {
-      grid-template-columns: 1fr;
+      display: block;
+      height: auto;
+      min-height: 100dvh;
+      overflow: visible;
     }
 
     .admin-sidebar {
       position: static;
+      width: auto;
       height: auto;
+      transform: none !important;
+      overflow: visible;
+      padding: 1.25rem 1rem;
+    }
+
+    .admin-sidebar__scroll {
+      overflow: visible;
+      margin-right: 0;
+      padding-right: 0;
+    }
+
+    .admin-shell.is-sidebar-collapsed .admin-sidebar {
+      display: none;
+    }
+
+    .admin-sidebar__toggle,
+    .admin-sidebar__expand {
+      display: none;
+    }
+
+    .admin-content,
+    .admin-shell.is-sidebar-collapsed .admin-content {
+      width: min(1120px, calc(100% - 2rem));
+      height: auto;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 3rem;
+      overflow: visible;
     }
 
     :global(.admin-page-header),
