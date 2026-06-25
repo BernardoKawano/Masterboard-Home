@@ -81,12 +81,32 @@ const visibleMembers = pickMembersWithUniqueCompanies(
   MEMBER_PROFILE_VISIBLE_COUNT,
 );
 
+// Membros destacados — sempre exibidos no topo da grade, independente dos dados do Supabase
+const featuredMembers: Member[] = [
+  { id: 'feat-1', sourceId: 'feat-1', source: 'static', name: 'Leonardo Nogueira', role: 'CEO', company: 'Barigui' },
+  { id: 'feat-2', sourceId: 'feat-2', source: 'static', name: 'Fabiano Szpyra', role: 'Diretoria', company: 'Festval' },
+  { id: 'feat-3', sourceId: 'feat-3', source: 'static', name: 'Wagner Villaverde', role: 'CEO', company: 'Outback Sul' },
+  { id: 'feat-4', sourceId: 'feat-4', source: 'static', name: 'Marcos Koch', role: 'Diretor', company: 'Ford' },
+  { id: 'feat-5', sourceId: 'feat-5', source: 'static', name: 'Marcelo Matuella', role: 'Fundador', company: 'Maltta' },
+  { id: 'feat-6', sourceId: 'feat-6', source: 'static', name: 'Rafa Magosso', role: 'Gerência', company: 'Hard Rock Curitiba' },
+  { id: 'feat-7', sourceId: 'feat-7', source: 'static', name: 'Marilucia Pertile', role: 'Investidora & Conselheira', company: 'Independente' },
+  { id: 'feat-8', sourceId: 'feat-8', source: 'static', name: 'Jefferson Souza', role: 'CEO', company: 'Só Carrão' },
+  { id: 'feat-9', sourceId: 'feat-9', source: 'static', name: 'Alex Pinheiro', role: 'Diretor', company: 'BTG Pactual' },
+  { id: 'feat-10', sourceId: 'feat-10', source: 'static', name: 'Edu e Sandrinho', role: 'Sócios', company: 'Market4u' },
+];
+
+const featuredNameKeys = new Set(featuredMembers.map((m) => m.name.toLowerCase().trim()));
+const filteredSupabaseMembers = visibleMembers.filter(
+  (m) => !featuredNameKeys.has(m.name.toLowerCase().trim()),
+);
+const displayMembers = [...featuredMembers, ...filteredSupabaseMembers].slice(0, MEMBER_PROFILE_VISIBLE_COUNT);
+
 const visibleCompanies = sortCompaniesByPrestige(
   companies.filter((company) => company.name),
 ).slice(0, MEMBER_COMPANY_VISIBLE_COUNT);
 
-const hasMemberProfiles = visibleMembers.length > 0;
-const displayMemberCount = memberCount ?? Math.max(members.length, visibleMembers.length);
+const hasMemberProfiles = displayMembers.length > 0;
+const displayMemberCount = memberCount ?? Math.max(members.length, displayMembers.length);
 const displayCompanyCount = companyCount ?? Math.max(companies.length, visibleCompanies.length);
 const moreLabel = hasMemberProfiles
   ? `E MAIS ${displayMemberCount.toLocaleString('pt-BR')} MEMBROS`
@@ -162,23 +182,29 @@ const getMemberImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
     >
       {hasMemberProfiles ? (
         <div class="members-profile-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-          {visibleMembers.map((member, i) => (
+          {displayMembers.map((member, i) => (
             <article
               class="member-profile-card"
               data-animate
               data-animate-delay={String((i % 6) * 60)}
               aria-label={`${getMemberDisplayName(member.name)}, ${getMemberRole(member)}, ${member.company}`}
             >
-              <img
-                {...getMemberImageAttrs(member.photo!)}
-                alt={member.name}
-                loading="lazy"
-                fetchpriority="low"
-                decoding="async"
-                width="320"
-                height="320"
-                class="member-profile-card__photo"
-              />
+              {member.photo ? (
+                <img
+                  {...getMemberImageAttrs(member.photo)}
+                  alt={member.name}
+                  loading="lazy"
+                  fetchpriority="low"
+                  decoding="async"
+                  width="320"
+                  height="320"
+                  class="member-profile-card__photo"
+                />
+              ) : (
+                <div class="member-profile-card__initials" aria-hidden="true">
+                  {member.name.charAt(0).toUpperCase()}
+                </div>
+              )}
               <div class="member-profile-card__info">
                 <p class="member-profile-card__name">{getMemberDisplayName(member.name)}</p>
                 <p class="member-profile-card__role">{getMemberRole(member)}</p>
@@ -301,6 +327,18 @@ const getMemberImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
     object-position: center top;
     filter: contrast(1.04);
     transition: transform 0.3s ease;
+  }
+
+  .member-profile-card__initials {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(2.5rem, 6cqi, 4rem);
+    font-weight: 900;
+    color: rgba(251, 190, 10, 0.30);
+    letter-spacing: -0.04em;
   }
 
   .member-profile-card:hover .member-profile-card__photo {

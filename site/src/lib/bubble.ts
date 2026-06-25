@@ -221,6 +221,7 @@ export function bbcodeToHtml(text: string | undefined | null): string {
     .replace(/\[b\]([\s\S]*?)\[\/b\]/g, '<strong>$1</strong>')
     .replace(/\[i\]([\s\S]*?)\[\/i\]/g, '<em>$1</em>')
     .replace(/\[u\]([\s\S]*?)\[\/u\]/g, '<u>$1</u>')
+    .replace(/\[color=([^\]]+)\]([\s\S]*?)\[\/color\]/g, '<span style="color:$1">$2</span>')
     .replace(/\n/g, '<br>');
 }
 

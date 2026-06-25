@@ -23,6 +23,11 @@
 
 /* ─── Base ───────────────────────────────────────────────── */
 @layer base {
+  /* Garante que o conteúdo de página fique sempre na frente das orbs fixas */
+  main, header, footer, nav {
+    position: relative;
+    z-index: 1;
+  }
   *, *::before, *::after {
     box-sizing: border-box;
   }
@@ -100,35 +105,15 @@
     color: var(--mb-yellow);
   }
 
-  /* Section glow — radial yellow tint no topo da seção */
+  /* Section glow — removido */
   .section-glow {
-    background-image: radial-gradient(
-      ellipse 72% 52% at 50% 0%,
-      rgba(251, 190, 10, 0.065) 0%,
-      transparent 66%
-    );
+    background-image: none;
   }
 
-  /* Degradê + glow de fundo para seções escuras */
+  /* Seções escuras — fundo preto sólido */
   .section-ambient {
     background-color: #0a0a0a;
-    background-image:
-      radial-gradient(
-        ellipse 90% 65% at 50% -8%,
-        rgba(251, 190, 10, 0.16) 0%,
-        transparent 62%
-      ),
-      radial-gradient(
-        ellipse 55% 40% at 100% 55%,
-        rgba(251, 190, 10, 0.08) 0%,
-        transparent 68%
-      ),
-      linear-gradient(
-        180deg,
-        #080808 0%,
-        rgba(251, 190, 10, 0.06) 48%,
-        #080808 100%
-      );
+    background-image: none;
   }
 
   /* Recorte dos glows sem quebrar position: sticky dos filhos */
@@ -608,9 +593,7 @@
 .hero-image-overlay {
   z-index: 2;
   pointer-events: none;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(251, 190, 10, 0.12), transparent 42%),
-    radial-gradient(circle at center, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.72));
+  background: radial-gradient(circle at center, rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.62));
 }
 
 .hero-bg {
@@ -644,10 +627,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 70% -10%, rgba(251, 190, 10, 0.18) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(251, 190, 10, 0.1) 0%, transparent 50%),
-    radial-gradient(ellipse 45% 35% at 8% 85%, rgba(251, 190, 10, 0.08) 0%, transparent 55%);
+  background: none;
   pointer-events: none;
 }
 
@@ -676,19 +656,119 @@
 }
 
 .hero-orb--primary {
-  width: min(42vw, 520px);
-  height: min(42vw, 520px);
+  width: min(29.4vw, 364px);
+  height: min(29.4vw, 364px);
   top: 9%;
   right: -10%;
   background: radial-gradient(circle, rgba(251, 190, 10, 0.38), transparent 64%);
 }
 
 .hero-orb--secondary {
-  width: min(36vw, 420px);
-  height: min(36vw, 420px);
+  width: min(25.2vw, 294px);
+  height: min(25.2vw, 294px);
   left: -12%;
   bottom: 5%;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.10), transparent 62%);
+}
+
+/* ─── Page-level ambient orbs (fixos — nunca clipados por seções) ── */
+.page-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.page-orb {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* Canto superior direito */
+.page-orb-1 {
+  width: min(34vw, 380px);
+  height: min(34vw, 380px);
+  top: 2%;
+  right: -6%;
+  background: radial-gradient(circle, rgba(251, 190, 10, 0.30), transparent 68%);
+  filter: blur(52px);
+  animation: glow-breathe-scale 9s ease-in-out infinite;
+}
+
+/* Lateral esquerda, meio-topo */
+.page-orb-2 {
+  width: min(26vw, 290px);
+  height: min(26vw, 290px);
+  top: 32%;
+  left: -5%;
+  background: radial-gradient(circle, rgba(251, 190, 10, 0.22), transparent 70%);
+  filter: blur(48px);
+  animation: glow-breathe-scale 11s ease-in-out infinite;
+  animation-delay: -4s;
+}
+
+/* Canto inferior direito */
+.page-orb-3 {
+  width: min(30vw, 340px);
+  height: min(30vw, 340px);
+  bottom: 6%;
+  right: -4%;
+  background: radial-gradient(circle, rgba(251, 190, 10, 0.24), transparent 68%);
+  filter: blur(50px);
+  animation: glow-breathe-scale 13s ease-in-out infinite;
+  animation-delay: -7s;
+}
+
+/* Centro inferior esquerdo */
+.page-orb-4 {
+  width: min(22vw, 240px);
+  height: min(22vw, 240px);
+  top: 62%;
+  left: 18%;
+  background: radial-gradient(circle, rgba(251, 190, 10, 0.14), transparent 72%);
+  filter: blur(44px);
+  animation: glow-breathe 8s ease-in-out infinite;
+  animation-delay: -2s;
+}
+
+/* Centro-topo levemente à direita */
+.page-orb-5 {
+  width: min(24vw, 270px);
+  height: min(24vw, 270px);
+  top: 20%;
+  right: 22%;
+  background: radial-gradient(circle, rgba(251, 190, 10, 0.11), transparent 70%);
+  filter: blur(46px);
+  animation: glow-breathe 10s ease-in-out infinite;
+  animation-delay: -5s;
+}
+
+/* Lateral esquerda inferior */
+.page-orb-6 {
+  width: min(26vw, 290px);
+  height: min(26vw, 290px);
+  bottom: 30%;
+  left: -4%;
+  background: radial-gradient(circle, rgba(251, 190, 10, 0.20), transparent 68%);
+  filter: blur(48px);
+  animation: glow-breathe-scale 12s ease-in-out infinite;
+  animation-delay: -9s;
+}
+
+/* Centro da página, muito sutil */
+.page-orb-7 {
+  width: min(40vw, 440px);
+  height: min(22vw, 240px);
+  top: 48%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(251, 190, 10, 0.07), transparent 72%);
+  filter: blur(60px);
+  animation: glow-breathe 14s ease-in-out infinite;
+  animation-delay: -6s;
 }
 
 /* ─── Ambient glow orbs (seções escuras) ─────────────────── */
@@ -713,16 +793,16 @@
 }
 
 .mb-glow-orb--top-right {
-  width: min(42vw, 480px);
-  height: min(42vw, 480px);
+  width: min(29.4vw, 336px);
+  height: min(29.4vw, 336px);
   top: -12%;
   right: -10%;
   background: radial-gradient(circle, rgba(251, 190, 10, 0.32), transparent 68%);
 }
 
 .mb-glow-orb--bottom-left {
-  width: min(36vw, 400px);
-  height: min(36vw, 400px);
+  width: min(25.2vw, 280px);
+  height: min(25.2vw, 280px);
   left: -12%;
   bottom: -8%;
   background: radial-gradient(circle, rgba(251, 190, 10, 0.22), transparent 70%);
@@ -730,8 +810,8 @@
 }
 
 .mb-glow-orb--center {
-  width: min(50vw, 560px);
-  height: min(34vw, 380px);
+  width: min(35vw, 392px);
+  height: min(23.8vw, 266px);
   top: 35%;
   left: 25%;
   right: 25%;
@@ -834,14 +914,11 @@
 .choice-section {
   margin-top: -1px;
   padding-block: clamp(4.25rem, 8vw, 6.75rem) clamp(3.5rem, 7vw, 6rem);
-  background:
-    linear-gradient(180deg, var(--mb-black) 0%, rgba(5, 5, 5, 0.98) 18%, rgba(251, 190, 10, 0.018) 52%, rgba(5, 5, 5, 0.98) 100%),
-    var(--mb-black);
+  background: var(--mb-black);
 }
 
 .choice-section__glow {
-  background: radial-gradient(ellipse 72% 52% at 50% 24%, rgba(251, 190, 10, 0.085), transparent 70%);
-  opacity: 0.85;
+  display: none;
 }
 
 .choice-card {
@@ -1574,9 +1651,7 @@
 
 /* ─── Event detail app layout ────────────────────────────── */
 .event-detail-page {
-  background:
-    radial-gradient(ellipse 70% 42% at 50% 0%, rgba(251, 190, 10, 0.08), transparent 62%),
-    var(--mb-black);
+  background: var(--mb-black);
 }
 
 .event-app-detail {

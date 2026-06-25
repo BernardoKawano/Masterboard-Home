@@ -44,8 +44,15 @@ const photoPositionOverrides: Record<string, string> = {
 const getPhotoPosition = (speaker: Speaker): string | undefined =>
   speaker.photoPosition ?? photoPositionOverrides[normalize(speaker.name)];
 
+const seenNames = new Set<string>();
 const visibleSpeakers = [...speakers]
-  .sort((a, b) => getSpeakerScore(b) - getSpeakerScore(a));
+  .sort((a, b) => getSpeakerScore(b) - getSpeakerScore(a))
+  .filter((s) => {
+    const key = normalize(s.name);
+    if (seenNames.has(key)) return false;
+    seenNames.add(key);
+    return true;
+  });
 
 const getSpeakerImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
   widths: [240, 360, 540, 720],

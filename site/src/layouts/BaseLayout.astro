@@ -133,6 +133,17 @@ const allSchemas = [organizationSchema, websiteSchema, ...jsonLd];
   </head>
 
   <body>
+    <!-- Orbs ambiente — layer fixo, nunca clipado por seções -->
+    <div class="page-orbs" aria-hidden="true">
+      <div class="page-orb page-orb-1"></div>
+      <div class="page-orb page-orb-2"></div>
+      <div class="page-orb page-orb-3"></div>
+      <div class="page-orb page-orb-4"></div>
+      <div class="page-orb page-orb-5"></div>
+      <div class="page-orb page-orb-6"></div>
+      <div class="page-orb page-orb-7"></div>
+    </div>
+
     <slot />
 
     <!-- Scroll reveal IntersectionObserver -->
