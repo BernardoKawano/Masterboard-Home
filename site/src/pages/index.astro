@@ -18,12 +18,17 @@ import CTAFinal from '../components/CTAFinal.astro';
 import faqsData from '../data/faqs.json';
 import { dataSource } from '../lib/data-source';
 
-// Busca em paralelo via data source (não Bubble diretamente)
+// Busca em paralelo — cada chamada tem fallback individual
+// para que falhas pontuais de API não derrubem a página inteira (500)
 const [upcomingEvents, speakers, members, memberCount] = await Promise.all([
-  dataSource.listEvents({ status: 'upcoming', sortAscending: true, limit: 5 }),
-  dataSource.listSpeakers(),
-  dataSource.listMembers?.(),
-  dataSource.getMemberCount?.(),
+  dataSource.listEvents({ status: 'upcoming', sortAscending: true, limit: 5 })
+    .catch((e) => { console.error('[index] listEvents:', e); return []; }),
+  dataSource.listSpeakers()
+    .catch((e) => { console.error('[index] listSpeakers:', e); return []; }),
+  (dataSource.listMembers?.() ?? Promise.resolve([]))
+    .catch((e) => { console.error('[index] listMembers:', e); return []; }),
+  (dataSource.getMemberCount?.() ?? Promise.resolve(undefined))
+    .catch((e) => { console.error('[index] getMemberCount:', e); return undefined; }),
 ]);
 
 // Temporariamente oculto — altere para true para exibir a seção de depoimentos novamente
