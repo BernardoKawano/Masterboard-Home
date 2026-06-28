@@ -116,7 +116,6 @@ const modules = [
               <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
             </svg>
           </a>
-          <a href="#metodologia" class="btn-secondary">Ver a metodologia</a>
         </div>
       </div>
 
@@ -133,64 +132,75 @@ const modules = [
           <div class="vp-deck">
             {modules.map((mod, i) => (
           <div
-            class:list={['vp-card', mod.locked && 'vp-card--locked']}
+            class:list={['vp-slot', mod.locked && 'vp-slot--locked']}
             style={`--i: ${i};`}
-            aria-hidden={mod.locked ? 'true' : undefined}
           >
-            {!mod.locked && <div class="vp-card__top-line" aria-hidden="true"></div>}
+            <div
+              class:list={['vp-card', mod.locked && 'vp-card--locked']}
+              aria-hidden={mod.locked ? 'true' : undefined}
+            >
+              {!mod.locked && <div class="vp-card__top-line" aria-hidden="true"></div>}
 
-            <!-- Eyebrow + logo Scale no featured -->
-            <div class="vp-card__header">
-              <div class="vp-card__eyebrow">
-                <span class:list={['vp-badge', !mod.locked && 'vp-badge--featured']}>{mod.label}</span>
-                {mod.tag && <span class="vp-badge vp-badge--yellow">{mod.tag}</span>}
+              <!-- Eyebrow + logo Scale no featured -->
+              <div class="vp-card__header">
+                <div class="vp-card__eyebrow">
+                  <span class:list={['vp-badge', !mod.locked && 'vp-badge--featured']}>{mod.label}</span>
+                  {mod.tag && <span class="vp-badge vp-badge--yellow">{mod.tag}</span>}
+                </div>
+                {!mod.locked && (
+                  <img
+                    src="/images/scaleco-logo.png"
+                    alt="ScaleCo"
+                    class="vp-scale-logo"
+                    width="72"
+                    height="24"
+                  />
+                )}
               </div>
-              {!mod.locked && (
-                <img
-                  src="/images/scaleco-logo.png"
-                  alt="ScaleCo"
-                  class="vp-scale-logo"
-                  width="72"
-                  height="24"
-                />
+
+              <div class="vp-card__profile">
+                <div class:list={['vp-card__avatar', mod.locked && 'vp-card__avatar--dim']}>
+                  {!mod.locked ? (
+                    <>
+                      <img
+                        src="/images/fabio-couto.jpg"
+                        alt={mod.name}
+                        width="80"
+                        height="80"
+                        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+                      />
+                      <div class="vp-card__avatar-fallback">FC</div>
+                    </>
+                  ) : (
+                    <span class="vp-card__avatar-num">{mod.id}</span>
+                  )}
+                </div>
+                <div>
+                  <p class="vp-card__name">{mod.name}</p>
+                  <p class="vp-card__role">{mod.role}</p>
+                  {!mod.locked && mod.company && <p class="vp-card__company">{mod.company}</p>}
+                </div>
+              </div>
+
+              <div class="vp-card__divider"></div>
+              <p class="vp-card__text">{mod.text}</p>
+
+              {mod.stats.length > 0 && (
+                <div class="vp-card__stats">
+                  {mod.stats.map((s) => (
+                    <div class="vp-stat">
+                      <span class="vp-stat__value">{s.value}</span>
+                      <span class="vp-stat__label">{s.label}</span>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 
-            <div class="vp-card__profile">
-              <div class:list={['vp-card__avatar', mod.locked && 'vp-card__avatar--dim']}>
-                {!mod.locked ? (
-                  <>
-                    <img
-                      src="/images/fabio-couto.jpg"
-                      alt={mod.name}
-                      width="80"
-                      height="80"
-                      onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-                    />
-                    <div class="vp-card__avatar-fallback">FC</div>
-                  </>
-                ) : (
-                  <span class="vp-card__avatar-num">{mod.id}</span>
-                )}
-              </div>
-              <div>
-                <p class="vp-card__name">{mod.name}</p>
-                <p class="vp-card__role">{mod.role}</p>
-                {!mod.locked && mod.company && <p class="vp-card__company">{mod.company}</p>}
-              </div>
-            </div>
-
-            <div class="vp-card__divider"></div>
-            <p class="vp-card__text">{mod.text}</p>
-
-            {mod.stats.length > 0 && (
-              <div class="vp-card__stats">
-                {mod.stats.map((s) => (
-                  <div class="vp-stat">
-                    <span class="vp-stat__value">{s.value}</span>
-                    <span class="vp-stat__label">{s.label}</span>
-                  </div>
-                ))}
+            {mod.locked && (
+              <div class="vp-lock-overlay" aria-hidden="true">
+                <p class="vp-lock-overlay__msg">Próximos módulos disponíveis para membros.</p>
+                <a href="/aplicacao/" class="vp-lock-overlay__cta">Saiba mais</a>
               </div>
             )}
           </div>
@@ -226,13 +236,20 @@ const modules = [
     height: 540px;
   }
 
-  .vp-card {
+  /* Slot: container absoluto que envolve cada card + overlay */
+  .vp-slot {
     position: absolute;
     left: calc(var(--i) * (var(--card-w) - var(--overlap)));
     top: 0;
     width: var(--card-w);
     height: 100%;
     z-index: calc(20 - var(--i));
+  }
+
+  .vp-card {
+    position: relative;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     gap: 1.35rem;
@@ -251,8 +268,8 @@ const modules = [
       0 12px 40px rgba(0, 0, 0, 0.3);
   }
 
-  /* Card featured — float animation */
-  .vp-card:first-child {
+  /* Card featured — float animation no slot */
+  .vp-slot:first-child .vp-card {
     border-color: rgba(251, 190, 10, 0.26);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.13),
@@ -269,13 +286,63 @@ const modules = [
     background: linear-gradient(90deg, transparent, rgba(251, 190, 10, 0.95), transparent);
   }
 
-  /* Cards bloqueados — blur leve para o conteúdo ainda aparecer */
-  .vp-card--locked { pointer-events: none; user-select: none; }
-  .vp-card--locked:nth-child(2) { filter: blur(1.5px); opacity: 0.72; }
-  .vp-card--locked:nth-child(3) { filter: blur(3px);   opacity: 0.55; }
-  .vp-card--locked:nth-child(4) { filter: blur(5px);   opacity: 0.38; }
-  .vp-card--locked:nth-child(5) { filter: blur(7px);   opacity: 0.22; }
-  .vp-card--locked:nth-child(6) { filter: blur(9px);   opacity: 0.12; }
+  /* Cards bloqueados — blur via slot para overlay não herdar */
+  .vp-card--locked { user-select: none; }
+  .vp-slot--locked:nth-child(2) .vp-card { filter: blur(1.5px); opacity: 0.72; }
+  .vp-slot--locked:nth-child(3) .vp-card { filter: blur(3px);   opacity: 0.55; }
+  .vp-slot--locked:nth-child(4) .vp-card { filter: blur(5px);   opacity: 0.38; }
+  .vp-slot--locked:nth-child(5) .vp-card { filter: blur(7px);   opacity: 0.22; }
+  .vp-slot--locked:nth-child(6) .vp-card { filter: blur(9px);   opacity: 0.12; }
+
+  /* ── Overlay de hover nos cards bloqueados ── */
+  .vp-lock-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.9rem;
+    padding: 1.75rem;
+    text-align: center;
+    background: rgba(10, 10, 10, 0.88);
+    backdrop-filter: blur(12px) saturate(1.4);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    border: 1px solid rgba(251, 190, 10, 0.18);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+    z-index: 2;
+  }
+
+  .vp-slot--locked:hover .vp-lock-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .vp-lock-overlay__msg {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .vp-lock-overlay__cta {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1.25rem;
+    border-radius: 9999px;
+    background: #FBBE0A;
+    color: #0b0b0b;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+
+  .vp-lock-overlay__cta:hover { opacity: 0.85; }
 
   /* ── Header (eyebrow + logo) ── */
   .vp-card__header {
@@ -427,6 +494,6 @@ const modules = [
       width: calc(var(--card-w) + 5 * (var(--card-w) - var(--overlap)) + 1rem);
     }
     /* Sem float animation no mobile para evitar artefatos de scroll */
-    .vp-card:first-child { animation: none; }
+    .vp-slot:first-child .vp-card { animation: none; }
   }
 </style>
