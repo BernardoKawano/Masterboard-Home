@@ -298,8 +298,8 @@ const modules = [
     position: absolute;
     top: 0;
     bottom: 0;
-    /* começa onde o 2º card (primeiro bloqueado) inicia */
-    left: calc(var(--card-w) - var(--overlap));
+    /* começa onde o card do Fábio termina — primeiro card bloqueado visível */
+    left: var(--card-w);
     right: -60vw; /* sangra além da seção — overflow: clip trata */
     z-index: 25;
     display: flex;
@@ -361,7 +361,7 @@ const modules = [
     .vp-locked-hover-zone {
       top: auto;
       bottom: -2.5rem;
-      left: calc(var(--card-w) - var(--overlap));
+      left: var(--card-w);
       right: 0;
       padding-left: 0;
       justify-content: center;
