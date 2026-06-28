@@ -1,0 +1,408 @@
+---
+const modules = [
+  {
+    id: '01',
+    label: 'Metodologia Atual',
+    tag: 'Scale',
+    name: 'Fabio Couto',
+    role: 'Fundador do método Scale',
+    company: 'Masterboard',
+    text: 'Mais de 15 anos refinando um sistema de vendas B2B que elimina a dependência de intuição e constrói previsibilidade real — da prospecção ao fechamento, com linguagem de dono.',
+    stats: [
+      { value: '+500', label: 'empresas' },
+      { value: 'B2B', label: 'foco' },
+      { value: '15+', label: 'anos' },
+    ],
+    locked: false,
+  },
+  {
+    id: '02',
+    label: 'Em breve',
+    tag: null,
+    name: 'Módulo 02',
+    role: 'Liderança & Gestão de Times',
+    company: null,
+    text: 'Como construir um time que performa sem depender de você. Estrutura, cultura e mecanismos de autonomia real.',
+    stats: [],
+    locked: true,
+  },
+  {
+    id: '03',
+    label: 'Em breve',
+    tag: null,
+    name: 'Módulo 03',
+    role: 'Estratégia & M&A',
+    company: null,
+    text: 'Decisões de crescimento inorgânico, avaliação de ativos e como estruturar uma tese de aquisição.',
+    stats: [],
+    locked: true,
+  },
+  {
+    id: '04',
+    label: 'Em breve',
+    tag: null,
+    name: 'Módulo 04',
+    role: 'Financeiro para Donos',
+    company: null,
+    text: 'DRE, fluxo de caixa e as métricas que importam quando você precisa decidir com velocidade e clareza.',
+    stats: [],
+    locked: true,
+  },
+  {
+    id: '05',
+    label: 'Em breve',
+    tag: null,
+    name: 'Módulo 05',
+    role: 'Escala & Operações',
+    company: null,
+    text: 'Processos, sistemas e estrutura para crescer sem perder o controle. Do caos operacional à máquina previsível.',
+    stats: [],
+    locked: true,
+  },
+  {
+    id: '06',
+    label: 'Em breve',
+    tag: null,
+    name: 'Módulo 06',
+    role: 'Produto & Inovação',
+    company: null,
+    text: 'Como criar ofertas que se vendem sozinhas e construir capacidade de inovação contínua no seu negócio.',
+    stats: [],
+    locked: true,
+  },
+];
+---
+
+<section
+  id="metodologia"
+  class="section-py bg-mb-black relative overflow-hidden"
+  aria-labelledby="scale-heading"
+>
+  <div class="mb-glow-orb mb-glow-orb--center" aria-hidden="true"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="mb-10 md:mb-14">
+      <p class="eyebrow mb-4" data-animate>Metodologia</p>
+      <h2
+        id="scale-heading"
+        class="section-title max-w-xl text-balance"
+        data-animate
+        data-animate-delay="100"
+      >
+        O método que transforma
+        <span class="text-mb-yellow"> vendas em sistema.</span>
+      </h2>
+    </div>
+
+    <!-- Label próximos módulos -->
+    <div class="scale-locked-label mb-4" data-animate data-animate-delay="150">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      Módulos disponíveis para membros
+    </div>
+
+    <!-- Deck de cards -->
+    <div class="scale-deck" data-animate data-animate-delay="200">
+      {modules.map((mod, i) => (
+        <div
+          class:list={['scale-card', mod.locked && 'scale-card--locked']}
+          style={`--card-index: ${i}; --total: ${modules.length};`}
+        >
+          <!-- Eyebrow -->
+          <div class="scale-card__eyebrow">
+            <span class="scale-badge">{mod.label}</span>
+            {mod.tag && <span class="scale-badge scale-badge--yellow">{mod.tag}</span>}
+          </div>
+
+          <!-- Perfil -->
+          <div class="scale-card__profile">
+            <div class:list={['scale-card__avatar', !mod.name.startsWith('Módulo') ? '' : 'scale-card__avatar--placeholder']}>
+              {!mod.name.startsWith('Módulo') && (
+                <>
+                  <img
+                    src="/images/fabio-couto.webp"
+                    alt={mod.name}
+                    width="80"
+                    height="80"
+                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+                  />
+                  <div class="scale-card__avatar-fallback">FC</div>
+                </>
+              )}
+            </div>
+            <div class="scale-card__identity">
+              <p class="scale-card__name">{mod.name}</p>
+              <p class="scale-card__role">{mod.role}</p>
+              {mod.company && <p class="scale-card__company">{mod.company}</p>}
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="scale-card__divider"></div>
+
+          <!-- Texto -->
+          <p class="scale-card__text">{mod.text}</p>
+
+          <!-- Stats (só card featured) -->
+          {mod.stats.length > 0 && (
+            <div class="scale-card__stats">
+              {mod.stats.map((s) => (
+                <div class="scale-stat">
+                  <span class="scale-stat__value">{s.value}</span>
+                  <span class="scale-stat__label">{s.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+
+    <!-- CTA -->
+    <div class="mt-12 md:mt-16" data-animate data-animate-delay="400">
+      <a href="/aplicacao/" class="btn-primary" aria-label="Candidatar-se ao Masterboard">
+        Quero acesso completo
+        <svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ── Deck container ── */
+  .scale-deck {
+    --card-w: 300px;
+    --overlap: 155px; /* quanto cada carta "esconde" atrás da anterior */
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    /* altura mínima para o container não colapsar com absolute */
+    min-height: 420px;
+  }
+
+  /* ── Card base ── */
+  .scale-card {
+    position: absolute;
+    left: calc(var(--card-index) * (var(--card-w) - var(--overlap)));
+    width: var(--card-w);
+    /* card 0 = z-index mais alto → fica na frente */
+    z-index: calc(20 - var(--card-index));
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.6rem;
+    border-radius: 1.4rem;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background:
+      linear-gradient(160deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.01) 100%),
+      rgba(12, 12, 12, 0.96);
+    backdrop-filter: blur(24px) saturate(1.6);
+    -webkit-backdrop-filter: blur(24px) saturate(1.6);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      4px 0 24px rgba(0, 0, 0, 0.45), /* sombra lateral direita — efeito baralho */
+      0 12px 40px rgba(0, 0, 0, 0.32);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  /* ── Card featured (01) ── */
+  .scale-card:first-child {
+    border-color: rgba(251, 190, 10, 0.22);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.11),
+      0 0 0 1px rgba(251, 190, 10, 0.07),
+      4px 0 28px rgba(0, 0, 0, 0.5),
+      0 16px 56px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+  }
+
+  .scale-card:first-child::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(251, 190, 10, 0.9), transparent);
+  }
+
+  /* ── Cards bloqueados ── */
+  .scale-card--locked {
+    filter: blur(3.5px);
+    opacity: 0.45;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* blur aumenta progressivamente nos últimos cards */
+  .scale-card--locked:nth-child(3) { filter: blur(4px); opacity: 0.38; }
+  .scale-card--locked:nth-child(4) { filter: blur(5px); opacity: 0.30; }
+  .scale-card--locked:nth-child(5) { filter: blur(6px); opacity: 0.22; }
+  .scale-card--locked:nth-child(6) { filter: blur(7px); opacity: 0.16; }
+
+  /* ── Label "módulos para membros" ── */
+  .scale-locked-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.32);
+  }
+
+  /* ── Internos do card ── */
+  .scale-card__eyebrow {
+    display: flex;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+  }
+
+  .scale-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.11);
+  }
+
+  .scale-badge--yellow {
+    color: rgba(251, 190, 10, 0.95);
+    background: rgba(251, 190, 10, 0.1);
+    border-color: rgba(251, 190, 10, 0.3);
+  }
+
+  .scale-card__profile {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .scale-card__avatar {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 9999px;
+    overflow: hidden;
+    border: 2px solid rgba(251, 190, 10, 0.28);
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.05);
+    position: relative;
+  }
+
+  .scale-card__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  .scale-card__avatar-fallback {
+    display: none;
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: rgba(251, 190, 10, 0.8);
+    background: rgba(251, 190, 10, 0.08);
+  }
+
+  .scale-card__avatar--placeholder {
+    border-color: rgba(255, 255, 255, 0.09);
+  }
+
+  .scale-card__name {
+    font-size: 0.975rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+  }
+
+  .scale-card__role {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.46);
+    line-height: 1.4;
+    margin-top: 0.12rem;
+  }
+
+  .scale-card__company {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(251, 190, 10, 0.65);
+    margin-top: 0.18rem;
+  }
+
+  .scale-card__divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .scale-card__text {
+    font-size: 0.835rem;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.72;
+    flex: 1;
+  }
+
+  .scale-card__stats {
+    display: flex;
+    gap: 1.4rem;
+    padding-top: 0.2rem;
+  }
+
+  .scale-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .scale-stat__value {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .scale-stat__label {
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.36);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  /* ── Mobile: scroll horizontal com cards como baralho ── */
+  @media (max-width: 767px) {
+    .scale-deck {
+      --card-w: 260px;
+      --overlap: 130px;
+      min-height: 380px;
+      overflow-x: auto;
+      /* extra width para todos os cards ficarem visíveis no scroll */
+    }
+  }
+
+  /* ── Ajuste de altura do deck baseado no card mais alto ── */
+  @media (min-width: 768px) {
+    .scale-deck {
+      --card-w: 300px;
+      --overlap: 155px;
+      /* 6 cards: largura = card-w + 5 * (card-w - overlap) */
+      min-height: 440px;
+    }
+  }
+</style>
