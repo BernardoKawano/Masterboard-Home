@@ -147,13 +147,14 @@ const getMemberImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
 
 <section
   id="membros"
-  class="section-py section-ambient relative overflow-hidden"
+  class="section-py bg-mb-black relative overflow-hidden"
   aria-labelledby="members-heading"
 >
   <div class="mb-glow-orb mb-glow-orb--bottom-left" aria-hidden="true"></div>
   <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
 
-  <div class="brand-grid-mark" aria-hidden="true" style="opacity:0.35; right: 2%; bottom: 5%;"></div>
+  <!-- Grade ampla + glow diagonal -->
+  <div class="mbr-grid-bg" aria-hidden="true"></div>
 
   <div class="container relative z-10">
     <div class="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-14 mb-12 md:mb-14">
@@ -261,6 +262,55 @@ const getMemberImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
 </section>
 
 <style>
+  /* ── Grade de fundo + glow diagonal ── */
+  .mbr-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(251, 190, 10, 0.13) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(251, 190, 10, 0.13) 1px, transparent 1px);
+    background-size: 52px 52px;
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(0,0,0,0.8) 12%,
+      black 35%,
+      black 70%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(0,0,0,0.8) 12%,
+      black 35%,
+      black 70%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow diagonal que cruza a grade */
+  .mbr-grid-bg::after {
+    content: '';
+    position: absolute;
+    inset: -30%;
+    background: linear-gradient(
+      128deg,
+      transparent 28%,
+      rgba(251, 190, 10, 0.05) 40%,
+      rgba(251, 190, 10, 0.18) 50%,
+      rgba(251, 190, 10, 0.05) 60%,
+      transparent 72%
+    );
+    animation: mbr-glow-sweep 6s ease-in-out infinite alternate;
+  }
+
+  @keyframes mbr-glow-sweep {
+    0%   { opacity: 0.55; transform: translateX(-8%) translateY(-4%); }
+    100% { opacity: 1;    transform: translateX(8%)  translateY(4%); }
+  }
+
   .community-summary {
     align-self: end;
     max-width: 38rem;

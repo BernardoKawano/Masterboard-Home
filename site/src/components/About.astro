@@ -1,5 +1,21 @@
 ---
-// Seção "Sobre / Proposta de valor" do Masterboard
+const pillars = [
+  {
+    number: '01',
+    title: 'Educação Continuada',
+    text: 'A cada trimestre, um módulo novo. Temas que importam para quem está no comando: estratégia, escala, liderança, financeiro, M&A. Conteúdo construído com quem já viveu, não com quem só ensina.',
+  },
+  {
+    number: '02',
+    title: 'Metodologia Scale',
+    text: 'Vendas não é intuição — é sistema. O Masterboard inclui acesso ao método Scale, desenvolvido para negócios B2B que querem crescer com previsibilidade. Da prospecção ao fechamento, com linguagem de dono.',
+  },
+  {
+    number: '03',
+    title: 'Rede Curada',
+    text: '~200 membros ativos. Sem volume, com filtro. A entrada começa por análise de perfil, momento da empresa e fit com a comunidade. A régua existe para proteger o tempo de quem já está dentro — e o valor de cada conexão.',
+  },
+];
 ---
 
 <section
@@ -11,9 +27,9 @@
   <div class="container">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
-      <!-- Texto -->
+      <!-- Texto esquerda -->
       <div>
-        <p class="eyebrow mb-5" data-animate>O que é o Masterboard</p>
+        <p class="eyebrow mb-5" data-animate>O que você encontra aqui</p>
 
         <h2
           id="about-heading"
@@ -21,82 +37,50 @@
           data-animate
           data-animate-delay="100"
         >
-          Aqui a conversa começa
-          <span class="text-mb-yellow"> onde o verniz acaba.</span>
+          Um ecossistema de educação para quem
+          <span class="text-mb-yellow"> lidera negócios em crescimento.</span>
         </h2>
 
         <p
-          class="text-white/65 text-lg leading-relaxed mb-5"
+          class="text-white/65 text-lg leading-relaxed mb-8"
           data-animate
           data-animate-delay="200"
         >
-          No <span class="brand-keyword text-white">Masterboard</span>, aprendizado acontece frente a frente com quem já
-          enfrentou o que você enfrenta hoje, sem verniz motivacional e sem
-          teoria enlatada.
+          Metodologia aplicada, educação continuada e uma rede curada de fundadores, CEOs e executivos — tudo integrado para acelerar decisões e resultados reais.
         </p>
 
-        <p
-          class="text-white/65 leading-relaxed mb-8"
-          data-animate
-          data-animate-delay="250"
-        >
-          As conexões iniciam pela confiança e os negócios acontecem como
-          consequência natural de relações verdadeiras. Primeiro amigos,
-          depois negócios.
-        </p>
-
-        <div data-animate data-animate-delay="300">
+        <div class="flex flex-col xs:flex-row gap-3" data-animate data-animate-delay="300">
           <a
             href="/aplicacao/"
             class="btn-primary"
             aria-label="Candidatar-se ao Masterboard"
           >
-            Pedir acesso
+            Quero participar
+            <svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+            </svg>
+          </a>
+          <a href="#metodologia" class="btn-secondary">
+            Ver a metodologia
           </a>
         </div>
       </div>
 
-      <!-- Visual side: pilares -->
-      <div class="flex flex-col gap-4" data-animate data-animate-delay="200">
-        {[
-          {
-            number: '01',
-            title: 'Acesso',
-            text: 'Você não assiste de longe. Você senta à mesa com quem decide.',
-          },
-          {
-            number: '02',
-            title: 'Experiência',
-            text: 'O ambiente não é cenário. É parte central da entrega.',
-          },
-          {
-            number: '03',
-            title: 'Transformação',
-            text: 'Quando o líder cresce, o negócio destrava.',
-          },
-          {
-            number: '04',
-            title: 'Consciência',
-            text: 'Decisões melhores não vêm de mais informação. Vêm de mais consciência.',
-          },
-        ].map((pillar, i) => (
+      <!-- Cards direita -->
+      <div class="flex flex-col gap-4">
+        {pillars.map((pillar, i) => (
           <div
-            class="flex gap-4 p-5 rounded-xl border border-mb-border bg-mb-card hover:border-mb-yellow/20 transition-colors group"
+            class="about-pillar-card"
             data-animate
             data-animate-delay={String(200 + i * 80)}
           >
-            <span class="text-xs font-800 text-mb-yellow/60 pt-0.5 tabular-nums w-5 shrink-0">
-              {pillar.number}
-            </span>
-            <div>
-              <p class="font-700 text-white text-sm mb-1 group-hover:text-mb-yellow transition-colors">
-                {pillar.title}
-              </p>
-              <p class="text-white/50 text-sm leading-relaxed">{pillar.text}</p>
-            </div>
+            <span class="about-pillar-number">{pillar.number}</span>
+            <h3 class="about-pillar-title">{pillar.title}</h3>
+            <p class="about-pillar-text">{pillar.text}</p>
           </div>
         ))}
       </div>
+
     </div>
   </div>
 </section>

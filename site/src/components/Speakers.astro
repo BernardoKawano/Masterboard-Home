@@ -68,11 +68,12 @@ const initialCompanies = initialSpeaker ? getSpeakerCompanies(initialSpeaker) : 
 {total > 0 && (
 <section
   id="speakers"
-  class="section-py section-ambient relative overflow-hidden"
+  class="section-py bg-mb-black relative overflow-hidden"
   aria-labelledby="speakers-heading"
 >
-  <div class="mb-glow-orb mb-glow-orb--top-right" aria-hidden="true"></div>
-  <div class="mb-glow-orb mb-glow-orb--bottom-left" aria-hidden="true"></div>
+  <div class="spk-glow spk-glow--tr" aria-hidden="true"></div>
+  <div class="spk-glow spk-glow--bl" aria-hidden="true"></div>
+  <div class="spk-glow spk-glow--center" aria-hidden="true"></div>
   <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
 
   <div class="container relative z-10">
@@ -243,6 +244,54 @@ const initialCompanies = initialSpeaker ? getSpeakerCompanies(initialSpeaker) : 
 )}
 
 <style>
+  /* ── Glow orbs específicos do Speakers (preto sólido) ── */
+  .spk-glow {
+    position: absolute;
+    z-index: 0;
+    border-radius: 9999px;
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+
+  .spk-glow--tr {
+    width: clamp(300px, 46vw, 620px);
+    height: clamp(300px, 46vw, 620px);
+    top: -18%;
+    right: -14%;
+    background: radial-gradient(circle, rgba(251, 190, 10, 0.38) 0%, rgba(251, 190, 10, 0.12) 40%, transparent 70%);
+    filter: blur(52px);
+    animation: spk-breathe 8s ease-in-out infinite;
+  }
+
+  .spk-glow--bl {
+    width: clamp(240px, 36vw, 480px);
+    height: clamp(240px, 36vw, 480px);
+    bottom: -16%;
+    left: -10%;
+    background: radial-gradient(circle, rgba(251, 190, 10, 0.26) 0%, rgba(251, 190, 10, 0.08) 45%, transparent 70%);
+    filter: blur(60px);
+    animation: spk-breathe 9s ease-in-out infinite;
+    animation-delay: -4s;
+  }
+
+  .spk-glow--center {
+    width: clamp(200px, 30vw, 400px);
+    height: clamp(160px, 22vw, 300px);
+    top: 40%;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    background: radial-gradient(ellipse, rgba(251, 190, 10, 0.10) 0%, transparent 72%);
+    filter: blur(48px);
+    animation: spk-breathe 11s ease-in-out infinite;
+    animation-delay: -2s;
+  }
+
+  @keyframes spk-breathe {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50%       { opacity: 1;   transform: scale(1.12); }
+  }
+
   .speaker-context-copy {
     max-width: 30rem;
     color: rgba(255,255,255,0.55);

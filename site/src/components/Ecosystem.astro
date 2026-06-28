@@ -2,33 +2,33 @@
 const timelineItems = [
   {
     step: '01',
-    label: 'Encontros de decisão',
-    title: 'Mesas privadas',
-    description: 'Encontros em grupos reduzidos para discutir decisões reais com pares do mesmo nível.',
+    label: 'Metodologia',
+    title: 'Sistema Scale de vendas B2B',
+    description: 'Do ICP à governança de receita — um ciclo completo e replicável. Construído por quem fez, não por quem só ensina. Sem intuição, com sistema.',
   },
   {
     step: '02',
-    label: 'Confiança antes do negócio',
-    title: 'Jantares curados',
-    description: 'Conversas de alto contexto, sem palco e sem pitch, para construir confiança antes do negócio.',
+    label: 'Educação continuada',
+    title: 'Módulos trimestrais com quem viveu',
+    description: 'A cada trimestre, um novo tema: escala, liderança, financeiro, M&A, operações. Conteúdo denso, sem enrolação. Formato feito para quem não tem tempo a perder.',
   },
   {
     step: '03',
-    label: 'Bastidor e estratégia',
-    title: 'Imersões executivas',
-    description: 'Dias de conteúdo, bastidor e troca prática com líderes que já atravessaram ciclos de escala.',
+    label: 'Aprendizado presencial',
+    title: 'Mesas, imersões e jantares privados',
+    description: 'Encontros onde o aprendizado acontece pela conversa real — sem pitch, sem palco. Grupos reduzidos, contexto compartilhado, decisões que mudam o negócio.',
   },
   {
     step: '04',
-    label: 'Referências que já fizeram',
-    title: 'Speakers e conselheiros',
-    description: 'Encontros com líderes convidados para abrir bastidores de decisão, gestão e crescimento.',
+    label: 'Rede com filtro',
+    title: '~200 membros selecionados',
+    description: 'A entrada começa por análise de perfil. A régua protege o tempo de quem já está dentro — e eleva o valor de cada troca. Qualidade, não volume.',
   },
   {
     step: '05',
-    label: 'Rede viva entre encontros',
-    title: 'Conexões contínuas',
-    description: 'App exclusivo, matchmaking com contexto e capítulos nacionais mantêm a comunidade ativa além da agenda presencial.',
+    label: 'Acesso contínuo',
+    title: 'Comunidade ativa além dos encontros',
+    description: 'App exclusivo, matchmaking com contexto e capítulos nacionais. O ecossistema funciona todos os dias — não só nos eventos.',
   },
 ];
 ---
@@ -36,6 +36,7 @@ const timelineItems = [
 <section
   id="experiencias"
   class="section-py section-ambient relative"
+  style="overflow: visible;"
   aria-labelledby="ecosystem-heading"
 >
   <div class="section-ambient__backdrop" aria-hidden="true">
@@ -46,20 +47,23 @@ const timelineItems = [
   <div class="container relative z-10">
 
     <div class="grid grid-cols-1 lg:grid-cols-[0.78fr_1.22fr] gap-8 lg:gap-12 items-start">
-      <!-- Cabeçalho -->
-      <div class="lg:sticky lg:top-28 lg:self-start max-w-xl">
-        <p class="eyebrow mb-4" data-animate>O que você acessa</p>
+      <!-- Cabeçalho — sticky enquanto timeline rola -->
+      <div
+        class="max-w-xl"
+        style="position: sticky; top: 7rem; align-self: start;"
+      >
+        <p class="eyebrow mb-4" data-animate>Como funciona</p>
         <h2
           id="ecosystem-heading"
           class="section-title text-balance"
           data-animate
           data-animate-delay="100"
         >
-          Uma jornada de experiências
-          <span class="text-mb-yellow"> para quem decide no alto nível.</span>
+          Método, rede e conteúdo
+          <span class="text-mb-yellow"> num só lugar.</span>
         </h2>
         <p class="text-white/55 mt-4 leading-relaxed" data-animate data-animate-delay="150">
-          A lógica é simples: menos volume, mais contexto. Cada encontro aproxima líderes certos, no momento certo, com espaço para conversa de verdade.
+          Não é curso. Não é evento. É um ecossistema de educação contínua onde metodologia, comunidade e aprendizado ao vivo se combinam para que você decida melhor — e mais rápido.
         </p>
         <div class="mt-6" data-animate data-animate-delay="200">
           <a href="/aplicacao/" class="btn-primary">

@@ -1,50 +1,94 @@
 ---
-const tabs = [
+const modules = [
   {
     id: '01',
-    title: 'Curadoria antes do convite',
-    text: 'A entrada começa por análise de perfil, momento da empresa e fit com a comunidade. A régua existe para proteger a qualidade da sala e o tempo de quem já está dentro.',
-    imageAvif: '/images/value-props/curadoria.avif',
-    imageWebp: '/images/value-props/curadoria.webp',
-    imageAlt: 'Grafismo Masterboard para curadoria de entrada',
+    label: 'Metodologia Atual',
+    tag: 'Scale',
+    name: 'Fábio Couto',
+    role: 'Founder & CEO, ScaleCo',
+    company: 'HP · SAP · Microsoft · Salesforce',
+    text: 'Visão, ICP e processo replicável. Antes de arquitetar a receita, escreva a visão. Growth Motion, 7 formas de crescimento — da estratégia para o sistema com conversão e previsibilidade comercial.',
+    stats: [
+      { value: '25', label: 'anos' },
+      { value: 'US$40M', label: 'Salesforce BR' },
+      { value: 'B2B', label: 'foco' },
+    ],
+    locked: false,
   },
   {
     id: '02',
-    title: 'Experiências com contexto',
-    text: 'Mesas privadas, jantares, imersões e visitas aproximam líderes que vivem desafios parecidos. O encontro não é genérico: cada formato nasce para gerar conversa útil e decisão melhor.',
-    imageAvif: '/images/value-props/experiencias.avif',
-    imageWebp: '/images/value-props/experiencias.webp',
-    imageAlt: 'Grafismo Masterboard para experiências executivas',
+    label: 'Próximo',
+    tag: null,
+    name: 'Módulo 02',
+    role: 'Motor de receita sem heróis',
+    text: 'Motor que gera receita sem heróis. Gestão de time: contratar, treinar, acompanhar. Cadência e governança: pipeline review, forecast, 1:1 e ritmo semanal.',
+    stats: [],
+    locked: true,
   },
   {
     id: '03',
-    title: 'Continuidade entre encontros',
-    text: 'A relação não termina quando o evento acaba. Matchmaking, app exclusivo e acompanhamento da comunidade mantêm as conexões vivas entre uma mesa e outra.',
-    imageAvif: '/images/value-props/continuidade.avif',
-    imageWebp: '/images/value-props/continuidade.webp',
-    imageAlt: 'Grafismo Masterboard para continuidade entre membros',
+    label: 'Em breve',
+    tag: null,
+    name: 'Módulo 03',
+    role: 'Analytics & Governance',
+    text: 'KPIs, ritmo e clareza. Accountability e dados na tomada de decisão. Como transformar números em ação sem precisar de um analista.',
+    stats: [],
+    locked: true,
+  },
+  {
+    id: '04',
+    label: 'Em breve',
+    tag: null,
+    name: 'Módulo 04',
+    role: 'Liderança & Gestão de Times',
+    text: 'Como construir um time que performa sem depender do founder. Estrutura, cultura e mecanismos de autonomia real.',
+    stats: [],
+    locked: true,
+  },
+  {
+    id: '05',
+    label: 'Em breve',
+    tag: null,
+    name: 'Módulo 05',
+    role: 'Financeiro para Donos',
+    text: 'DRE, fluxo de caixa e as métricas que importam quando você precisa decidir com velocidade e clareza.',
+    stats: [],
+    locked: true,
+  },
+  {
+    id: '06',
+    label: 'Em breve',
+    tag: null,
+    name: 'Módulo 06',
+    role: 'Estratégia & M&A',
+    text: 'Decisões de crescimento inorgânico, avaliação de ativos e como estruturar uma tese de aquisição para o seu negócio.',
+    stats: [],
+    locked: true,
   },
 ];
 ---
 
 <section
   id="sobre"
-  class="section-py section-ambient relative overflow-hidden"
+  class="section-py section-ambient relative"
+  style="overflow: clip;"
   aria-labelledby="vp-heading"
 >
   <div class="mb-glow-orb mb-glow-orb--top-right" aria-hidden="true"></div>
   <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
 
   <div class="container relative z-10">
-    <div class="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-9 lg:gap-14 items-center">
 
-      <!-- ── Coluna esquerda ─────────────────────────────── -->
+    <!-- Grid: texto esquerda | deck direita -->
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-9 lg:gap-0 items-center">
+
+      <!-- Coluna esquerda: texto -->
       <div>
         <p
           class="text-mb-yellow/70 font-800 text-xs tracking-[0.28em] uppercase mb-4"
           data-animate
         >
-          // O QUE É O MASTERBOARD
+          // O QUE VOCÊ ENCONTRA AQUI
         </p>
 
         <h2
@@ -53,7 +97,7 @@ const tabs = [
           data-animate
           data-animate-delay="100"
         >
-          Um <span class="text-gradient-yellow">club empresarial</span>
+          Um <span class="text-gradient-yellow">ecossistema de educação</span>
           {' '}para quem lidera negócios em crescimento.
         </h2>
 
@@ -62,166 +106,327 @@ const tabs = [
           data-animate
           data-animate-delay="200"
         >
-          Uma comunidade fechada de fundadores, CEOs e executivos que combina curadoria, experiências presenciais e conexões contínuas para acelerar decisões.
+          Metodologia aplicada, educação continuada e uma rede curada de fundadores, CEOs e executivos — tudo integrado para acelerar decisões e resultados reais.
         </p>
 
-        <div
-          class="flex flex-col xs:flex-row gap-3"
-          data-animate
-          data-animate-delay="260"
-        >
-          <a
-            href="/aplicacao/"
-            class="btn-primary"
-            aria-label="Abrir candidatura"
-          >
+        <div class="flex flex-col xs:flex-row gap-3" data-animate data-animate-delay="260">
+          <a href="/aplicacao/" class="btn-primary" aria-label="Abrir candidatura">
             Quero participar
             <svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
             </svg>
           </a>
-          <a href="#experiencias" class="btn-secondary">Ver experiências</a>
+          <a href="#metodologia" class="btn-secondary">Ver a metodologia</a>
         </div>
       </div>
 
-      <!-- ── Coluna direita: painel com abas ────────────── -->
-      <div data-animate data-animate-delay="150">
-        <div class="vp-panel">
-
-          <!-- Abas numéricas -->
+      <!-- Coluna direita: deck de cards -->
+      <div class="vp-deck-col" data-animate data-animate-delay="300">
+        <div class="vp-locked-label mb-5 lg:mb-4">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="3" y="11" width="18" height="11" rx="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Próximos módulos disponíveis para membros
+        </div>
+        <div class="vp-deck-outer">
+          <div class="vp-deck">
+            {modules.map((mod, i) => (
           <div
-            class="flex border-b border-white/10 mb-5"
-            role="tablist"
-            aria-label="Pilares do Masterboard"
+            class:list={['vp-card', mod.locked && 'vp-card--locked']}
+            style={`--i: ${i};`}
+            aria-hidden={mod.locked ? 'true' : undefined}
           >
-            {tabs.map((tab, i) => (
-              <button
-                class="vp-tab-btn"
-                role="tab"
-                aria-selected={i === 0 ? 'true' : 'false'}
-                aria-controls={`vp-panel-${tab.id}`}
-                id={`vp-tab-${tab.id}`}
-                data-tab={tab.id}
-              >
-                {tab.id}
-              </button>
-            ))}
-            <button
-              class="vp-next-btn ml-auto"
-              type="button"
-              aria-label="Ver próximo pilar do Masterboard"
-              data-vp-next
-            >
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
+            {!mod.locked && <div class="vp-card__top-line" aria-hidden="true"></div>}
 
-          <!-- Painéis de conteúdo -->
-          {tabs.map((tab, i) => (
-            <div
-              class="vp-tab-panel"
-              role="tabpanel"
-              id={`vp-panel-${tab.id}`}
-              aria-labelledby={`vp-tab-${tab.id}`}
-              data-panel={tab.id}
-              hidden={i !== 0}
-            >
-              <h3 class="vp-panel-title-badge font-800 text-xl mb-4 leading-tight tracking-tight">
-                {tab.title}
-              </h3>
-              <p class="text-white/60 text-base leading-relaxed">
-                {tab.text}
-              </p>
+            <!-- Eyebrow + logo Scale no featured -->
+            <div class="vp-card__header">
+              <div class="vp-card__eyebrow">
+                <span class:list={['vp-badge', !mod.locked && 'vp-badge--featured']}>{mod.label}</span>
+                {mod.tag && <span class="vp-badge vp-badge--yellow">{mod.tag}</span>}
+              </div>
+              {!mod.locked && (
+                <img
+                  src="/images/scaleco-logo.png"
+                  alt="ScaleCo"
+                  class="vp-scale-logo"
+                  width="72"
+                  height="24"
+                />
+              )}
+            </div>
 
-              <!-- Grafismo oficial do site original -->
-              <div class="vp-tab-art">
-                <picture>
-                  <source srcset={tab.imageAvif} type="image/avif" />
-                  <img
-                    src={tab.imageWebp}
-                    alt={tab.imageAlt}
-                    width="242"
-                    height="178"
-                    loading="lazy"
-                    fetchpriority="low"
-                    decoding="async"
-                  />
-                </picture>
+            <div class="vp-card__profile">
+              <div class:list={['vp-card__avatar', mod.locked && 'vp-card__avatar--dim']}>
+                {!mod.locked ? (
+                  <>
+                    <img
+                      src="/images/fabio-couto.jpg"
+                      alt={mod.name}
+                      width="80"
+                      height="80"
+                      onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+                    />
+                    <div class="vp-card__avatar-fallback">FC</div>
+                  </>
+                ) : (
+                  <span class="vp-card__avatar-num">{mod.id}</span>
+                )}
+              </div>
+              <div>
+                <p class="vp-card__name">{mod.name}</p>
+                <p class="vp-card__role">{mod.role}</p>
+                {!mod.locked && mod.company && <p class="vp-card__company">{mod.company}</p>}
               </div>
             </div>
-          ))}
 
+            <div class="vp-card__divider"></div>
+            <p class="vp-card__text">{mod.text}</p>
+
+            {mod.stats.length > 0 && (
+              <div class="vp-card__stats">
+                {mod.stats.map((s) => (
+                  <div class="vp-stat">
+                    <span class="vp-stat__value">{s.value}</span>
+                    <span class="vp-stat__label">{s.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+            ))}
+          </div>
         </div>
       </div>
 
-    </div>
+    </div><!-- /grid -->
   </div>
 </section>
 
-<script>
-  const btns = document.querySelectorAll<HTMLButtonElement>('.vp-tab-btn');
-  const panels = document.querySelectorAll<HTMLElement>('.vp-tab-panel');
-  const nextBtn = document.querySelector<HTMLButtonElement>('[data-vp-next]');
-  const tabIds = Array.from(btns).map((btn) => btn.dataset.tab).filter(Boolean);
-  let activeId = tabIds[0] ?? '01';
-
-  const setActiveTab = (id: string | undefined) => {
-    if (!id || id === activeId) return;
-    activeId = id;
-
-    btns.forEach((btn) => {
-      btn.setAttribute('aria-selected', String(btn.dataset.tab === id));
-    });
-
-    panels.forEach((panel) => {
-      panel.hidden = panel.dataset.panel !== id;
-    });
-  };
-
-  const goToNextTab = () => {
-    if (tabIds.length <= 1) return;
-    const currentIndex = Math.max(tabIds.indexOf(activeId), 0);
-    const nextIndex = (currentIndex + 1) % tabIds.length;
-    setActiveTab(tabIds[nextIndex]);
-  };
-
-  btns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      setActiveTab(btn.dataset.tab);
-    });
-  });
-
-  nextBtn?.addEventListener('click', goToNextTab);
-</script>
-
 <style>
-  .vp-next-btn {
-    display: inline-flex;
-    width: 2.35rem;
-    height: 2.35rem;
+  /* Coluna direita — permite cards sangrarem à direita */
+  .vp-deck-col {
+    position: relative;
+    overflow: visible;
+  }
+
+  .vp-deck-outer {
+    overflow: visible;
+  }
+
+  @keyframes vp-float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-10px); }
+  }
+
+  .vp-deck {
+    --card-w: 390px;
+    --overlap: 204px; /* ~52% */
+    position: relative;
+    height: 540px;
+  }
+
+  .vp-card {
+    position: absolute;
+    left: calc(var(--i) * (var(--card-w) - var(--overlap)));
+    top: 0;
+    width: var(--card-w);
+    height: 100%;
+    z-index: calc(20 - var(--i));
+    display: flex;
+    flex-direction: column;
+    gap: 1.35rem;
+    padding: 2.25rem;
+    border-radius: 1.75rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background:
+      linear-gradient(160deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%),
+      rgba(11, 11, 11, 0.97);
+    backdrop-filter: blur(28px) saturate(1.6);
+    -webkit-backdrop-filter: blur(28px) saturate(1.6);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.09),
+      10px 0 32px rgba(0, 0, 0, 0.55),
+      0 12px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Card featured — float animation */
+  .vp-card:first-child {
+    border-color: rgba(251, 190, 10, 0.26);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.13),
+      0 0 0 1px rgba(251, 190, 10, 0.08),
+      10px 0 36px rgba(0, 0, 0, 0.65),
+      0 24px 64px rgba(0, 0, 0, 0.42);
+    animation: vp-float 4s ease-in-out infinite;
+  }
+
+  .vp-card__top-line {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(251, 190, 10, 0.95), transparent);
+  }
+
+  /* Cards bloqueados — blur leve para o conteúdo ainda aparecer */
+  .vp-card--locked { pointer-events: none; user-select: none; }
+  .vp-card--locked:nth-child(2) { filter: blur(1.5px); opacity: 0.72; }
+  .vp-card--locked:nth-child(3) { filter: blur(3px);   opacity: 0.55; }
+  .vp-card--locked:nth-child(4) { filter: blur(5px);   opacity: 0.38; }
+  .vp-card--locked:nth-child(5) { filter: blur(7px);   opacity: 0.22; }
+  .vp-card--locked:nth-child(6) { filter: blur(9px);   opacity: 0.12; }
+
+  /* ── Header (eyebrow + logo) ── */
+  .vp-card__header {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(251, 190, 10, 0.26);
-    border-radius: 999px;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .vp-card__eyebrow { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+
+  .vp-scale-logo {
+    height: 20px;
+    width: auto;
+    opacity: 0.75;
+    filter: brightness(0) invert(1);
+    flex-shrink: 0;
+  }
+
+  .vp-badge {
+    display: inline-flex; align-items: center;
+    padding: 0.25rem 0.7rem; border-radius: 9999px;
+    font-size: 0.62rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+  }
+
+  .vp-badge--featured {
+    color: #0b0b0b;
+    background: #FBBE0A;
+    border-color: #FBBE0A;
+  }
+
+  .vp-badge--yellow {
+    color: rgba(251, 190, 10, 0.98);
+    background: rgba(251, 190, 10, 0.12);
+    border-color: rgba(251, 190, 10, 0.35);
+  }
+
+  /* ── Perfil ── */
+  .vp-card__profile { display: flex; align-items: center; gap: 1.1rem; }
+
+  .vp-card__avatar {
+    width: 4.75rem; height: 4.75rem;
+    border-radius: 9999px; overflow: hidden;
+    border: 2px solid rgba(251, 190, 10, 0.4);
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.05);
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 5px rgba(251, 190, 10, 0.09), 0 4px 16px rgba(0,0,0,0.4);
+  }
+
+  .vp-card__avatar img {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center top;
+  }
+
+  .vp-card__avatar-fallback {
+    display: none; position: absolute; inset: 0;
+    align-items: center; justify-content: center;
+    font-size: 1.2rem; font-weight: 800;
+    color: rgba(251, 190, 10, 0.85);
     background: rgba(251, 190, 10, 0.08);
-    color: var(--mb-yellow);
-    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
   }
 
-  .vp-next-btn:hover {
-    border-color: rgba(251, 190, 10, 0.48);
-    background: rgba(251, 190, 10, 0.14);
-    transform: translateX(2px);
+  .vp-card__avatar--dim {
+    width: 3.75rem; height: 3.75rem;
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: none;
+    background: rgba(255,255,255,0.04);
   }
 
-  .vp-panel-title-badge {
-    display: inline;
-    padding: 0.04em 0.12em 0.08em;
-    background: var(--mb-yellow);
-    color: var(--mb-black);
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
+  .vp-card__avatar-num {
+    font-size: 1rem; font-weight: 800;
+    color: rgba(255, 255, 255, 0.28);
+  }
+
+  /* ── Identidade ── */
+  .vp-card__name {
+    font-size: 1.2rem; font-weight: 800;
+    color: #fff; line-height: 1.15;
+    letter-spacing: -0.015em;
+  }
+
+  .vp-card__role {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.62);
+    line-height: 1.4; margin-top: 0.22rem;
+  }
+
+  .vp-card__company {
+    font-size: 0.66rem; font-weight: 700;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(251, 190, 10, 0.78);
+    margin-top: 0.3rem;
+  }
+
+  /* ── Corpo ── */
+  .vp-card__divider { height: 1px; background: rgba(255,255,255,0.08); }
+
+  .vp-card__text {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.72);
+    line-height: 1.75; flex: 1;
+  }
+
+  /* ── Stats ── */
+  .vp-card__stats {
+    display: flex; gap: 1.75rem;
+    margin-top: auto;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 1.1rem;
+  }
+
+  .vp-stat { display: flex; flex-direction: column; gap: 0.18rem; }
+
+  .vp-stat__value {
+    font-size: 1.5rem; font-weight: 800;
+    color: #fff; line-height: 1;
+    letter-spacing: -0.025em;
+  }
+
+  .vp-stat__label {
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  /* ── Label ── */
+  .vp-locked-label {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(251, 190, 10, 0.85);
+  }
+
+  .vp-locked-label svg { color: rgba(251, 190, 10, 0.7); }
+
+  @media (max-width: 1023px) {
+    .vp-deck-col { overflow: hidden; }
+    .vp-deck-outer { overflow-x: auto; }
+    .vp-deck {
+      --card-w: 300px;
+      --overlap: 156px;
+      height: 480px;
+      width: calc(var(--card-w) + 5 * (var(--card-w) - var(--overlap)) + 1rem);
+    }
+    /* Sem float animation no mobile para evitar artefatos de scroll */
+    .vp-card:first-child { animation: none; }
   }
 </style>

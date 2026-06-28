@@ -83,6 +83,16 @@ export interface ContentDataSource {
 }
 
 // ─── Active data source ───────────────────────────────────────────────────────
-// Troque este import para migrar para outro adapter.
-// O resto do código não muda.
-export { supabaseDataSource as dataSource } from './adapters/supabase/index';
+// Adapter híbrido: eventos vêm do Bubble (fonte de verdade enquanto não migramos),
+// todo o resto (speakers, members, posts) vem do Supabase.
+import { supabaseDataSource } from './adapters/supabase/index';
+import { bubbleDataSource } from './adapters/bubble/index';
+
+export const dataSource: ContentDataSource = {
+  ...supabaseDataSource,
+  name: 'hybrid',
+  // Eventos → Bubble (atualiza automaticamente a cada request / cache 5min)
+  listEvents:          (...args) => bubbleDataSource.listEvents(...args),
+  getEventById:        (...args) => bubbleDataSource.getEventById(...args),
+  getSpeakersForEvent: (...args) => bubbleDataSource.getSpeakersForEvent(...args),
+};
