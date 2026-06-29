@@ -242,7 +242,7 @@
   }
 
   .brand-logo--header {
-    height: clamp(1.1rem, 1.6vw, 1.45rem);
+    height: clamp(1.45rem, 2.2vw, 1.75rem);
   }
 
   .brand-logo--footer {
@@ -2577,4 +2577,124 @@
   background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.5);
   border: 1px solid var(--mb-border);
+}
+
+/* ─── Mobile Responsiveness ──────────────────────────────── */
+
+@media (max-width: 767px) {
+  /* Gallery animada — oculta em mobile (pesada, invisível atrás dos overlays) */
+  .animated-gallery {
+    display: none;
+  }
+
+  /* Hero headline — ajusta para telas pequenas */
+  .hero-headline {
+    font-size: clamp(2.3rem, 9.5vw, 3rem);
+    line-height: 1.01;
+  }
+
+  /* Hero orbs — reduz em mobile para não poluir visualmente */
+  .hero-orb--primary {
+    width: 72vw;
+    height: 72vw;
+    right: -16%;
+    top: 4%;
+    filter: blur(28px);
+  }
+
+  .hero-orb--secondary {
+    width: 58vw;
+    height: 58vw;
+    left: -14%;
+    bottom: 6%;
+    filter: blur(28px);
+  }
+
+  /* Page orbs — reduz tamanho em mobile */
+  .page-orb-1 { width: 72vw; height: 72vw; }
+  .page-orb-2 { width: 58vw; height: 58vw; }
+  .page-orb-3 { width: 64vw; height: 64vw; }
+  .page-orb-4 { width: 50vw; height: 50vw; }
+
+  /* Container — padding mínimo ligeiramente maior */
+  .container {
+    padding-inline: max(1.25rem, env(safe-area-inset-left, 1.25rem));
+  }
+
+  /* Section title — ajuste leve */
+  .section-title {
+    font-size: clamp(1.85rem, 7.5vw, 2.6rem);
+  }
+
+  /* Cards hover — remove translateY em mobile (sem hover real) */
+  .card:hover,
+  .about-pillar-card:hover {
+    transform: none;
+  }
+
+  /* Scroll indicator — oculta em mobile pequeno */
+  .scroll-indicator-dot {
+    display: none;
+  }
+
+  /* Testimonial card — menos padding em mobile */
+  .testimonial-card {
+    padding: 1.5rem;
+  }
+
+  /* Event card — simplifica grid em mobile */
+  .event-card {
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    padding: 1.1rem;
+  }
+
+  /* FAQ trigger — fonte menor em mobile */
+  .faq-trigger {
+    font-size: 0.975rem;
+    padding: 1.25rem 0;
+  }
+
+  /* Marquee item — menos padding lateral */
+  .marquee-item {
+    padding: 0 1.25rem;
+  }
+
+  /* Metrics number — compacta em mobile */
+  .metrics-number {
+    font-size: clamp(2rem, 7.5vw, 2.35rem);
+  }
+
+  /* Speakers carousel — ajuste slide width */
+  .spk-carousel {
+    --slide-w: clamp(10rem, 72vw, 16rem);
+  }
+
+  /* Nav mobile — padding seguro com safe area */
+  .nav-mobile {
+    padding-inline: max(1rem, env(safe-area-inset-left, 1rem));
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 1.25rem));
+  }
+}
+
+/* Telas muito pequenas (< 360px) */
+@media (max-width: 359px) {
+  .hero-headline {
+    font-size: clamp(2rem, 9vw, 2.4rem);
+  }
+
+  .section-title {
+    font-size: clamp(1.7rem, 7vw, 2rem);
+  }
+
+  .badge-glass {
+    font-size: 0.64rem;
+    padding: 0.28rem 0.65rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    font-size: 0.875rem;
+    padding: 0.75rem 1.25rem;
+  }
 }

@@ -42,7 +42,7 @@
         <!-- CTA principal -->
         <a
           href="/aplicacao/"
-          class="btn-primary text-lg px-8 py-4"
+          class="btn-primary text-lg px-8 py-4 w-full sm:w-auto justify-center"
           aria-label="Iniciar candidatura ao Masterboard"
         >
           Quero participar
@@ -60,7 +60,7 @@
 
     <!-- Logos / certificações (placeholder) -->
     <div
-      class="flex flex-wrap items-center gap-6 mt-9 pt-8 border-t border-mb-border"
+      class="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-6 mt-9 pt-8 border-t border-mb-border"
       data-animate
       data-animate-delay="400"
       aria-label="Informações de membros"
@@ -71,7 +71,7 @@
         { number: '12+', label: 'cidades' },
         { number: 'R$5bi+', label: 'faturamento combinado' },
       ].map(({ number, label }) => (
-        <div class="text-center">
+        <div class="text-center sm:text-left">
           <p class="text-white font-800 text-xl md:text-2xl" style="letter-spacing: -0.03em;">{number}</p>
           <p class="text-white/35 text-xs">{label}</p>
         </div>

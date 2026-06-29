@@ -47,11 +47,8 @@ const timelineItems = [
   <div class="container relative z-10">
 
     <div class="grid grid-cols-1 lg:grid-cols-[0.78fr_1.22fr] gap-8 lg:gap-12 items-start">
-      <!-- Cabeçalho — sticky enquanto timeline rola -->
-      <div
-        class="max-w-xl"
-        style="position: sticky; top: 7rem; align-self: start;"
-      >
+      <!-- Cabeçalho — sticky no desktop, estático no mobile -->
+      <div class="max-w-xl lg:sticky lg:top-28 lg:self-start">
         <p class="eyebrow mb-4" data-animate>Como funciona</p>
         <h2
           id="ecosystem-heading"
@@ -66,7 +63,7 @@ const timelineItems = [
           Não é curso. Não é evento. É um ecossistema de educação contínua onde metodologia, comunidade e aprendizado ao vivo se combinam para que você decida melhor — e mais rápido.
         </p>
         <div class="mt-6" data-animate data-animate-delay="200">
-          <a href="/aplicacao/" class="btn-primary">
+          <a href="/aplicacao/" class="btn-primary w-full sm:w-auto justify-center">
             Quero participar
           </a>
         </div>

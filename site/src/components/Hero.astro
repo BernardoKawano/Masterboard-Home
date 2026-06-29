@@ -21,7 +21,7 @@ const SHOW_HERO_INTEL_CARD = false;
 
 <section
   id="inicio"
-  class="hero-section relative min-h-screen flex flex-col justify-center overflow-hidden bg-mb-black"
+  class="hero-section relative sm:min-h-screen flex flex-col sm:justify-center overflow-hidden bg-mb-black"
   aria-label="Introdução ao Masterboard"
 >
   <AnimatedGallery />
@@ -32,7 +32,7 @@ const SHOW_HERO_INTEL_CARD = false;
   <div class="mb-glow-orb mb-glow-orb--center" aria-hidden="true"></div>
 
   <!-- Conteúdo -->
-  <div class="container hero-container relative z-10 pt-24 pb-14 md:pt-28 md:pb-20">
+  <div class="container hero-container relative z-10 pt-12 sm:pt-24 pb-12 sm:pb-14 md:pt-28 md:pb-20">
     <div class:list={[
       'grid grid-cols-1 gap-10 xl:gap-16 items-end',
       SHOW_HERO_INTEL_CARD && 'xl:grid-cols-[minmax(0,1fr)_360px]',
