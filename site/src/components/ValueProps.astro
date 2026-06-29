@@ -312,36 +312,39 @@ const modules = [
     position: absolute;
     top: 0;
     bottom: 0;
-    /* começa onde o card do Fábio termina — primeiro card bloqueado visível */
     left: var(--card-w);
-    right: -60vw; /* sangra além da seção — overflow: clip trata */
+    right: -60vw;
     z-index: 25;
     display: flex;
     align-items: center;
-    padding-left: 2.5rem;
+    justify-content: flex-start;
+    padding-left: 1.5rem;
     cursor: default;
   }
 
   .vp-locked-tooltip {
     display: inline-flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0.55rem;
-    padding: 0.65rem 1.1rem 0.65rem 0.9rem;
-    border-radius: 9999px;
-    background: rgba(9, 9, 9, 0.92);
-    border: 1px solid rgba(251, 190, 10, 0.35);
-    backdrop-filter: blur(20px) saturate(1.5);
-    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    padding: 0.75rem 1.25rem 0.75rem 1rem;
+    border-radius: 1.25rem;
+    background: rgba(6, 6, 6, 0.97);
+    border: 1px solid rgba(251, 190, 10, 0.4);
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
     box-shadow:
-      0 0 0 1px rgba(251, 190, 10, 0.08),
-      0 8px 32px rgba(0, 0, 0, 0.6);
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.76rem;
+      0 0 0 1px rgba(251, 190, 10, 0.1),
+      0 12px 40px rgba(0, 0, 0, 0.75);
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.82rem;
     font-weight: 500;
-    white-space: nowrap;
+    max-width: min(22rem, 50vw);
+    white-space: normal;
+    line-height: 1.45;
     /* estado inicial: invisível */
     opacity: 0;
-    transform: translateY(5px) scale(0.97);
+    transform: translateX(-6px) scale(0.97);
     pointer-events: none;
     transition: opacity 0.22s ease, transform 0.22s ease;
   }
@@ -349,7 +352,7 @@ const modules = [
   /* Ativa quando qualquer parte da hover zone é hovered */
   .vp-locked-hover-zone:hover .vp-locked-tooltip {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(0) scale(1);
     pointer-events: auto;
   }
 
