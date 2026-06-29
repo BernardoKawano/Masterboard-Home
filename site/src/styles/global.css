@@ -630,18 +630,22 @@
 
 .animated-gallery-col.col-0 .animated-gallery-track {
   animation: scrollUp 32s linear infinite;
+  animation-delay: -16s;
 }
 
 .animated-gallery-col.col-1 .animated-gallery-track {
   animation: scrollDown 45s linear infinite;
+  animation-delay: -22s;
 }
 
 .animated-gallery-col.col-2 .animated-gallery-track {
   animation: scrollUp 38s linear infinite;
+  animation-delay: -10s;
 }
 
 .animated-gallery-col.col-3 .animated-gallery-track {
   animation: scrollDown 52s linear infinite;
+  animation-delay: -34s;
 }
 
 .animated-gallery-col.col-0,
