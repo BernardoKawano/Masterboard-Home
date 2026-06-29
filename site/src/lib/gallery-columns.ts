@@ -14,13 +14,15 @@ export function buildGalleryColumns(
     return Array.from({ length: columnCount }, () => []);
   }
 
-  const imagesPerColumn = Math.ceil(imagePaths.length / columnCount);
-
-  return Array.from({ length: columnCount }, (_, columnIndex) => {
-    const start = columnIndex * imagesPerColumn;
-    const columnImages = imagePaths.slice(start, start + imagesPerColumn);
-    return [...columnImages, ...columnImages];
+  // Round-robin: distribui as imagens alternando entre colunas
+  // garante que todas as colunas tenham praticamente o mesmo número de imagens
+  const columns: string[][] = Array.from({ length: columnCount }, () => []);
+  imagePaths.forEach((path, i) => {
+    columns[i % columnCount].push(path);
   });
+
+  // Duplica cada coluna para o scroll infinito (translateY -50% fica seamless)
+  return columns.map((col) => [...col, ...col]);
 }
 
 export function buildGalleryImagePaths(

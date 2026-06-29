@@ -23,7 +23,7 @@ const columns = buildGalleryColumns(imagePaths, GALLERY_COLUMN_COUNT);
                 height={200}
                 decoding="async"
                 fetchpriority="low"
-                loading={columnIndex === 0 && imageIndex < 3 ? 'eager' : 'lazy'}
+                loading={imageIndex < 4 ? 'eager' : 'lazy'}
               />
             ))}
           </div>

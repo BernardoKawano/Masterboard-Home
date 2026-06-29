@@ -615,6 +615,7 @@
 .animated-gallery-track {
   display: flex;
   flex-direction: column;
+  will-change: transform;
 }
 
 @keyframes scrollUp {
@@ -656,11 +657,8 @@
   object-position: center;
   border-radius: 1.5rem;
   opacity: 0.8;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   box-shadow:
-    0 0 20px rgba(251, 190, 10, 0.28),
-    0 0 60px rgba(251, 190, 10, 0.14),
+    0 0 20px rgba(251, 190, 10, 0.18),
     0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
