@@ -197,8 +197,8 @@ const clubOptions = [
                     <input id="field-empresa" name="empresa" type="text" class="form-input application-input" placeholder="Ex: Masterboard" required data-required-label="nome da empresa" autocomplete="organization" data-company-field />
                   </div>
                   <div class="application-field">
-                    <label class="form-label" for="field-city-display">Cidade da empresa</label>
-                    <input id="field-city-display" type="text" class="form-input application-input" placeholder="Preenchida automaticamente pelo CNPJ" readonly data-city-display />
+                    <label class="form-label" for="field-city-display">Cidade da empresa <span class="form-label-optional">(opcional)</span></label>
+                    <input id="field-city-display" type="text" class="form-input application-input" placeholder="Ex: Curitiba, PR" data-city-display autocomplete="address-level2" />
                   </div>
                   <div class="application-field">
                     <label class="form-label" for="field-website">5. Site da empresa <span class="form-label-optional">(opcional)</span></label>
@@ -701,6 +701,10 @@ const clubOptions = [
 
   phoneCode?.addEventListener('change', syncPhone);
   phoneLocal?.addEventListener('input', syncPhone);
+
+  cityDisplay?.addEventListener('input', () => {
+    if (cityField) cityField.value = cityDisplay.value;
+  });
 
   const storedLeadId = sessionStorage.getItem(LEAD_STORAGE_KEY);
   if (storedLeadId && leadIdField) leadIdField.value = storedLeadId;
