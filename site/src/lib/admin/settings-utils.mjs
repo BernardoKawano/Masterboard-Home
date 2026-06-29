@@ -33,7 +33,7 @@ export const SETTING_DEFINITIONS = [
     key: 'home.hero.line1',
     label: 'Hero: linha 1',
     type: 'text',
-    defaultValue: 'Ecossistema empresarial',
+    defaultValue: 'Ecossistema',
   },
   {
     key: 'home.hero.line2',

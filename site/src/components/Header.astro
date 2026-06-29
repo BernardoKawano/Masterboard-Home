@@ -10,22 +10,22 @@ const navLinks = [
 
 <header class="site-header" role="banner">
   <div class="container">
-    <div class="flex items-center justify-between h-16 md:h-20">
+    <div class="grid grid-cols-[1fr_auto_1fr] items-center h-16 md:h-20">
 
       <!-- Logo lockup oficial (wordmark + M) -->
-      <a href="/" aria-label="Masterboard — página inicial" class="brand-lockup">
+      <a href="/" aria-label="Masterboard — página inicial" class="brand-lockup justify-self-start">
         <img
-          src="/brand/masterboard-logo-header.png"
+          src="/brand/masterboard-logo-04.png"
           alt="Masterboard"
           class="brand-logo brand-logo--header"
-          width="420"
-          height="52"
+          width="2001"
+          height="176"
           loading="eager"
           decoding="async"
         />
       </a>
 
-      <!-- Nav desktop -->
+      <!-- Nav desktop — coluna central, verdadeiramente centrada -->
       <nav class="hidden md:flex items-center gap-1" aria-label="Menu principal">
         {navLinks.map(({ href, label, external }) => (
           <a
@@ -39,7 +39,7 @@ const navLinks = [
       </nav>
 
       <!-- CTA desktop + toggle mobile -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 justify-self-end">
         <a
           href="/aplicacao/"
           class="btn-primary hidden sm:inline-flex text-sm py-2.5 px-5"

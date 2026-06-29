@@ -67,17 +67,20 @@ const SHOW_HERO_INTEL_CARD = false;
           Reunimos métodos e experiências de grandes executivos para ajudar empresários a tomar melhores decisões, desenvolver times e construir negócios preparados para crescer.
         </p>
 
-        <!-- Badges de empresas -->
-        <div
-          class="flex flex-wrap items-center gap-2 mb-8 md:mb-9"
+        <!-- Empresas referência -->
+        <p
+          class="text-white/38 text-xs font-600 tracking-[0.12em] uppercase mb-8 md:mb-9"
           data-animate
           data-animate-delay="250"
           aria-label="Empresas representadas pelos nossos membros"
         >
-          {['Microsoft', 'Salesforce', 'Amazon', 'SAP', 'Azul', 'Wellhub'].map((empresa) => (
-            <span class="badge-glass">{empresa}</span>
+          {['Microsoft', 'Salesforce', 'Amazon', 'SAP', 'Azul', 'Wellhub'].map((empresa, i, arr) => (
+            <>
+              <span>{empresa}</span>
+              {i < arr.length - 1 && <span class="mx-2 opacity-40">·</span>}
+            </>
           ))}
-        </div>
+        </p>
 
         <!-- CTAs -->
         <div

@@ -242,7 +242,7 @@
   }
 
   .brand-logo--header {
-    height: clamp(1.45rem, 2.2vw, 1.75rem);
+    height: clamp(1.1rem, 1.7vw, 1.35rem);
   }
 
   .brand-logo--footer {
@@ -471,7 +471,7 @@
 }
 
 .hero-container {
-  padding-top: clamp(5.5rem, 13vh, 7rem);
+  padding-top: clamp(6.875rem, 16.25vh, 8.75rem);
   padding-bottom: clamp(3rem, 8vh, 5rem);
 }
 
@@ -683,7 +683,7 @@
 
 @media (max-height: 700px) and (min-width: 768px) {
   .hero-container {
-    padding-top: 5.25rem;
+    padding-top: 6.5625rem;
     padding-bottom: 2.75rem;
   }
 

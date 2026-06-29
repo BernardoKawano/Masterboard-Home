@@ -75,6 +75,7 @@ const modules = [
   aria-labelledby="vp-heading"
 >
   <div class="mb-glow-orb mb-glow-orb--top-right" aria-hidden="true"></div>
+  <div class="mb-glow-orb mb-glow-orb--bottom-left" aria-hidden="true"></div>
   <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
 
   <div class="container relative z-10">
@@ -191,6 +192,19 @@ const modules = [
                   </div>
                 ))}
               </div>
+            )}
+            {!mod.locked && (
+              <a
+                href="https://masterboard.scaleco.ai/landing/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="vp-card__see-more"
+              >
+                Saiba mais
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                </svg>
+              </a>
             )}
           </div>
             ))}
@@ -527,6 +541,31 @@ const modules = [
     }
     /* Sem float animation no mobile para evitar artefatos de scroll */
     .vp-card:first-child { animation: none; }
+  }
+
+  /* ── Saiba mais link ── */
+  .vp-card__see-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    border: 1.5px solid rgba(251, 190, 10, 0.35);
+    border-radius: 9999px;
+    background: rgba(251, 190, 10, 0.07);
+    color: var(--mb-yellow);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    align-self: flex-start;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .vp-card__see-more:hover {
+    background: rgba(251, 190, 10, 0.15);
+    border-color: rgba(251, 190, 10, 0.65);
+    transform: translateY(-1px);
   }
 
   /* Telas pequenas (< 480px) — card ligeiramente menor */

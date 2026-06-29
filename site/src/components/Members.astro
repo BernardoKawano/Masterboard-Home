@@ -150,6 +150,7 @@ const getMemberImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
   class="section-py bg-mb-black relative overflow-hidden"
   aria-labelledby="members-heading"
 >
+  <div class="mb-glow-orb mb-glow-orb--top-right" aria-hidden="true"></div>
   <div class="mb-glow-orb mb-glow-orb--bottom-left" aria-hidden="true"></div>
   <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
 
@@ -171,13 +172,6 @@ const getMemberImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
         </h2>
       </div>
 
-      <div class="community-summary" data-animate data-animate-delay="150">
-        <p class="text-white/56 leading-relaxed">
-          {hasMemberProfiles
-            ? 'Perfis selecionados da comunidade, com foto do membro, sobrenome e empresa.'
-            : 'A API pública ainda não expõe fotos e nomes completos dos membros. Enquanto isso, mostramos empresas reais cadastradas no ecossistema.'}
-        </p>
-      </div>
     </div>
 
     <div
