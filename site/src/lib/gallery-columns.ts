@@ -15,14 +15,21 @@ export function buildGalleryColumns(
   }
 
   // Round-robin: distribui as imagens alternando entre colunas
-  // garante que todas as colunas tenham praticamente o mesmo número de imagens
   const columns: string[][] = Array.from({ length: columnCount }, () => []);
   imagePaths.forEach((path, i) => {
     columns[i % columnCount].push(path);
   });
 
-  // Duplica cada coluna para o scroll infinito (translateY -50% fica seamless)
-  return columns.map((col) => [...col, ...col]);
+  // Garante mínimo de imagens por coluna repetindo o ciclo
+  // (evita tracks curtos que deixam "buracos" visíveis na janela 3D)
+  const MIN_PER_COLUMN = 10;
+  return columns.map((col) => {
+    const padded = col.length >= MIN_PER_COLUMN
+      ? col
+      : Array.from({ length: MIN_PER_COLUMN }, (_, i) => col[i % col.length]);
+    // Duplica para scroll infinito seamless (translateY -50%)
+    return [...padded, ...padded];
+  });
 }
 
 export function buildGalleryImagePaths(

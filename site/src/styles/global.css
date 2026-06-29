@@ -653,6 +653,25 @@
   filter: blur(1px);
 }
 
+.animated-gallery::before,
+.animated-gallery::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.animated-gallery::before {
+  top: 0;
+  height: 28%;
+  background: linear-gradient(to bottom, #090909 0%, transparent 100%);
+}
+.animated-gallery::after {
+  bottom: 0;
+  height: 28%;
+  background: linear-gradient(to top, #090909 0%, transparent 100%);
+}
+
 .animated-gallery-image {
   display: block;
   width: var(--gallery-image-width);
