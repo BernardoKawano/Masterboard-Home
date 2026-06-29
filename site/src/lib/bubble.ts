@@ -10,10 +10,12 @@
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const BUBBLE_BASE =
-  import.meta.env.BUBBLE_BASE_URL ?? 'https://app.masterboard.com.br/api/1.1';
+const BUBBLE_BASE = (
+  import.meta.env.BUBBLE_BASE_URL ?? 'https://app.masterboard.com.br/api/1.1'
+).replace(/^﻿/, '').trim();
 
-const BUBBLE_TOKEN: string | undefined = import.meta.env.BUBBLE_API_TOKEN;
+const BUBBLE_TOKEN: string | undefined = (import.meta.env.BUBBLE_API_TOKEN as string | undefined)
+  ?.replace(/^﻿/, '').trim() || undefined;
 
 /** In-memory cache TTL in milliseconds (5 minutes). */
 const CACHE_TTL = 5 * 60 * 1000;
