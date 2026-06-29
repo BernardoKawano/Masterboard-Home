@@ -1,0 +1,139 @@
+---
+export const prerender = false;
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { dataSource } from '../../lib/data-source';
+import { getResponsiveImageAttrs } from '../../lib/responsive-image';
+import { getGalleryUrl } from '../../types/domain';
+
+const PHOTOS_PER_PAGE = 60;
+
+const { slug } = Astro.params;
+if (!slug) {
+  return Astro.redirect('/galeria/');
+}
+
+const page = Math.max(1, Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10) || 1);
+const offset = (page - 1) * PHOTOS_PER_PAGE;
+
+const gallery = await dataSource.getGalleryById?.(slug) ?? null;
+if (!gallery) {
+  return Astro.redirect('/galeria/');
+}
+
+const [photos, totalPhotos] = await Promise.all([
+  dataSource.listGalleryPhotos?.(slug, { limit: PHOTOS_PER_PAGE, offset }) ?? [],
+  dataSource.countGalleryPhotos?.(slug) ?? gallery.photoCount ?? 0,
+]);
+
+const totalPages = Math.max(1, Math.ceil(totalPhotos / PHOTOS_PER_PAGE));
+const safePage = Math.min(page, totalPages);
+const pageBaseUrl = getGalleryUrl(gallery);
+
+const getPhotoImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
+  widths: [320, 480, 720, 1080],
+  sizes: '(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw',
+  quality: 76,
+});
+
+const gallerySchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ImageGallery',
+  name: gallery.name,
+  url: `https://masterboard.com.br${pageBaseUrl}`,
+  numberOfItems: totalPhotos,
+};
+---
+
+<BaseLayout
+  title={`${gallery.name} | Galeria Masterboard`}
+  description={`Fotos do evento ${gallery.name} no ecossistema Masterboard.`}
+  jsonLd={[gallerySchema]}
+>
+  <Header />
+
+  <main id="main-content" class="pt-20">
+    <section class="section-py bg-mb-black relative overflow-hidden" aria-labelledby="galeria-detail-heading">
+      <div class="container relative z-10 max-w-4xl">
+        <a href="/galeria/" class="text-white/45 hover:text-white text-sm mb-6 inline-flex items-center gap-2 transition-colors">
+          <span aria-hidden="true">←</span> Voltar para galeria
+        </a>
+        <p class="eyebrow mb-4" data-animate>// ÁLBUM</p>
+        <h1
+          id="galeria-detail-heading"
+          class="text-balance mb-4"
+          data-animate
+          data-animate-delay="100"
+          style="font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.05;"
+        >
+          {gallery.name}
+        </h1>
+        <p class="text-white/50" data-animate data-animate-delay="150">
+          {totalPhotos} fotos
+          {totalPages > 1 && <span> · Página {safePage} de {totalPages}</span>}
+        </p>
+      </div>
+    </section>
+
+    <section class="section-py bg-mb-black relative" aria-label={`Fotos de ${gallery.name}`}>
+      <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+      <div class="container">
+        {photos.length > 0 ? (
+          <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+            {photos.map((photo, index) => (
+              <a
+                href={photo.fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="group block overflow-hidden rounded-xl border border-mb-border bg-mb-card aspect-[4/3]"
+                data-animate
+                data-animate-delay={String((index % 12) * 30)}
+                aria-label={`Abrir ${photo.name}`}
+              >
+                <img
+                  {...getPhotoImageAttrs(photo.fileUrl)}
+                  alt={photo.name}
+                  loading="lazy"
+                  fetchpriority="low"
+                  decoding="async"
+                  width="720"
+                  height="540"
+                  class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                  onerror="this.parentElement.style.display='none'"
+                />
+              </a>
+            ))}
+          </div>
+        ) : (
+          <p class="text-white/50 text-center">Nenhuma foto nesta página.</p>
+        )}
+
+        {totalPages > 1 && (
+          <nav class="flex items-center justify-center gap-3 mt-10" aria-label="Paginação da galeria">
+            {safePage > 1 && (
+              <a
+                href={`${pageBaseUrl}?page=${safePage - 1}`}
+                class="btn-secondary text-sm"
+              >
+                Anterior
+              </a>
+            )}
+            <span class="text-white/40 text-sm">Página {safePage} de {totalPages}</span>
+            {safePage < totalPages && (
+              <a
+                href={`${pageBaseUrl}?page=${safePage + 1}`}
+                class="btn-secondary text-sm"
+              >
+                Próxima
+              </a>
+            )}
+          </nav>
+        )}
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>

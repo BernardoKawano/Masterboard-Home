@@ -223,3 +223,8 @@ export function getEventUrl(event: Pick<Event, 'id'>): string {
 export function getPostUrl(post: Pick<ContentPost, 'id'>): string {
   return `/blog/${post.id}/`;
 }
+
+/** Retorna o caminho canônico de uma galeria */
+export function getGalleryUrl(gallery: Pick<{ id: string }, 'id'>): string {
+  return `/galeria/${gallery.id}/`;
+}

@@ -1,0 +1,121 @@
+---
+export const prerender = false;
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { dataSource } from '../../lib/data-source';
+import { getResponsiveImageAttrs } from '../../lib/responsive-image';
+import { getGalleryUrl } from '../../types/domain';
+import type { Gallery } from '../../types/domain';
+
+const galleries = await dataSource.listGalleries?.() ?? [];
+
+const getGalleryImageAttrs = (src: string) => getResponsiveImageAttrs(src, {
+  widths: [320, 640, 960],
+  sizes: '(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw',
+  quality: 74,
+});
+
+const galleryListSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Galeria Masterboard',
+  description: 'Fotos dos eventos e encontros do ecossistema Masterboard.',
+  url: 'https://masterboard.com.br/galeria/',
+  numberOfItems: galleries.length,
+};
+---
+
+<BaseLayout
+  title="Galeria Masterboard | Fotos dos Eventos"
+  description="Reviva os momentos dos encontros Masterboard — jantares, summits e experiências com líderes empresariais em todo o Brasil."
+  jsonLd={[galleryListSchema]}
+>
+  <Header />
+
+  <main id="main-content" class="pt-20">
+    <section class="section-py bg-mb-black relative overflow-hidden" aria-labelledby="galeria-heading">
+      <div
+        class="absolute inset-0 pointer-events-none"
+        style="background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(251,190,10,0.06) 0%, transparent 60%);"
+        aria-hidden="true"
+      ></div>
+      <div class="container relative z-10 text-center max-w-3xl mx-auto">
+        <p class="eyebrow mb-4" data-animate>// GALERIA</p>
+        <h1
+          id="galeria-heading"
+          class="text-balance mb-5"
+          data-animate
+          data-animate-delay="100"
+          style="font-size: clamp(2.75rem, 6vw, 5rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.0;"
+        >
+          Momentos que
+          <span class="text-mb-yellow"> ficam.</span>
+        </h1>
+        <p class="text-white/60 text-lg leading-relaxed" data-animate data-animate-delay="150">
+          Registros dos encontros, jantares e experiências do ecossistema Masterboard.
+          {galleries.length > 0 && (
+            <span class="text-white/35 text-base block mt-1">{galleries.length} álbuns disponíveis.</span>
+          )}
+        </p>
+      </div>
+    </section>
+
+    {galleries.length > 0 ? (
+      <section class="section-py bg-mb-black relative" aria-label="Álbuns de fotos">
+        <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-mb-border to-transparent"></div>
+        <div class="container">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {galleries.map((gallery: Gallery, index: number) => (
+              <article class="card flex flex-col gap-4 group" data-animate data-animate-delay={String(index * 60)}>
+                <a href={getGalleryUrl(gallery)} class="block" aria-label={`Abrir galeria: ${gallery.name}`}>
+                  <div class="w-full aspect-video rounded-xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-mb-border overflow-hidden">
+                    {gallery.coverImage ? (
+                      <img
+                        {...getGalleryImageAttrs(gallery.coverImage)}
+                        alt={gallery.name}
+                        loading="lazy"
+                        fetchpriority="low"
+                        decoding="async"
+                        width="640"
+                        height="360"
+                        class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
+                        onerror="this.style.display='none'"
+                      />
+                    ) : (
+                      <div class="w-full h-full flex items-center justify-center">
+                        <span class="text-white/10 font-800 text-3xl">M</span>
+                      </div>
+                    )}
+                  </div>
+                </a>
+
+                <div>
+                  <h2 class="font-800 text-white text-lg leading-tight mb-2 group-hover:text-mb-yellow transition-colors">
+                    <a href={getGalleryUrl(gallery)}>{gallery.name}</a>
+                  </h2>
+                  {gallery.photoCount !== undefined && (
+                    <p class="text-white/45 text-sm">{gallery.photoCount} fotos</p>
+                  )}
+                </div>
+
+                <a href={getGalleryUrl(gallery)} class="btn-secondary text-sm justify-center mt-auto">
+                  Ver fotos
+                </a>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    ) : (
+      <section class="section-py bg-mb-black">
+        <div class="container text-center max-w-xl mx-auto">
+          <p class="text-white/50">Nenhuma galeria publicada no momento.</p>
+        </div>
+      </section>
+    )}
+  </main>
+
+  <Footer />
+</BaseLayout>
