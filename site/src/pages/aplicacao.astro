@@ -98,6 +98,11 @@ const clubOptions = [
               <input type="hidden" name="lead_id" data-lead-id />
               <input type="hidden" name="cidade" data-city-field />
               <input type="hidden" name="form_step" data-form-step />
+              <input type="hidden" name="utm_source" data-utm="utm_source" />
+              <input type="hidden" name="utm_medium" data-utm="utm_medium" />
+              <input type="hidden" name="utm_campaign" data-utm="utm_campaign" />
+              <input type="hidden" name="utm_content" data-utm="utm_content" />
+              <input type="hidden" name="ref" data-utm="ref" />
 
               <p class="application-step-indicator" data-step-indicator aria-hidden="true"></p>
 
@@ -708,6 +713,24 @@ const clubOptions = [
 
   const storedLeadId = sessionStorage.getItem(LEAD_STORAGE_KEY);
   if (storedLeadId && leadIdField) leadIdField.value = storedLeadId;
+
+  // UTM tracking
+  const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'ref'] as const;
+  const UTM_STORAGE_KEY = 'masterboard:utm';
+  const urlParams = new URLSearchParams(window.location.search);
+  const storedUtm = sessionStorage.getItem(UTM_STORAGE_KEY);
+  const utmData: Record<string, string> = storedUtm ? JSON.parse(storedUtm) : {};
+  for (const key of UTM_KEYS) {
+    const val = urlParams.get(key);
+    if (val) utmData[key] = val;
+  }
+  if (Object.keys(utmData).length > 0) {
+    sessionStorage.setItem(UTM_STORAGE_KEY, JSON.stringify(utmData));
+  }
+  for (const key of UTM_KEYS) {
+    const el = document.querySelector<HTMLInputElement>(`[data-utm="${key}"]`);
+    if (el && utmData[key]) el.value = utmData[key];
+  }
 
   updateStep();
 </script>

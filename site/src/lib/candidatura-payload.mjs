@@ -116,6 +116,11 @@ export function buildCandidaturaPayload(data, meta = {}) {
     lgpd: data.get('lgpd') === 'on' || data.get('lgpd') === 'true',
     source: getFormString(data, 'source') || meta.source || LEAD_SOURCE.MASTERBOARD_SITE_CANDIDATURA,
     referrer: getFormString(data, 'referrer') || meta.referrer || '',
+    utmSource: getFormString(data, 'utm_source'),
+    utmMedium: getFormString(data, 'utm_medium'),
+    utmCampaign: getFormString(data, 'utm_campaign'),
+    utmContent: getFormString(data, 'utm_content'),
+    ref: getFormString(data, 'ref'),
     formStep: Number.parseInt(getFormString(data, 'form_step') || String(meta.formStep ?? ''), 10) || meta.formStep || 0,
     timestamp: meta.timestamp || new Date().toISOString(),
   };
@@ -202,6 +207,17 @@ function qualificationNotes(payload, score, extra = {}) {
     priority: priorityFromScore(score),
     source: payload.source,
     referrer: payload.referrer,
+    ...(payload.utmSource || payload.utmMedium || payload.utmCampaign || payload.ref
+      ? {
+          utm: {
+            source: payload.utmSource || null,
+            medium: payload.utmMedium || null,
+            campaign: payload.utmCampaign || null,
+            content: payload.utmContent || null,
+            ref: payload.ref || null,
+          },
+        }
+      : {}),
     ...extra,
   };
 

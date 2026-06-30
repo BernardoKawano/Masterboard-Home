@@ -170,7 +170,7 @@ const eventSchema = {
               </h1>
 
               <div class="event-app-actions" data-animate data-animate-delay="200">
-                <a href="/aplicacao/" class="btn-primary">
+                <a href={`/aplicacao/?utm_source=site&utm_medium=evento&utm_campaign=${encodeURIComponent(event.id)}&utm_content=hero-cta`} class="btn-primary">
                   Quero participar
                 </a>
                 <a class="event-app-action" href={calendarUrl} target="_blank" rel="noopener noreferrer">
@@ -258,7 +258,7 @@ const eventSchema = {
                   )}
                 </dl>
 
-                <a href="/aplicacao/" class="btn-primary w-full justify-center mt-6">
+                <a href={`/aplicacao/?utm_source=site&utm_medium=evento&utm_campaign=${encodeURIComponent(event.id)}&utm_content=side-cta`} class="btn-primary w-full justify-center mt-6">
                   Quero participar
                 </a>
               </section>

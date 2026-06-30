@@ -476,6 +476,20 @@ const scoreColor = (score: number) => {
                   <div><dt>Colaboradores</dt><dd>{q.employees}</dd></div>
                   <div><dt>Momento</dt><dd>{q.moment}</dd></div>
                   <div><dt>Origem</dt><dd>{formatLeadSourceLabel(source)}</dd></div>
+                  {notes.utm && (typeof notes.utm === 'object') && (
+                    <div class="lead-card__grid-full">
+                      <dt>UTM</dt>
+                      <dd>
+                        {[
+                          notes.utm.source && `source: ${notes.utm.source}`,
+                          notes.utm.medium && `medium: ${notes.utm.medium}`,
+                          notes.utm.campaign && `campaign: ${notes.utm.campaign}`,
+                          notes.utm.content && `content: ${notes.utm.content}`,
+                          notes.utm.ref && `ref: ${notes.utm.ref}`,
+                        ].filter(Boolean).join(' · ')}
+                      </dd>
+                    </div>
+                  )}
                 </dl>
 
                 {q.objective !== '-' && <p class="lead-card__objective">{q.objective}</p>}
@@ -1067,6 +1081,10 @@ const scoreColor = (score: number) => {
     color: rgba(255, 255, 255, 0.76);
     font-size: 0.84rem;
     overflow-wrap: anywhere;
+  }
+
+  .lead-card__grid-full {
+    grid-column: 1 / -1;
   }
 
   .lead-wa-link {
